@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Display_TMATS", "Display_TMATS.vcproj", "{E3202B05-0452-4772-B77D-C413979540A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F94C17BA-1B8A-4DCF-8D0B-BD615AB4FD53} = {F94C17BA-1B8A-4DCF-8D0B-BD615AB4FD53}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "irig106lib", "..\irig106lib\dotnet2005\irig106lib.vcproj", "{F94C17BA-1B8A-4DCF-8D0B-BD615AB4FD53}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E3202B05-0452-4772-B77D-C413979540A4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E3202B05-0452-4772-B77D-C413979540A4}.Debug|Win32.Build.0 = Debug|Win32
+		{E3202B05-0452-4772-B77D-C413979540A4}.Release|Win32.ActiveCfg = Release|Win32
+		{E3202B05-0452-4772-B77D-C413979540A4}.Release|Win32.Build.0 = Release|Win32
+		{F94C17BA-1B8A-4DCF-8D0B-BD615AB4FD53}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F94C17BA-1B8A-4DCF-8D0B-BD615AB4FD53}.Debug|Win32.Build.0 = Debug|Win32
+		{F94C17BA-1B8A-4DCF-8D0B-BD615AB4FD53}.Release|Win32.ActiveCfg = Release|Win32
+		{F94C17BA-1B8A-4DCF-8D0B-BD615AB4FD53}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
