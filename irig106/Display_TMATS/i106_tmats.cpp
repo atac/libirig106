@@ -233,6 +233,7 @@ System::Void InputForm::DisplayTree()
             psuGDataSource->iDataSourceNum, 
             Marshal::PtrToStringAnsi((System::IntPtr)psuGDataSource->szDataSourceID)));
         this->treeTree->Nodes->Add(GDataSourceNode);
+        GDataSourceNode->Expand();
 
         GDataSourceNode->Nodes->Add(String::Format("(G\\DST-{0}) Data Source Type - {1}",
             psuGDataSource->iDataSourceNum,
@@ -248,6 +249,7 @@ System::Void InputForm::DisplayTree()
             TreeNode ^ RRecordNode = gcnew TreeNode(String::Format("(R-{0}\\ID) ID - {1}",
                 iRIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuRRecord->szDataSourceID)));
             GDataSourceNode->Nodes->Add(RRecordNode);
+            RRecordNode->Expand();
 
             // Walk the R record data sources
             psuRDataSource = psuRRecord->psuFirstDataSource;
@@ -258,6 +260,13 @@ System::Void InputForm::DisplayTree()
                 TreeNode ^ RDataSourceNode = gcnew TreeNode(String::Format("(R-{0}\\DSI-{1}) Data Source ID - {2}",
                     iRIndex, iRDsiIndex,
                     Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szDataSourceID)));
+
+                // Set the color based on enabled/disabled
+                if (!psuRDataSource->bEnabled)
+                    RDataSourceNode->BackColor = Color::LightSalmon;
+                else
+                    RDataSourceNode->BackColor = Color::LightGreen;
+
                 RRecordNode->Nodes->Add(RDataSourceNode);
                 iRDsiIndex = psuRDataSource->iDataSourceNum;
                 RDataSourceNode->Nodes->Add(String::Format("(R-{0}\\DST-{1}) Channel Type - {2}",
@@ -274,14 +283,18 @@ System::Void InputForm::DisplayTree()
                 if (psuMRecord != NULL)
                     {
                     iMIndex = psuMRecord->iRecordNum;
-                    TreeNode ^ MRecordNode = gcnew TreeNode(String::Format("(M-{0}\\BB\\DLN) DLN - {1}",
-                        iMIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuMRecord->szDataLinkName)));
+                    //TreeNode ^ MRecordNode = gcnew TreeNode(String::Format("(M-{0}\\BB\\DLN) DLN - {1}",
+                    //    iMIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuMRecord->szDataLinkName)));
+                    TreeNode ^ MRecordNode = gcnew TreeNode(String::Format("(M-{0}\\ID) - {1}",
+                        iMIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuMRecord->szDataSourceID)));
 
                     MRecordNode->Nodes->Add(String::Format("(M-{0}\\BSG1) {1}",
                         iMIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuMRecord->szBasebandSignalType)));
 
-                    MRecordNode->Nodes->Add(String::Format("(M-{0}\\ID) {1}",
-                        iMIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuMRecord->szDataSourceID)));
+                    //MRecordNode->Nodes->Add(String::Format("(M-{0}\\ID) {1}",
+                    //    iMIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuMRecord->szDataSourceID)));
+                    MRecordNode->Nodes->Add(String::Format("(M-{0}\\BB\\DLN) {1}",
+                        iMIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuMRecord->szDataLinkName)));
 
                     RDataSourceNode->Nodes->Add(MRecordNode);
                     } // end if M record exists
