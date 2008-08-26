@@ -116,7 +116,6 @@ namespace I106Input {
             this->pictureLogo->SizeMode = System::Windows::Forms::PictureBoxSizeMode::AutoSize;
             this->pictureLogo->TabIndex = 0;
             this->pictureLogo->TabStop = false;
-            this->pictureLogo->Click += gcnew System::EventHandler(this, &AboutDisplayTmats::pictureLogo_Click);
             // 
             // buttonClose
             // 
@@ -154,7 +153,7 @@ namespace I106Input {
             this->label1->Name = L"label1";
             this->label1->Size = System::Drawing::Size(117, 64);
             this->label1->TabIndex = 5;
-            this->label1->Text = L"Display TMATS\r\nVerson 1.0.0\r\nCopyright 2008 \r\nirig106.org";
+            this->label1->Text = L"Display TMATS\r\nVerson 1.0.1\r\nCopyright 2008 \r\nirig106.org";
             // 
             // AboutDisplayTmats
             // 
@@ -193,7 +192,6 @@ private: System::Void linkIrig106_Click(System::Object^  sender, System::EventAr
     }
 
 
-private: System::Void pictureLogo_Click(System::Object^  sender, System::EventArgs^  e) {
-         }
+
 };
 }
