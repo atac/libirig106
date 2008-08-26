@@ -73,22 +73,14 @@ namespace I106Input {
 		InputForm(void)
 		{
 			InitializeComponent();
-			//
-			//TODO: Add the constructor code here
 
             this->IrigIn       = new Irig106::Irig106Lib();
-            this->psuTmatsInfo = new SuTmatsInfo;
-
-            memset(this->psuTmatsInfo, 0, sizeof(SuTmatsInfo));
 
 		}
 
     // ----------------------------------------------------------------
 
 	protected:
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
 		~InputForm()
 		{
 			if (components)
@@ -99,8 +91,6 @@ namespace I106Input {
             IrigIn->Close();
 
             delete this->IrigIn;
-            delete this->psuTmatsInfo;
-            this->psuTmatsInfo = NULL;
 
 		}
 
@@ -110,16 +100,8 @@ namespace I106Input {
 
     protected: 
 
-        SuTmatsInfo                * psuTmatsInfo;   // Decoded TMATS info tree
-
     private: System::Windows::Forms::ToolStripStatusLabel^  statuslblAbout;
     private: System::Windows::Forms::ToolStripStatusLabel^  statuslblDummy;
-    protected: 
-
-
-
-
-
 
     protected: 
         Irig106::Irig106Lib        * IrigIn;

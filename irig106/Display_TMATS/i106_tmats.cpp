@@ -105,9 +105,7 @@ System::Void InputForm::ProcessIrigFile()
             {
             // Read the data into the buffer
             enStatus = IrigIn->ReadData();
-
-            //SuTmatsInfo   suTmatsInfo;
-//            enStatus = enI106_Decode_Tmats(psuI106Hdr, pvBuff, psuTmatsInfo);
+            enStatus = IrigIn->Decode_Tmats();
 
             DecodeDisplayTMATS();
             } // end if TMATS
@@ -157,18 +155,6 @@ System::Void InputForm::ProcessIrigFile()
 
 System::Void InputForm::DecodeDisplayTMATS()
     {
-//    size_t              iDataBuffLen;
-    EnI106Status        enStatus;
-
-    // Free any previous TMATS info
-    enI106_Free_TmatsInfo(this->psuTmatsInfo);
-
-    // Allocate memory and store the info
-    memset((void *)psuTmatsInfo, 0, sizeof(SuTmatsInfo));
-
-    // Decode the new info
-    enStatus = IrigIn->Decode_Tmats(psuTmatsInfo);
-
     // Display the views
     DisplayRaw();
     DisplayChannels();
@@ -218,11 +204,11 @@ System::Void InputForm::DisplayTree()
     this->treeTree->Nodes->Clear();
 
     // G record
-    this->treeTree->Nodes->Add("(G) Program Name  - " + Marshal::PtrToStringAnsi((System::IntPtr)psuTmatsInfo->psuFirstGRecord->szProgramName));
-    this->treeTree->Nodes->Add("(G) TMATS Version - " + Marshal::PtrToStringAnsi((System::IntPtr)psuTmatsInfo->psuFirstGRecord->szIrig106Rev));
+    this->treeTree->Nodes->Add("(G) Program Name  - " + Marshal::PtrToStringAnsi((System::IntPtr)IrigIn->suTmatsInfo.psuFirstGRecord->szProgramName));
+    this->treeTree->Nodes->Add("(G) TMATS Version - " + Marshal::PtrToStringAnsi((System::IntPtr)IrigIn->suTmatsInfo.psuFirstGRecord->szIrig106Rev));
 
     // Walk the G record data sources
-    psuGDataSource = psuTmatsInfo->psuFirstGRecord->psuFirstGDataSource;
+    psuGDataSource = IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource;
     do  {
         if (psuGDataSource == NULL) break;
 
@@ -237,7 +223,7 @@ System::Void InputForm::DisplayTree()
 
         GDataSourceNode->Nodes->Add(String::Format("(G\\DST-{0}) Data Source Type - {1}",
             psuGDataSource->iDataSourceNum,
-            Marshal::PtrToStringAnsi((System::IntPtr)psuTmatsInfo->psuFirstGRecord->psuFirstGDataSource->szDataSourceType)));
+            Marshal::PtrToStringAnsi((System::IntPtr)IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource->szDataSourceType)));
 
         // R record info
         psuRRecord = psuGDataSource->psuRRecord;
@@ -269,7 +255,7 @@ System::Void InputForm::DisplayTree()
 
                 RRecordNode->Nodes->Add(RDataSourceNode);
                 iRDsiIndex = psuRDataSource->iDataSourceNum;
-                RDataSourceNode->Nodes->Add(String::Format("(R-{0}\\DST-{1}) Channel Type - {2}",
+                RDataSourceNode->Nodes->Add(String::Format("(R-{0}\\CDT-{1}) Channel Type - {2}",
                     iRIndex, iRDsiIndex, 
                     Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szChannelDataType)));
                 RDataSourceNode->Nodes->Add(String::Format("(R-{0}\\TK1-{1}) Track Number - {2}",
@@ -305,7 +291,7 @@ System::Void InputForm::DisplayTree()
             psuRRecord = psuRRecord->psuNextRRecord;
             } // end if R record exists
 
-        psuGDataSource = psuTmatsInfo->psuFirstGRecord->psuFirstGDataSource->psuNextGDataSource;
+        psuGDataSource = IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource->psuNextGDataSource;
         } while (bTRUE);
 
     Update();
@@ -333,13 +319,13 @@ void InputForm::DisplayChannels()
     // ------------------------
 
     // G record
-    this->textChannels->Text += L"Program Name - " + Marshal::PtrToStringAnsi((System::IntPtr)psuTmatsInfo->psuFirstGRecord->szProgramName) + "\r\n";
-    this->textChannels->Text += L"TMATS Version - " + Marshal::PtrToStringAnsi((System::IntPtr)psuTmatsInfo->psuFirstGRecord->szIrig106Rev) + "\r\n";
+    this->textChannels->Text += L"Program Name - " + Marshal::PtrToStringAnsi((System::IntPtr)IrigIn->suTmatsInfo.psuFirstGRecord->szProgramName) + "\r\n";
+    this->textChannels->Text += L"TMATS Version - " + Marshal::PtrToStringAnsi((System::IntPtr)IrigIn->suTmatsInfo.psuFirstGRecord->szIrig106Rev) + "\r\n";
     this->textChannels->Text += L"Channel  Type          Enabled   Data Source         \r\n";
     this->textChannels->Text += L"-------  ------------  --------  --------------------\r\n";
 
     // Data sources
-    psuGDataSource = psuTmatsInfo->psuFirstGRecord->psuFirstGDataSource;
+    psuGDataSource = IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource;
     do  {
         if (psuGDataSource == NULL) break;
 
@@ -369,7 +355,7 @@ void InputForm::DisplayChannels()
             } while (bTRUE);
 
 
-        psuGDataSource = psuTmatsInfo->psuFirstGRecord->psuFirstGDataSource->psuNextGDataSource;
+        psuGDataSource = IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource->psuNextGDataSource;
         } while (bTRUE);
 
     // Update the dialog box display"
