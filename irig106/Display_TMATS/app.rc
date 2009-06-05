@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,1,1
- PRODUCTVERSION 1,0,1,1
+ FILEVERSION 1,2,0,0
+ PRODUCTVERSION 1,2,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -72,12 +72,12 @@ BEGIN
             VALUE "Comments", "Free open source viewer for IRIG 106 TMATS.  Go to www.irig106.org for more information."
             VALUE "CompanyName", "irig106.org"
             VALUE "FileDescription", "IRIG 106 TMATS Viewer"
-            VALUE "FileVersion", "1, 0, 1, 1"
+            VALUE "FileVersion", "1, 2, 0, 0"
             VALUE "InternalName", "Decode_TMATS"
             VALUE "LegalCopyright", "Copyright (C) 2008 irig106.org"
             VALUE "OriginalFilename", "Decode_TMATS.exe"
             VALUE "ProductName", " Decode_TMATS"
-            VALUE "ProductVersion", "1, 0, 1, 1"
+            VALUE "ProductVersion", "1, 2, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -98,14 +98,4 @@ IDI_ICON_IRIG_APP       ICON                    "irig106_app.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
 
