@@ -203,10 +203,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\about.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\AssemblyInfo.cpp"
 				>
 			</File>
@@ -241,58 +237,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\about.h"
-				FileType="3"
-				>
-				<File
-					RelativePath=".\about.resx"
-					SubType="Designer"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCManagedResourceCompilerTool"
-							ResourceFileName="$(IntDir)\I106Input.AboutDisplayTmats.resources"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCManagedResourceCompilerTool"
-							ResourceFileName="$(IntDir)\I106Input.AboutDisplayTmats.resources"
-						/>
-					</FileConfiguration>
-				</File>
-			</File>
-			<File
-				RelativePath=".\input_form.h"
-				FileType="3"
-				>
-				<File
-					RelativePath=".\input_form.resX"
-					SubType="Designer"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCManagedResourceCompilerTool"
-							ResourceFileName="$(IntDir)\I106Input.InputForm.resources"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCManagedResourceCompilerTool"
-							ResourceFileName="$(IntDir)\I106Input.InputForm.resources"
-						/>
-					</FileConfiguration>
-				</File>
-			</File>
-			<File
 				RelativePath=".\resource.h"
 				>
 			</File>
@@ -317,6 +261,36 @@
 			<File
 				RelativePath=".\irig106_app.ico"
 				>
+			</File>
+		</Filter>
+		<Filter
+			Name="AboutForm"
+			>
+			<File
+				RelativePath=".\AboutDisplayTmats.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\AboutDisplayTmats.h"
+				FileType="3"
+				>
+				<File
+					RelativePath=".\AboutDisplayTmats.resx"
+					>
+				</File>
+			</File>
+		</Filter>
+		<Filter
+			Name="InputForm"
+			>
+			<File
+				RelativePath=".\InputForm.h"
+				FileType="3"
+				>
+				<File
+					RelativePath=".\InputForm.resx"
+					>
+				</File>
 			</File>
 		</Filter>
 		<File
