@@ -83,7 +83,6 @@ int main(array<System::String ^> ^args)
 System::Void InputForm::ProcessIrigFile()
     {
     EnI106Status        enStatus;
-//    pin_ptr<int>        piI106In = &iI106In;
     char              * szTime;
 
     enStatus = IrigIn->Open(txtFilename->Text);
@@ -108,9 +107,6 @@ System::Void InputForm::ProcessIrigFile()
             {
             // Read the data into the buffer
             enStatus = IrigIn->ReadData();
-
-            //SuTmatsInfo   suTmatsInfo;
-//            enStatus = enI106_Decode_Tmats(psuI106Hdr, pvBuff, psuTmatsInfo);
 
             DecodeDisplayTMATS();
             } // end if TMATS
@@ -160,18 +156,10 @@ System::Void InputForm::ProcessIrigFile()
 
 System::Void InputForm::DecodeDisplayTMATS()
     {
-//    size_t              iDataBuffLen;
     EnI106Status        enStatus;
-
-    // Free any previous TMATS info
-//    enI106_Free_TmatsInfo(this->psuTmatsInfo);
-
-    // Allocate memory and store the info
-//    memset((void *)psuTmatsInfo, 0, sizeof(SuTmatsInfo));
 
     // Decode the new info
     enStatus = IrigIn->Decode_Tmats();
-//    psuTmatsInfo = &IrigIn->suTmatsInfo;
 
     // Display the views
     DisplayRaw();
@@ -474,6 +462,35 @@ szVideoEncodingDelay;   // (R-x\VED-n)
 
                         } // end if video channel type
 
+                    // Analog Attributes
+                    if (strcasecmp(psuRDataSource->szChannelDataType, "ANAIN") == 0)
+                        {
+                        // (R-x\ACH\N-n)
+                        if (psuRDataSource->szAnalogChansPerPkt != NULL)
+                            {
+                            ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\ACH\\N-{1}) Analog Channels per Packet - {2}",
+                                iRIndex, iRDsiIndex, 
+                                Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szAnalogChansPerPkt)));
+                            } // end if ACH\N
+
+                        // (R-1\ASR-n)
+                        if (psuRDataSource->szAnalogSampleRate != NULL)
+                            {
+                            ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\ASR-{1}) Analog Sample Rate - {2}",
+                                iRIndex, iRDsiIndex, 
+                                Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szAnalogSampleRate)));
+                            } // end if ASR
+
+                        // (R-x\ADP-n)
+                        if (psuRDataSource->szAnalogDataPacking != NULL)
+                            {
+                            ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\ADP-{1}) Analog Data Packing - {2}",
+                                iRIndex, iRDsiIndex, 
+                                Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szAnalogDataPacking)));
+                            } // end if ACH\N
+
+                        } // end if analog channel type
+
                     } // end if szChannelDataType not null
 
                 if (psuRDataSource->szTrackNumber != NULL)
@@ -570,6 +587,30 @@ TreeNode ^ MakePRecordNode(SuPRecord * psuPRecord)
     if (psuPRecord->szBitsInMinorFrame != NULL)
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\MF2) Bits per Minor Frame - {1}",
             iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szBitsInMinorFrame)));
+    if (psuPRecord->szMinorFrameSyncType != NULL)
+        PRecordNode->Nodes->Add(String::Format("(P-{0}\\MF3) Minor Frame Sync Type - {1}",
+            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szMinorFrameSyncType)));
+    if (psuPRecord->szMinorFrameSyncPatLen != NULL)
+        {
+        PRecordNode->Nodes->Add(String::Format("(P-{0}\\MF4) Minor Frame Sync Pattern Length - {1}",
+            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szMinorFrameSyncPatLen)));
+        }
+    if (psuPRecord->szMinorFrameSyncPatLen != NULL)
+        {
+        // Make a hex version of Frame Sync Pattern to make Ron VK happy
+        Int64 iPower = 1;
+        Int64 iPattern = 0;
+        String ^ sPattern;
+        sPattern = Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szMinorFrameSyncPat);
+        for (int iIdx=sPattern->Length-1; iIdx>0; iIdx--)
+            {
+            if (sPattern[iIdx] == '1')
+                iPattern += iPower;
+            iPower = iPower << 1;
+            } // end for all characters
+        PRecordNode->Nodes->Add(String::Format("(P-{0}\\MF5) Minor Frame Sync Pattern - {1} (0x{2:X})",
+            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szMinorFrameSyncPat), iPattern));
+        }
 
     return PRecordNode;
     }
