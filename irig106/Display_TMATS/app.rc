@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,2,0,0
- PRODUCTVERSION 1,2,0,0
+ FILEVERSION 1,4,0,0
+ PRODUCTVERSION 1,4,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -72,12 +72,12 @@ BEGIN
             VALUE "Comments", "Free open source viewer for IRIG 106 TMATS.  Go to www.irig106.org for more information."
             VALUE "CompanyName", "irig106.org"
             VALUE "FileDescription", "IRIG 106 TMATS Viewer"
-            VALUE "FileVersion", "1, 2, 0, 0"
+            VALUE "FileVersion", "1, 4, 0, 0"
             VALUE "InternalName", "Decode_TMATS"
-            VALUE "LegalCopyright", "Copyright (C) 2008 irig106.org"
+            VALUE "LegalCopyright", "Copyright (C) 2009 irig106.org"
             VALUE "OriginalFilename", "Decode_TMATS.exe"
             VALUE "ProductName", " Decode_TMATS"
-            VALUE "ProductVersion", "1, 2, 0, 0"
+            VALUE "ProductVersion", "1, 4, 0, 0"
         END
     END
     BLOCK "VarFileInfo"

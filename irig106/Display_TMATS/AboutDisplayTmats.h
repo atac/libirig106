@@ -110,7 +110,7 @@ namespace I106Input {
             // 
             this->pictureLogo->Image = (cli::safe_cast<System::Drawing::Image^  >(resources->GetObject(L"pictureLogo.Image")));
             this->pictureLogo->Location = System::Drawing::Point(1, 0);
-            this->pictureLogo->Margin = System::Windows::Forms::Padding(2, 2, 2, 2);
+            this->pictureLogo->Margin = System::Windows::Forms::Padding(2);
             this->pictureLogo->Name = L"pictureLogo";
             this->pictureLogo->Size = System::Drawing::Size(200, 200);
             this->pictureLogo->SizeMode = System::Windows::Forms::PictureBoxSizeMode::AutoSize;
@@ -122,7 +122,7 @@ namespace I106Input {
             this->buttonClose->BackColor = System::Drawing::Color::LightGray;
             this->buttonClose->DialogResult = System::Windows::Forms::DialogResult::OK;
             this->buttonClose->Location = System::Drawing::Point(234, 137);
-            this->buttonClose->Margin = System::Windows::Forms::Padding(2, 2, 2, 2);
+            this->buttonClose->Margin = System::Windows::Forms::Padding(2);
             this->buttonClose->Name = L"buttonClose";
             this->buttonClose->Size = System::Drawing::Size(76, 28);
             this->buttonClose->TabIndex = 3;
@@ -153,7 +153,7 @@ namespace I106Input {
             this->label1->Name = L"label1";
             this->label1->Size = System::Drawing::Size(117, 64);
             this->label1->TabIndex = 5;
-            this->label1->Text = L"Display TMATS\r\nVerson 1.2.0\r\nCopyright 2009 \r\nirig106.org";
+            this->label1->Text = L"Display TMATS\r\nVerson 1.4.0\r\nCopyright 2009 \r\nirig106.org";
             // 
             // AboutDisplayTmats
             // 
@@ -168,7 +168,7 @@ namespace I106Input {
             this->Controls->Add(this->pictureLogo);
             this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedSingle;
             this->Icon = (cli::safe_cast<System::Drawing::Icon^  >(resources->GetObject(L"$this.Icon")));
-            this->Margin = System::Windows::Forms::Padding(2, 2, 2, 2);
+            this->Margin = System::Windows::Forms::Padding(2);
             this->MaximizeBox = false;
             this->MinimizeBox = false;
             this->Name = L"AboutDisplayTmats";

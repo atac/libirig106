@@ -16,7 +16,7 @@ using namespace System::Security::Permissions;
 [assembly:AssemblyConfigurationAttribute("")];
 [assembly:AssemblyCompanyAttribute("irig106.org")];
 [assembly:AssemblyProductAttribute("i106_tmats")];
-[assembly:AssemblyCopyrightAttribute("Copyright (c) irig106.org 2008")];
+[assembly:AssemblyCopyrightAttribute("Copyright (c) irig106.org 2009")];
 [assembly:AssemblyTrademarkAttribute("")];
 [assembly:AssemblyCultureAttribute("")];
 
@@ -31,7 +31,7 @@ using namespace System::Security::Permissions;
 // You can specify all the value or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
 
-[assembly:AssemblyVersionAttribute("1.2.*")];
+[assembly:AssemblyVersionAttribute("1.4.*")];
 
 [assembly:ComVisible(false)];
 
