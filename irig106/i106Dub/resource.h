@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by app.rc
+// Used by i106Dub.rc
 //
 #define IDI_ICON1                       102
 
