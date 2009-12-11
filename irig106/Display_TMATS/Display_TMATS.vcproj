@@ -276,6 +276,7 @@
 				>
 				<File
 					RelativePath=".\AboutDisplayTmats.resx"
+					SubType="Designer"
 					>
 				</File>
 			</File>
@@ -289,6 +290,7 @@
 				>
 				<File
 					RelativePath=".\InputForm.resx"
+					SubType="Designer"
 					>
 				</File>
 			</File>
