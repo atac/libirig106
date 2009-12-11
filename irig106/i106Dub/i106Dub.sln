@@ -8,6 +8,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "i106Dub", "i106Dub.vcproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "irig106lib", "..\irig106lib\dotnet2005\irig106lib.vcproj", "{F94C17BA-1B8A-4DCF-8D0B-BD615AB4FD53}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "i106Dub_Setup", "i106Dub_Setup.vdproj", "{BFE0C04D-B76F-45DA-B79B-0AC7D35B2A0B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -22,6 +24,10 @@ Global
 		{F94C17BA-1B8A-4DCF-8D0B-BD615AB4FD53}.Debug|Win32.Build.0 = Debug|Win32
 		{F94C17BA-1B8A-4DCF-8D0B-BD615AB4FD53}.Release|Win32.ActiveCfg = Release|Win32
 		{F94C17BA-1B8A-4DCF-8D0B-BD615AB4FD53}.Release|Win32.Build.0 = Release|Win32
+		{BFE0C04D-B76F-45DA-B79B-0AC7D35B2A0B}.Debug|Win32.ActiveCfg = Debug
+		{BFE0C04D-B76F-45DA-B79B-0AC7D35B2A0B}.Debug|Win32.Build.0 = Debug
+		{BFE0C04D-B76F-45DA-B79B-0AC7D35B2A0B}.Release|Win32.ActiveCfg = Release
+		{BFE0C04D-B76F-45DA-B79B-0AC7D35B2A0B}.Release|Win32.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
