@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "irig106dotnet", "irig106dotnet.vcproj", "{12FBB6F8-7131-48CA-81E1-33FB482AB2E3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AEDD17E1-E0C6-47C1-8612-B3329BBE8BA6} = {AEDD17E1-E0C6-47C1-8612-B3329BBE8BA6}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "irig106dll", "irig106dll.vcproj", "{AEDD17E1-E0C6-47C1-8612-B3329BBE8BA6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{12FBB6F8-7131-48CA-81E1-33FB482AB2E3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{12FBB6F8-7131-48CA-81E1-33FB482AB2E3}.Debug|Win32.Build.0 = Debug|Win32
+		{12FBB6F8-7131-48CA-81E1-33FB482AB2E3}.Release|Win32.ActiveCfg = Release|Win32
+		{12FBB6F8-7131-48CA-81E1-33FB482AB2E3}.Release|Win32.Build.0 = Release|Win32
+		{AEDD17E1-E0C6-47C1-8612-B3329BBE8BA6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AEDD17E1-E0C6-47C1-8612-B3329BBE8BA6}.Debug|Win32.Build.0 = Debug|Win32
+		{AEDD17E1-E0C6-47C1-8612-B3329BBE8BA6}.Release|Win32.ActiveCfg = Release|Win32
+		{AEDD17E1-E0C6-47C1-8612-B3329BBE8BA6}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
