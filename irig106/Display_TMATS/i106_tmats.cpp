@@ -38,27 +38,20 @@
 
 #include "stdafx.h"
 
-#include <malloc.h>
-#include <string.h>
-#include <ctype.h>
-
 #include "AboutDisplayTmats.h"
 #include "InputForm.h"
-
-#include "config.h"
-#include "stdint.h"
-#include "irig106ch10.h"
-#include "i106_decode_tmats.h"
 
 using namespace System;
 using namespace System::Collections;
 using namespace System::Text;
 using namespace System::Runtime::InteropServices;
+using namespace System::IO;
 
 using namespace I106Input;
+using namespace Irig106DotNet;
 
+TreeNode ^ MakePRecordNode(Irig106DotNet::Tmats::SuPRecord ^ PRecord);
 
-TreeNode ^ MakePRecordNode(SuPRecord * psuPRecord);
 
 // ========================================================================
 
@@ -82,72 +75,135 @@ int main(array<System::String ^> ^args)
 
 System::Void InputForm::ProcessIrigFile()
     {
-    EnI106Status        enStatus;
-    char              * szTime;
+    bool    bStatus;
+    String ^ sExt;
 
-    enStatus = IrigIn->Open(txtFilename->Text);
-    if (enStatus != I106_OK)
+    // Figure out if it seems to be an IRIG file or just a TMATS text file
+    sExt = Path::GetExtension(txtFilename->Text);
+    sExt = sExt->ToLower();
+    
+    // Seems to be an IRIG file so try opening it that way
+    if ((sExt == ".ch10") || (sExt == ".c10"))
+        bStatus = OpenAsIrigFile(txtFilename->Text);
+
+    // Seems to be a TMATS file so try opening it that way
+    else if ((sExt == ".tmt") || (sExt == ".tma") || (sExt == ".txt"))
+        bStatus = OpenAsTmatsFile(txtFilename->Text);
+
+    // Unknown file extension so try both ways
+    else
         {
-        MessageBox::Show( "Error opening data file.", "Error",
-            MessageBoxButtons::OK, MessageBoxIcon::Exclamation );
-        return;
+        bStatus = OpenAsIrigFile(txtFilename->Text);
+        if (bStatus != true)
+            bStatus = OpenAsTmatsFile(txtFilename->Text);
         }
 
-    enStatus = IrigIn->ReadNextHeader();
-    if (enStatus != I106_OK)
-        {
-        MessageBox::Show( "Error reading header.", "Error",
+    // If no TMATS found then warn the poor user
+    if (bStatus == false)
+        MessageBox::Show( "No valid TMATS found!", "Error",
             MessageBoxButtons::OK, MessageBoxIcon::Exclamation );
-        }
+
+    return;
+    }
+
+
+
+// ------------------------------------------------------------------------
+
+bool InputForm::OpenAsIrigFile(String ^ Filename)
+    {
+    Irig106DotNet::ReturnStatus        Status;
+
+    Status = IrigIn->Open(Filename, Irig106DotNet::Ch10FileMode::READ);
+    if (Status != Irig106DotNet::ReturnStatus::OK)
+        return false;
+
+    Status = IrigIn->ReadNextHeader();
+    if (Status != Irig106DotNet::ReturnStatus::OK)
+        return false;
 
     else
         {
         // See if it's TMATS
-        if (IrigIn->pHeader->ubyDataType == I106CH10_DTYPE_TMATS)
+        if (IrigIn->Header->ubyDataType == Irig106DotNet::DataType::TMATS)
             {
             // Read the data into the buffer
-            enStatus = IrigIn->ReadData();
+            Status = IrigIn->ReadData();
+
+            // Decode the new info
+            Status = Tmats->DecodeTmats(this->IrigIn->Header, this->IrigIn->DataBuff);
+            if (Status != Irig106DotNet::ReturnStatus::OK)
+                return false;
 
             DecodeDisplayTMATS();
             } // end if TMATS
 
         // TMATS not found            
         else
-            MessageBox::Show( "TMATS data not found", "Error", 
-                MessageBoxButtons::OK, MessageBoxIcon::Exclamation );
+            return false;
 
         } // end read header ok
 
     // Figure out and display start and stop times
     IrigIn->SyncTime();
 
-    enStatus = IrigIn->ReadNextHeader();
-    if (enStatus == I106_OK)
+    Status = IrigIn->ReadNextHeader();
+    if (Status == Irig106DotNet::ReturnStatus::OK)
         {
-        SuIrig106Time       suStartTime;
-        IrigIn->Rel2IrigTime(&suStartTime);
-        szTime = IrigTime2String(&suStartTime);
+        Irig106DotNet::IrigTime       suStartTime;
+        IrigIn->Rel2IrigTime(%suStartTime);
+        //szTime = IrigTime2String(%suStartTime);
         String ^ sTime;
-        sTime = String::Format("Start - {0}", Marshal::PtrToStringAnsi(System::IntPtr(szTime)));
+        //sTime = String::Format("Start - {0}", Marshal::PtrToStringAnsi(System::IntPtr(szTime)));
+        sTime = String::Format("Start - {0}", IrigIn->IrigTime2String(%suStartTime));
         this->statuslblStartTime->Text = sTime;
         }
 
-    enStatus = IrigIn->LastMsg();
-    enStatus = IrigIn->ReadNextHeader();
-    if (enStatus == I106_OK)
+    Status = IrigIn->LastMsg();
+    Status = IrigIn->ReadNextHeader();
+    if (Status == Irig106DotNet::ReturnStatus::OK)
         {
-        SuIrig106Time       suStopTime;
-        IrigIn->Rel2IrigTime(&suStopTime);
-        szTime = IrigTime2String(&suStopTime);
+        Irig106DotNet::IrigTime       suStopTime;
+        IrigIn->Rel2IrigTime(%suStopTime);
         String ^ sTime;
-        sTime = String::Format("Stop - {0}", Marshal::PtrToStringAnsi(System::IntPtr(szTime)));
+        sTime = String::Format("Stop - {0}", IrigIn->IrigTime2String(%suStopTime));
         this->statuslblStopTime->Text = sTime;
         }
-
 
     // Close the data file
     IrigIn->Close();
 
+    return true;
+    }
+
+
+
+// ------------------------------------------------------------------------
+
+// Open a TMATS text file, decode it, and display it
+bool InputForm::OpenAsTmatsFile(String ^ Filename)
+    {
+    StreamReader                  ^ TmatsFile;
+    Irig106DotNet::ReturnStatus     Status;
+
+    // Open the TMATS text file for reading
+    TmatsFile = gcnew StreamReader(Filename);
+    Tmats->sDataBuff = TmatsFile->ReadToEnd();
+
+    // Decode it
+    Status = Tmats->DecodeTmats(Tmats->sDataBuff);
+    if (Status != Irig106DotNet::ReturnStatus::OK)
+        {
+        return false;
+        }
+
+    // Display it
+    DecodeDisplayTMATS();
+
+    this->statuslblStartTime->Text = "";
+    this->statuslblStopTime->Text  = "";
+
+    return true;
     }
 
 
@@ -156,10 +212,6 @@ System::Void InputForm::ProcessIrigFile()
 
 System::Void InputForm::DecodeDisplayTMATS()
     {
-    EnI106Status        enStatus;
-
-    // Decode the new info
-    enStatus = IrigIn->Decode_Tmats();
 
     // Display the views
     DisplayRaw();
@@ -177,15 +229,28 @@ System::Void InputForm::DecodeDisplayTMATS()
 System::Void InputForm::DisplayRaw()
     {
 
-    // Convert ASCII TMATS to a String
-    System::IntPtr  pBuffPtr((void *)&((char *)IrigIn->pDataBuff)[4]);
+    // Unformatted display
+    if (this->radUnformatted->Checked)
+        {
+        this->textRaw->Text = Tmats->sDataBuff;
+        }
 
-    String ^ sTMATS;
-    sTMATS = Marshal::PtrToStringAnsi(pBuffPtr, IrigIn->pHeader->ulDataLen-4);
+    // Formatted display
+    else if (this->radFormatted->Checked)
+        {
+        String ^ sRawText = "";
+        for each(Tmats::SuTmatsLine ^ TmatsLine in Tmats->Lines)
+            sRawText = sRawText + String::Format("{0}:{1};\n\r\n\r", TmatsLine->CodeName, TmatsLine->DataItem);
 
-    // Display it in the text box
+        this->textRaw->Text = sRawText;
+        }
 
-    this->textRaw->Text = sTMATS;
+    // Don't know why we're here but go unformatted
+    else
+        {
+        this->textRaw->Text = Tmats->sDataBuff;
+        }
+
     Update();
 
     return;
@@ -201,120 +266,109 @@ System::Void InputForm::DisplayTree()
     int                     iRIndex;
     int                     iMIndex;
     int                     iRDsiIndex;
-    SuGDataSource         * psuGDataSource;
-    SuRRecord             * psuRRecord;
-    SuRDataSource         * psuRDataSource;
-    SuMRecord             * psuMRecord;
-//  SuPRecord             * psuPRecord;
+    Irig106DotNet::Tmats::SuRRecord       ^ RRecord;
+    Irig106DotNet::Tmats::SuMRecord       ^ MRecord;
 
     // Clear out the tree
     this->treeTree->Nodes->Clear();
 
     // G record
-    switch (IrigIn->suTmatsInfo.iCh10Ver)
-        {
-        case 0 :
-            this->treeTree->Nodes->Add("        Recorder Ch 10 Version  - 05 or earlier");
-            break;
-        case 7 :
-            this->treeTree->Nodes->Add("        Recorder Ch 10 Version  - 07");
-            break;
-        case 8 :
-            this->treeTree->Nodes->Add("        Recorder Ch 10 Version  - 09");
-            break;
-        default :
-            this->treeTree->Nodes->Add("        Recorder Ch 10 Version  - Unknown");
-            break;
-        } // end switch on Ch 10 version
+    if (Tmats->bCsdwValid)
+        switch (Tmats->iCh10Ver)
+            {
+            case 0 :
+                this->treeTree->Nodes->Add("        Recorder Ch 10 Version  - 05 or earlier");
+                break;
+            case 7 :
+                this->treeTree->Nodes->Add("        Recorder Ch 10 Version  - 07");
+                break;
+            case 8 :
+                this->treeTree->Nodes->Add("        Recorder Ch 10 Version  - 09");
+                break;
+            default :
+                this->treeTree->Nodes->Add("        Recorder Ch 10 Version  - Unknown");
+                break;
+            } // end switch on Ch 10 version
 
-    if (IrigIn->suTmatsInfo.psuFirstGRecord->szIrig106Rev != NULL)
-        this->treeTree->Nodes->Add("(G\\106) TMATS Ch 9 Version      - " + Marshal::PtrToStringAnsi((System::IntPtr)IrigIn->suTmatsInfo.psuFirstGRecord->szIrig106Rev));
+    if (Tmats->GRecord->sIrig106Rev != nullptr)
+        this->treeTree->Nodes->Add("(G\\106) TMATS Ch 9 Version      - " + Tmats->GRecord->sIrig106Rev);
 
-    if (IrigIn->suTmatsInfo.psuFirstGRecord->szProgramName != NULL)
-        this->treeTree->Nodes->Add("(G\\PN)  Program Name            - " + Marshal::PtrToStringAnsi((System::IntPtr)IrigIn->suTmatsInfo.psuFirstGRecord->szProgramName));
+    if (Tmats->GRecord->sProgramName != nullptr)
+        this->treeTree->Nodes->Add("(G\\PN)  Program Name            - " + Tmats->GRecord->sProgramName);
 
     // Walk the G record data sources
-    psuGDataSource = IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource;
-    do  {
-        if (psuGDataSource == NULL) break;
-
+    for each (Irig106DotNet::Tmats::SuGDataSource ^ GDataSource in Tmats->GRecord->GDataSources)
+        {
         // G record data source info
-        iGIndex = psuGDataSource->iDataSourceNum;
+        iGIndex = GDataSource->iDataSourceNum;
 
         TreeNode ^ GDataSourceNode = gcnew TreeNode(String::Format("(G\\DSI-{0}) Data Source ID - {1}", 
-            psuGDataSource->iDataSourceNum, 
-            Marshal::PtrToStringAnsi((System::IntPtr)psuGDataSource->szDataSourceID)));
+            GDataSource->iDataSourceNum, GDataSource->sDataSourceID));
         this->treeTree->Nodes->Add(GDataSourceNode);
         GDataSourceNode->Expand();
 
-        if (IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource->szDataSourceType != NULL)
+        if (GDataSource->sDataSourceType != nullptr)
             GDataSourceNode->Nodes->Add(String::Format("(G\\DST-{0}) Data Source Type - {1}",
-                psuGDataSource->iDataSourceNum,
-                Marshal::PtrToStringAnsi((System::IntPtr)IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource->szDataSourceType)));
+                GDataSource->iDataSourceNum, GDataSource->sDataSourceType));
 
         // R record info
-        psuRRecord = psuGDataSource->psuRRecord;
-        if (psuRRecord != NULL)
+        RRecord = GDataSource->RRecord;
+        if (RRecord != nullptr)
             {
-            iRIndex = psuRRecord->iRecordNum;
+            iRIndex = RRecord->iRecordNum;
 
             // Make the R record 
             TreeNode ^ RRecordNode = gcnew TreeNode(String::Format("(R-{0}\\ID) ID - {1}",
-                iRIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuRRecord->szDataSourceID)));
+                iRIndex, RRecord->sDataSourceID));
             GDataSourceNode->Nodes->Add(RRecordNode);
             RRecordNode->Expand();
 
             // Indexes enabled/disabled
-            if (psuRRecord->szIndexEnabled != NULL)
-                if(toupper(psuRRecord->szIndexEnabled[0]) == 'T')
+            if (RRecord->sIndexEnabled != nullptr)
+                if(RRecord->bIndexEnabled)
                     RRecordNode->Nodes->Add(String::Format("(R-{0}\\IDX\\E) Indexes ENABLED", iRIndex));
                 else
                     RRecordNode->Nodes->Add(String::Format("(R-{0}\\IDX\\E) Indexes DISABLED", iRIndex));
 
             // Events enabled/disabled
-            if (psuRRecord->szEventsEnabled != NULL)
-                if (toupper(psuRRecord->szEventsEnabled[0]) == 'T')
+            if (RRecord->sEventsEnabled != nullptr)
+                if (RRecord->bEventsEnabled)
                     RRecordNode->Nodes->Add(String::Format("(R-{0}\\EV\\E) Events ENABLED", iRIndex));
                 else
                     RRecordNode->Nodes->Add(String::Format("(R-{0}\\EV\\E) Events DISABLED", iRIndex));
 
             // Walk the R record data sources
-            psuRDataSource = psuRRecord->psuFirstDataSource;
-            do  {
-                // Break out when there are no more
-                if (psuRDataSource == NULL) break;
-
-                iRDsiIndex = psuRDataSource->iDataSourceNum;
+            for each (Irig106DotNet::Tmats::SuRDataSource ^ RDataSource in RRecord->RDataSources)
+                {
+                iRDsiIndex = RDataSource->iDataSourceNum;
                 TreeNode ^ RDataSourceNode = gcnew TreeNode(String::Format("(R-{0}\\DSI-{1}) Data Source ID - {2}",
-                    iRIndex, iRDsiIndex,
-                    Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szDataSourceID)));
+                    iRIndex, iRDsiIndex, RDataSource->sDataSourceID));
 
                 // Set the color based on enabled/disabled
-                if ((psuRDataSource->szEnabled != NULL) &&
-                    (toupper(psuRDataSource->szEnabled[0]) != 'T'))
+                if ((RDataSource->sEnabled != nullptr) &&
+                    (RDataSource->bEnabled == false))
                     RDataSourceNode->BackColor = Color::LightSalmon;
                 else
                     RDataSourceNode->BackColor = Color::LightGreen;
 
                 RRecordNode->Nodes->Add(RDataSourceNode);
-                iRDsiIndex = psuRDataSource->iDataSourceNum;
+                iRDsiIndex = RDataSource->iDataSourceNum;
 
                 // Put up channel type and channel specific parameters
-                if (psuRDataSource->szChannelDataType != NULL)
+                if (RDataSource->sChannelDataType != nullptr)
                     {
                     TreeNode ^ ChanTypeNode = gcnew TreeNode(String::Format("(R-{0}\\DST-{1}) Channel Type - {2}",
-                        iRIndex, iRDsiIndex, 
-                        Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szChannelDataType)));
+                        iRIndex, iRDsiIndex, RDataSource->sChannelDataType));
                     RDataSourceNode->Nodes->Add(ChanTypeNode);
 
                     // PCM Attributes
-                    if (strcasecmp(psuRDataSource->szChannelDataType, "PCMIN") == 0)
+                    if (String::Compare(RDataSource->sChannelDataType, "PCMIN", true) == 0)
                         {
                         // (R-x\PDTF-n)
-                        if (psuRDataSource->szPcmDataTypeFormat != NULL)
+                        if (RDataSource->sPcmDataTypeFormat != nullptr)
                             {
                             String  ^ PcmDataTypeFormat;
-                            switch (psuRDataSource->szPcmDataTypeFormat[0])
+                            switch (RDataSource->sPcmDataTypeFormat[0])
                                 {
                                 case '0' : PcmDataTypeFormat = "FORMAT 0 (RESERVED)";        break;
                                 case '1' : PcmDataTypeFormat = "FORMAT 1 (IRIG 106 CH 4/8)"; break;
@@ -325,72 +379,68 @@ System::Void InputForm::DisplayTree()
                             } // end if PDTF
 
                         // (R-x\PDP-n)
-                        if (psuRDataSource->szPcmDataPacking != NULL)
+                        if (RDataSource->sPcmDataPacking != nullptr)
                             {
                             String  ^ PcmDataPacking;
-                            if      (strcasecmp(psuRDataSource->szPcmDataPacking, "UN")  == 0) PcmDataPacking = "UNPACKED";
-                            else if (strcasecmp(psuRDataSource->szPcmDataPacking, "PFS") == 0) PcmDataPacking = "PACKED WITH FRAME SYNC";
-                            else if (strcasecmp(psuRDataSource->szPcmDataPacking, "TM")  == 0) PcmDataPacking = "THROUGHPUT MODE";
-                            else                                                               PcmDataPacking = "UNKNOWN";
+                            if      (String::Compare(RDataSource->sPcmDataPacking, "UN",  true) == 0) PcmDataPacking = "UNPACKED";
+                            else if (String::Compare(RDataSource->sPcmDataPacking, "PFS", true) == 0) PcmDataPacking = "PACKED WITH FRAME SYNC";
+                            else if (String::Compare(RDataSource->sPcmDataPacking, "TM",  true) == 0) PcmDataPacking = "THROUGHPUT MODE";
+                            else                                                                 PcmDataPacking = "UNKNOWN";
                             ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\PDP-{1}) Data Packing - {2}",
                                 iRIndex, iRDsiIndex, PcmDataPacking));
                             } // end if PDP
 
                         // (R-x\ICE-n)
-                        if (psuRDataSource->szPcmInputClockEdge != NULL)
+                        if (RDataSource->sPcmInputClockEdge != nullptr)
                             {
                             ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\ICE-{1}) Input Clock Edge - {2} Degrees",
-                                iRIndex, iRDsiIndex, 
-                                Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szPcmInputClockEdge)));
+                                iRIndex, iRDsiIndex, RDataSource->sPcmInputClockEdge));
                             } // end if ICE
 
                         // (R-x\IST-n)
-                        if (psuRDataSource->szPcmInputSignalType != NULL)
+                        if (RDataSource->sPcmInputSignalType != nullptr)
                             {
                             String  ^ PcmInputSignalType;
-                            if      (strcasecmp(psuRDataSource->szPcmInputSignalType, "SE")    == 0) PcmInputSignalType = "SINGLE ENDED";
-                            else if (strcasecmp(psuRDataSource->szPcmInputSignalType, "DIFF")  == 0) PcmInputSignalType = "DIFFERENTIAL";
-                            else if (strcasecmp(psuRDataSource->szPcmInputSignalType, "RS422") == 0) PcmInputSignalType = "RS-422 STANDARD DIFFERENTIAL";
-                            else if (strcasecmp(psuRDataSource->szPcmInputSignalType, "TTL")   == 0) PcmInputSignalType = "SINGLE ENDED WITH TTL";
-                            else                                                                     PcmInputSignalType = "UNKNOWN";
+                            if      (String::Compare(RDataSource->sPcmInputSignalType, "SE")    == 0) PcmInputSignalType = "SINGLE ENDED";
+                            else if (String::Compare(RDataSource->sPcmInputSignalType, "DIFF")  == 0) PcmInputSignalType = "DIFFERENTIAL";
+                            else if (String::Compare(RDataSource->sPcmInputSignalType, "RS422") == 0) PcmInputSignalType = "RS-422 STANDARD DIFFERENTIAL";
+                            else if (String::Compare(RDataSource->sPcmInputSignalType, "TTL")   == 0) PcmInputSignalType = "SINGLE ENDED WITH TTL";
+                            else                                                                      PcmInputSignalType = "UNKNOWN";
                             ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\IST-{1}) Input Signal Type - {2}",
                                 iRIndex, iRDsiIndex, PcmInputSignalType));
                             } // end if IST
 
                         // (R-x\ITH-n)
-                        if (psuRDataSource->szPcmInputThreshold != NULL)
+                        if (RDataSource->sPcmInputThreshold != nullptr)
                             {
                             ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\ITH-{1}) Input Threshold - {2} Volts",
-                                iRIndex, iRDsiIndex, 
-                                Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szPcmInputThreshold)));
+                                iRIndex, iRDsiIndex, RDataSource->sPcmInputThreshold));
                             } // end if ITH
 
                         // (R-x\ITM-n)
-                        if (psuRDataSource->szPcmInputTermination != NULL)
+                        if (RDataSource->sPcmInputTermination != nullptr)
                             {
                             ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\ITM-{1}) Input Termination - {2}",
-                                iRIndex, iRDsiIndex, 
-                                Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szPcmInputTermination)));
+                                iRIndex, iRDsiIndex, RDataSource->sPcmInputTermination));
                             } // end if ITM
 
                         // (R-x\PTF-n)
-                        if (psuRDataSource->szPcmVideoTypeFormat != NULL)
+                        if (RDataSource->sPcmVideoTypeFormat != nullptr)
                             {
                             ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\PTF-{1}) PCM Video Type - {2}",
-                                iRIndex, iRDsiIndex, 
-                                Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szPcmVideoTypeFormat)));
+                                iRIndex, iRDsiIndex, RDataSource->sPcmVideoTypeFormat));
                             } // end if PTF
 
                         } // end if PCM channel type
 
                     // Video Attributes
-                    if (strcasecmp(psuRDataSource->szChannelDataType, "VIDIN") == 0)
+                    if (String::Compare(RDataSource->sChannelDataType, "VIDIN", true) == 0)
                         {
                         // (R-x\VTF-n)
-                        if (psuRDataSource->szVideoDataType != NULL)
+                        if (RDataSource->sVideoDataType != nullptr)
                             {
                             String  ^ VideoDataType;
-                            switch (psuRDataSource->szVideoDataType[0])
+                            switch (RDataSource->sVideoDataType[0])
                                 {
                                 case '0' : VideoDataType = "FORMAT 0 (MPEG-2/H.264)";     break;
                                 case '1' : VideoDataType = "FORMAT 1 (MPEG-2 ISO 13818)"; break;
@@ -402,10 +452,10 @@ System::Void InputForm::DisplayTree()
                             } // end if VTF
 
                         // (R-x\VXF-n)
-                        if (psuRDataSource->szVideoEncodeType != NULL)
+                        if (RDataSource->sVideoEncodeType != nullptr)
                             {
                             String  ^ VideoEncodeType;
-                            switch (psuRDataSource->szVideoEncodeType[0])
+                            switch (RDataSource->sVideoEncodeType[0])
                                 {
                                 case '0' : VideoEncodeType = "2ON2 (MPEG-2)";  break;
                                 case '1' : VideoEncodeType = "264ON2 (H.264)"; break;
@@ -416,10 +466,10 @@ System::Void InputForm::DisplayTree()
                             } // end if VXF
 
                         // (R-x\VST-n)
-                        if (psuRDataSource->szVideoSignalType != NULL)
+                        if (RDataSource->sVideoSignalType != nullptr)
                             {
                             String  ^ VideoSignalType;
-                            switch (psuRDataSource->szVideoSignalType[0])
+                            switch (RDataSource->sVideoSignalType[0])
                                 {
                                 case '0' : VideoSignalType = "AUTO DETECT"; break;
                                 case '1' : VideoSignalType = "COMPOSITE";   break;
@@ -436,10 +486,10 @@ System::Void InputForm::DisplayTree()
                             } // end if VST
 
                         // (R-x\VSF-n)
-                        if (psuRDataSource->szVideoSignalFormat != NULL)
+                        if (RDataSource->sVideoSignalFormat != nullptr)
                             {
                             String  ^ VideoSignalFormat;
-                            switch (psuRDataSource->szVideoSignalType[0])
+                            switch (RDataSource->sVideoSignalType[0])
                                 {
                                 case '0' : VideoSignalFormat = "AUTO DETECT"; break;
                                 case '1' : VideoSignalFormat = "NTSC";        break;
@@ -463,87 +513,79 @@ szVideoEncodingDelay;   // (R-x\VED-n)
                         } // end if video channel type
 
                     // Analog Attributes
-                    if (strcasecmp(psuRDataSource->szChannelDataType, "ANAIN") == 0)
+                    if (String::Compare(RDataSource->sChannelDataType, "ANAIN", true) == 0)
                         {
                         // (R-x\ACH\N-n)
-                        if (psuRDataSource->szAnalogChansPerPkt != NULL)
+                        if (RDataSource->sAnalogChansPerPkt != nullptr)
                             {
                             ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\ACH\\N-{1}) Analog Channels per Packet - {2}",
-                                iRIndex, iRDsiIndex, 
-                                Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szAnalogChansPerPkt)));
+                                iRIndex, iRDsiIndex, RDataSource->sAnalogChansPerPkt));
                             } // end if ACH\N
 
                         // (R-1\ASR-n)
-                        if (psuRDataSource->szAnalogSampleRate != NULL)
+                        if (RDataSource->sAnalogSampleRate != nullptr)
                             {
                             ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\ASR-{1}) Analog Sample Rate - {2}",
-                                iRIndex, iRDsiIndex, 
-                                Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szAnalogSampleRate)));
+                                iRIndex, iRDsiIndex, RDataSource->sAnalogSampleRate));
                             } // end if ASR
 
                         // (R-x\ADP-n)
-                        if (psuRDataSource->szAnalogDataPacking != NULL)
+                        if (RDataSource->sAnalogDataPacking != nullptr)
                             {
                             ChanTypeNode->Nodes->Add(String::Format("(R-{0}\\ADP-{1}) Analog Data Packing - {2}",
-                                iRIndex, iRDsiIndex, 
-                                Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szAnalogDataPacking)));
+                                iRIndex, iRDsiIndex, RDataSource->sAnalogDataPacking));
                             } // end if ACH\N
 
                         } // end if analog channel type
 
                     } // end if szChannelDataType not null
 
-                if (psuRDataSource->szTrackNumber != NULL)
+                if (RDataSource->sTrackNumber != nullptr)
                     RDataSourceNode->Nodes->Add(String::Format("(R-{0}\\TK1-{1}) Track Number - {2}",
-                        iRIndex, iRDsiIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szTrackNumber)));
-                if (psuRDataSource->szEnabled != NULL)
+                        iRIndex, iRDsiIndex, RDataSource->sTrackNumber));
+                if (RDataSource->sEnabled != nullptr)
                     RDataSourceNode->Nodes->Add(String::Format("(R-{0}\\CHE-{1}) {2}",
-                        iRIndex, iRDsiIndex,
-                        toupper(psuRDataSource->szEnabled[0])=='T' ? "ENABLED" : "DISABLED"));
-                if (psuRDataSource->szChanDataLinkName != NULL)
+                        iRIndex, iRDsiIndex, RDataSource->bEnabled ? "ENABLED" : "DISABLED"));
+                if (RDataSource->sChanDataLinkName != nullptr)
                     RDataSourceNode->Nodes->Add(String::Format("(R-{0}\\CDLN-{1}) Channel Data Link Name - {2}",
-                        iRIndex, iRDsiIndex, 
-                        Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szChanDataLinkName)));
+                        iRIndex, iRDsiIndex, RDataSource->sChanDataLinkName));
 
-                if (psuRDataSource->psuPRecord != NULL)
+                if (RDataSource->PRecord != nullptr)
                     {
-                    RDataSourceNode->Nodes->Add(MakePRecordNode(psuRDataSource->psuPRecord));
+                    RDataSourceNode->Nodes->Add(MakePRecordNode(RDataSource->PRecord));
                     }
 
                 // M record
-                psuMRecord = psuRDataSource->psuMRecord;
-                if (psuMRecord != NULL)
+                MRecord = RDataSource->MRecord;
+                if (MRecord != nullptr)
                     {
-                    iMIndex = psuMRecord->iRecordNum;
+                    iMIndex = MRecord->iRecordNum;
                     TreeNode ^ MRecordNode = gcnew TreeNode(String::Format("(M-{0}\\ID) - {1}",
-                        iMIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuMRecord->szDataSourceID)));
+                        iMIndex, MRecord->sDataSourceID));
 
-                    if (psuMRecord->szBasebandSignalType != NULL)
+                    if (MRecord->sBasebandSignalType != nullptr)
                         MRecordNode->Nodes->Add(String::Format("(M-{0}\\BSG1) {1}",
-                            iMIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuMRecord->szBasebandSignalType)));
+                            iMIndex, MRecord->sBasebandSignalType));
 
-                    if (psuMRecord->szBBDataLinkName != NULL)
+                    if (MRecord->sBBDataLinkName != nullptr)
                         MRecordNode->Nodes->Add(String::Format("(M-{0}\\BB\\DLN) {1}",
-                            iMIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuMRecord->szBBDataLinkName)));
+                            iMIndex, MRecord->sBBDataLinkName));
 
                     RDataSourceNode->Nodes->Add(MRecordNode);
 
                     // P record
-                    if (psuMRecord->psuPRecord != NULL)
+                    if (MRecord->PRecord != nullptr)
                         {
-                        MRecordNode->Nodes->Add(MakePRecordNode(psuMRecord->psuPRecord));
+                        MRecordNode->Nodes->Add(MakePRecordNode(MRecord->PRecord));
                         } // end if P record exists
 
                     } // end if M record exists
 
-                psuRDataSource = psuRDataSource->psuNextRDataSource;
-                } while (bTRUE); // end for all R data sources
+                } // for each RDataSource
 
-            psuRRecord = psuRRecord->psuNextRRecord;
             } // end if R record exists
 
-        psuGDataSource = IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource->psuNextGDataSource;
-        } while (bTRUE);
+        } // end for each GDataSource
 
     Update();
 
@@ -554,62 +596,63 @@ szVideoEncodingDelay;   // (R-x\VED-n)
 
 /* ------------------------------------------------------------------------ */
 
-TreeNode ^ MakePRecordNode(SuPRecord * psuPRecord)
+TreeNode ^ MakePRecordNode(Irig106DotNet::Tmats::SuPRecord ^ PRecord)
+
     {
     int                     iPIndex;
 
-    iPIndex = psuPRecord->iRecordNum;
+    iPIndex = PRecord->iRecordNum;
 
     TreeNode ^ PRecordNode = gcnew TreeNode(String::Format("(P-{0}\\DLN) Data Link Name - {1}",
-        iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szDataLinkName)));
+        iPIndex, PRecord->sDataLinkName));
 
-    if (psuPRecord->szPcmCode != NULL)
+    if (PRecord->sPcmCode != nullptr)
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\D1) PCM Code - {1}",
-            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szPcmCode)));
-    if (psuPRecord->szBitsPerSec != NULL)
+            iPIndex, PRecord->sPcmCode));
+    if (PRecord->sBitsPerSec != nullptr)
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\D2) Bits per Second - {1}",
-            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szBitsPerSec)));
-    if (psuPRecord->szPolarity != NULL)
+            iPIndex, PRecord->sBitsPerSec));
+    if (PRecord->sPolarity != nullptr)
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\D4) Polarity - {1}",
-            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szPolarity)));
-    if (psuPRecord->szTypeFormat != NULL)
+            iPIndex, PRecord->sPolarity));
+    if (PRecord->sTypeFormat != nullptr)
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\TF) Type Format - {1}",
-            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szTypeFormat)));
-    if (psuPRecord->szCommonWordLen != NULL)
+            iPIndex, PRecord->sTypeFormat));
+    if (PRecord->sCommonWordLen != nullptr)
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\F1) Common Word Length - {1}",
-            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szCommonWordLen)));
-    if (psuPRecord->szNumMinorFrames != NULL)
+            iPIndex, PRecord->sCommonWordLen));
+    if (PRecord->sNumMinorFrames != nullptr)
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\MF\\N) Number of Minor Frames - {1}",
-            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szNumMinorFrames)));
-    if (psuPRecord->szWordsInMinorFrame != NULL)
+            iPIndex, PRecord->sNumMinorFrames));
+    if (PRecord->sWordsInMinorFrame != nullptr)
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\MF1) Words per Minor Frame - {1}",
-            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szWordsInMinorFrame)));
-    if (psuPRecord->szBitsInMinorFrame != NULL)
+            iPIndex, PRecord->sWordsInMinorFrame));
+    if (PRecord->sBitsInMinorFrame != nullptr)
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\MF2) Bits per Minor Frame - {1}",
-            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szBitsInMinorFrame)));
-    if (psuPRecord->szMinorFrameSyncType != NULL)
+            iPIndex, PRecord->sBitsInMinorFrame));
+    if (PRecord->sMinorFrameSyncType != nullptr)
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\MF3) Minor Frame Sync Type - {1}",
-            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szMinorFrameSyncType)));
-    if (psuPRecord->szMinorFrameSyncPatLen != NULL)
+            iPIndex, PRecord->sMinorFrameSyncType));
+    if (PRecord->sMinorFrameSyncPatLen != nullptr)
         {
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\MF4) Minor Frame Sync Pattern Length - {1}",
-            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szMinorFrameSyncPatLen)));
+            iPIndex, PRecord->sMinorFrameSyncPatLen));
         }
-    if (psuPRecord->szMinorFrameSyncPatLen != NULL)
+    if (PRecord->sMinorFrameSyncPatLen != nullptr)
         {
         // Make a hex version of Frame Sync Pattern to make Ron VK happy
         Int64 iPower = 1;
         Int64 iPattern = 0;
         String ^ sPattern;
-        sPattern = Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szMinorFrameSyncPat);
-        for (int iIdx=sPattern->Length-1; iIdx>0; iIdx--)
+        sPattern = PRecord->sMinorFrameSyncPat;
+        for (int iIdx=sPattern->Length-1; iIdx>=0; iIdx--)
             {
             if (sPattern[iIdx] == '1')
                 iPattern += iPower;
             iPower = iPower << 1;
             } // end for all characters
         PRecordNode->Nodes->Add(String::Format("(P-{0}\\MF5) Minor Frame Sync Pattern - {1} (0x{2:X})",
-            iPIndex, Marshal::PtrToStringAnsi((System::IntPtr)psuPRecord->szMinorFrameSyncPat), iPattern));
+            iPIndex, PRecord->sMinorFrameSyncPat, iPattern));
         }
 
     return PRecordNode;
@@ -625,9 +668,7 @@ void InputForm::DisplayChannels()
     int                     iRIndex;
     int                     iRDsiIndex;
     int                     bEnabled;
-    SuGDataSource         * psuGDataSource;
-    SuRRecord             * psuRRecord;
-    SuRDataSource         * psuRDataSource;
+    Irig106DotNet::Tmats::SuRRecord           ^ RRecord;
 
     // Clear out the text box
     this->textChannels->Text = "";
@@ -636,69 +677,63 @@ void InputForm::DisplayChannels()
     // ------------------------
 
     // G record
-    this->textChannels->Text += L"Program Name - " + Marshal::PtrToStringAnsi((System::IntPtr)IrigIn->suTmatsInfo.psuFirstGRecord->szProgramName) + "\r\n";
+    this->textChannels->Text += L"Program Name - " + Tmats->GRecord->sProgramName + "\r\n";
 
-    switch (IrigIn->suTmatsInfo.iCh10Ver)
-        {
-        case 0 :
-            this->textChannels->Text += L"Recorder Ch 10 Version  - 05 or earlier\r\n";
-            break;
-        case 7 :
-            this->textChannels->Text += L"Recorder Ch 10 Version  - 07\r\n";
-            break;
-        case 8 :
-            this->textChannels->Text += L"Recorder Ch 10 Version  - 09\r\n";
-            break;
-        default :
-            this->textChannels->Text += L"Recorder Ch 10 Version  - Unknown\r\n";
-            break;
-        } // end switch on Ch 10 version
+    if (Tmats->bCsdwValid)
+        switch (Tmats->iCh10Ver)
+            {
+            case 0 :
+                this->textChannels->Text += L"Recorder Ch 10 Version  - 05 or earlier\r\n";
+                break;
+            case 7 :
+                this->textChannels->Text += L"Recorder Ch 10 Version  - 07\r\n";
+                break;
+            case 8 :
+                this->textChannels->Text += L"Recorder Ch 10 Version  - 09\r\n";
+                break;
+            default :
+                this->textChannels->Text += L"Recorder Ch 10 Version  - Unknown\r\n";
+                break;
+            } // end switch on Ch 10 version
 
-    this->textChannels->Text += L"TMATS Ch 9 Version - " + Marshal::PtrToStringAnsi((System::IntPtr)IrigIn->suTmatsInfo.psuFirstGRecord->szIrig106Rev) + "\r\n";
+    this->textChannels->Text += L"TMATS Ch 9 Version - " + Tmats->GRecord->sIrig106Rev + "\r\n";
 
     this->textChannels->Text += L"Channel  Type          Enabled   Data Source         \r\n";
     this->textChannels->Text += L"-------  ------------  --------  --------------------\r\n";
 
     // Data sources
-    psuGDataSource = IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource;
-    do  {
-        if (psuGDataSource == NULL) break;
+    for each (Irig106DotNet::Tmats::SuGDataSource ^ GDataSource in Tmats->GRecord->GDataSources)
+        {
 
         // G record data source info
-        iGIndex = psuGDataSource->iDataSourceNum;
+        iGIndex = GDataSource->iDataSourceNum;
 
         // R record info
-        psuRRecord = psuGDataSource->psuRRecord;
-        do  {
-            if (psuRRecord == NULL) break;
-            iRIndex = psuRRecord->iRecordNum;
+        RRecord = GDataSource->RRecord;
+        if (RRecord != nullptr)
+            {
+            iRIndex = RRecord->iRecordNum;
 
             // R record data sources
-            psuRDataSource = psuRRecord->psuFirstDataSource;
-            do  {
-                if (psuRDataSource == NULL) break;
-
-                if ((psuRDataSource->szEnabled != NULL) &&
-                    (toupper(psuRDataSource->szEnabled[0])=='T'))
-                    bEnabled = true;
-                else
+            for each (Irig106DotNet::Tmats::SuRDataSource ^ RDataSource in RRecord->RDataSources)
+                {
+                if ((RDataSource->sEnabled != nullptr) &&
+                    (RDataSource->bEnabled == false  ))
                     bEnabled = false;
+                else
+                    bEnabled = true;
 
-                iRDsiIndex = psuRDataSource->iDataSourceNum;
+                iRDsiIndex = RDataSource->iDataSourceNum;
                 this->textChannels->Text += String::Format("{0,6}   {1,-12} {2}  {3}\r\n",
-                    Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szTrackNumber),
-                    Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szChannelDataType),
+                    RDataSource->sTrackNumber,
+                    RDataSource->sChannelDataType,
                     bEnabled ? " Enabled " : " Disabled",
-                    Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szDataSourceID));
-                psuRDataSource = psuRDataSource->psuNextRDataSource;
-                } while (bTRUE);
+                    RDataSource->sDataSourceID);
+                } // end for each RDataSource
 
-            psuRRecord = psuRRecord->psuNextRRecord;
-            } while (bTRUE);
+            } // end if RRecord not null
 
-
-        psuGDataSource = IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource->psuNextGDataSource;
-        } while (bTRUE);
+        } // end for each GDataSource
 
     // Update the dialog box display"
     Update();

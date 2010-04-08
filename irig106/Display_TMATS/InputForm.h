@@ -37,6 +37,7 @@
 
 #pragma once
 
+/*
 #include <time.h>
 #include <sys\stat.h>
 #include <sys\timeb.h>
@@ -46,6 +47,10 @@
 #include "irig106ch10.h"
 #include "i106_decode_tmats.h"
 #include "irig106cl.h"
+*/
+
+//#using "irig106dotnet.dll"
+//using namespace Irig106DotNet;
 
 using namespace System::Runtime::InteropServices;
 using namespace System::Windows::Forms;
@@ -60,7 +65,8 @@ namespace I106Input {
 	using namespace System::Data;
 	using namespace System::Drawing;
 
-    using namespace Irig106;
+//    using namespace Irig106;
+//    using namespace Irig106DotNet;
 
 	public ref class InputForm : public System::Windows::Forms::Form
 	{
@@ -73,12 +79,9 @@ namespace I106Input {
 		InputForm(void)
 		{
 			InitializeComponent();
-			//
-			//TODO: Add the constructor code here
 
-            this->IrigIn       = new Irig106::Irig106Lib();
-//          this->psuTmatsInfo = new SuTmatsInfo;
-//          memset(this->psuTmatsInfo, 0, sizeof(SuTmatsInfo));
+            this->IrigIn       = gcnew Irig106DotNet::Irig106Lib();
+            this->Tmats        = gcnew Irig106DotNet::Tmats();
 
 		}
 
@@ -98,8 +101,6 @@ namespace I106Input {
             IrigIn->Close();
 
             delete this->IrigIn;
-            //delete this->psuTmatsInfo;
-            //this->psuTmatsInfo = NULL;
 
 		}
 
@@ -109,19 +110,12 @@ namespace I106Input {
 
     protected: 
 
-//        SuTmatsInfo                * psuTmatsInfo;   // Decoded TMATS info tree
-
     private: System::Windows::Forms::ToolStripStatusLabel^  statuslblAbout;
     private: System::Windows::Forms::ToolStripStatusLabel^  statuslblDummy;
-    protected: 
-
-
-
-
-
 
     protected: 
-        Irig106::Irig106Lib        * IrigIn;
+        Irig106DotNet::Irig106Lib       ^ IrigIn;
+        Irig106DotNet::Tmats            ^ Tmats;
 
 
     // ----------------------------------------------------------------
@@ -130,6 +124,10 @@ namespace I106Input {
 
     protected:
     System::Void ProcessIrigFile();
+
+    bool OpenAsIrigFile(String ^ Filename);
+    bool OpenAsTmatsFile(String ^ Filename);
+
     System::Void DecodeDisplayTMATS();
     System::Void InputForm::DisplayChannels();
     System::Void InputForm::DisplayTree();
@@ -151,6 +149,9 @@ namespace I106Input {
     private: System::Windows::Forms::TabPage^       tabTree;
     private: System::Windows::Forms::TextBox^       textChannels;
     private: System::Windows::Forms::TreeView^      treeTree;
+    private: System::Windows::Forms::RadioButton^   radFormatted;
+    private: System::Windows::Forms::RadioButton^   radUnformatted;
+
 
 	private:
 		System::ComponentModel::Container ^components;
@@ -167,6 +168,8 @@ namespace I106Input {
             this->txtFilename = (gcnew System::Windows::Forms::TextBox());
             this->tabTMATS = (gcnew System::Windows::Forms::TabControl());
             this->tabRaw = (gcnew System::Windows::Forms::TabPage());
+            this->radFormatted = (gcnew System::Windows::Forms::RadioButton());
+            this->radUnformatted = (gcnew System::Windows::Forms::RadioButton());
             this->textRaw = (gcnew System::Windows::Forms::TextBox());
             this->tabChannels = (gcnew System::Windows::Forms::TabPage());
             this->textChannels = (gcnew System::Windows::Forms::TextBox());
@@ -223,6 +226,8 @@ namespace I106Input {
             // 
             // tabRaw
             // 
+            this->tabRaw->Controls->Add(this->radFormatted);
+            this->tabRaw->Controls->Add(this->radUnformatted);
             this->tabRaw->Controls->Add(this->textRaw);
             this->tabRaw->Location = System::Drawing::Point(4, 22);
             this->tabRaw->Margin = System::Windows::Forms::Padding(2);
@@ -233,6 +238,31 @@ namespace I106Input {
             this->tabRaw->Text = L"Raw";
             this->tabRaw->UseVisualStyleBackColor = true;
             // 
+            // radFormatted
+            // 
+            this->radFormatted->AutoSize = true;
+            this->radFormatted->Location = System::Drawing::Point(96, 5);
+            this->radFormatted->Name = L"radFormatted";
+            this->radFormatted->Size = System::Drawing::Size(72, 17);
+            this->radFormatted->TabIndex = 2;
+            this->radFormatted->TabStop = true;
+            this->radFormatted->Text = L"Formatted";
+            this->radFormatted->UseVisualStyleBackColor = true;
+            this->radFormatted->Click += gcnew System::EventHandler(this, &InputForm::cmdRawFormat_Click);
+            // 
+            // radUnformatted
+            // 
+            this->radUnformatted->AutoSize = true;
+            this->radUnformatted->Checked = true;
+            this->radUnformatted->Location = System::Drawing::Point(5, 5);
+            this->radUnformatted->Name = L"radUnformatted";
+            this->radUnformatted->Size = System::Drawing::Size(83, 17);
+            this->radUnformatted->TabIndex = 1;
+            this->radUnformatted->TabStop = true;
+            this->radUnformatted->Text = L"Unformatted";
+            this->radUnformatted->UseVisualStyleBackColor = true;
+            this->radUnformatted->Click += gcnew System::EventHandler(this, &InputForm::cmdRawFormat_Click);
+            // 
             // textRaw
             // 
             this->textRaw->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
@@ -240,12 +270,12 @@ namespace I106Input {
                 | System::Windows::Forms::AnchorStyles::Right));
             this->textRaw->Font = (gcnew System::Drawing::Font(L"Courier New", 9, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
                 static_cast<System::Byte>(0)));
-            this->textRaw->Location = System::Drawing::Point(0, 2);
+            this->textRaw->Location = System::Drawing::Point(0, 27);
             this->textRaw->Margin = System::Windows::Forms::Padding(2);
             this->textRaw->Multiline = true;
             this->textRaw->Name = L"textRaw";
             this->textRaw->ScrollBars = System::Windows::Forms::ScrollBars::Both;
-            this->textRaw->Size = System::Drawing::Size(532, 413);
+            this->textRaw->Size = System::Drawing::Size(532, 388);
             this->textRaw->TabIndex = 0;
             // 
             // tabChannels
@@ -255,7 +285,7 @@ namespace I106Input {
             this->tabChannels->Margin = System::Windows::Forms::Padding(2);
             this->tabChannels->Name = L"tabChannels";
             this->tabChannels->Padding = System::Windows::Forms::Padding(2);
-            this->tabChannels->Size = System::Drawing::Size(504, 290);
+            this->tabChannels->Size = System::Drawing::Size(532, 415);
             this->tabChannels->TabIndex = 1;
             this->tabChannels->Text = L"Channels";
             this->tabChannels->UseVisualStyleBackColor = true;
@@ -272,7 +302,7 @@ namespace I106Input {
             this->textChannels->Multiline = true;
             this->textChannels->Name = L"textChannels";
             this->textChannels->ScrollBars = System::Windows::Forms::ScrollBars::Both;
-            this->textChannels->Size = System::Drawing::Size(504, 296);
+            this->textChannels->Size = System::Drawing::Size(528, 411);
             this->textChannels->TabIndex = 0;
             // 
             // tabTree
@@ -282,7 +312,7 @@ namespace I106Input {
             this->tabTree->Margin = System::Windows::Forms::Padding(2);
             this->tabTree->Name = L"tabTree";
             this->tabTree->Padding = System::Windows::Forms::Padding(2);
-            this->tabTree->Size = System::Drawing::Size(504, 290);
+            this->tabTree->Size = System::Drawing::Size(532, 415);
             this->tabTree->TabIndex = 2;
             this->tabTree->Text = L"Tree";
             this->tabTree->UseVisualStyleBackColor = true;
@@ -297,7 +327,7 @@ namespace I106Input {
             this->treeTree->Location = System::Drawing::Point(0, 2);
             this->treeTree->Margin = System::Windows::Forms::Padding(2);
             this->treeTree->Name = L"treeTree";
-            this->treeTree->Size = System::Drawing::Size(504, 296);
+            this->treeTree->Size = System::Drawing::Size(528, 409);
             this->treeTree->TabIndex = 0;
             // 
             // statusStrip1
@@ -397,7 +427,7 @@ private: System::Void cmdBrowse_Click(System::Object^  sender, System::EventArgs
     // Open the file dialog        
     OpenFileDialog ^ dlgOpenFile = gcnew OpenFileDialog();
     dlgOpenFile->DefaultExt = "c10";
-    dlgOpenFile->Filter     = "Ch 10 files (*.c10,*.ch10)|*.c10;*.ch10|All files (*.*)|*.*";
+    dlgOpenFile->Filter     = "Ch 10 files (*.c10,*.ch10)|*.c10;*.ch10|TMATS Files (*.tmt,*.tma)|*.tmt;*.tma|All files (*.*)|*.*";
     DStatus = dlgOpenFile->ShowDialog();
 
     // If file selected then process the file
@@ -426,6 +456,18 @@ private: System::Void txtFilename_KeyPress(System::Object^  sender, System::Wind
         ProcessIrigFile();
         } // end if ENTER
     }
+
+
+
+// --------------------------------------------------------------------------
+
+// Raw formatted / unformatted click event
+private: System::Void cmdRawFormat_Click(System::Object^  sender, System::EventArgs^  e) 
+    {
+    DisplayRaw();
+    }
+
+
 
 // --------------------------------------------------------------------------
 

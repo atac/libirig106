@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\irig106lib\src"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;_DEBUG;_USE_32BIT_TIME_T"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -194,6 +194,10 @@
 		<AssemblyReference
 			RelativePath="System.XML.dll"
 			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{12FBB6F8-7131-48CA-81E1-33FB482AB2E3}"
+			RelativePathToProject="..\irig106dotnet\dotnet2005\irig106dotnet.vcproj"
 		/>
 	</References>
 	<Files>

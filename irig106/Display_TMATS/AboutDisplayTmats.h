@@ -60,12 +60,20 @@ namespace I106Input {
 	{
 	public:
 		AboutDisplayTmats(void)
-		{
+    		{
 			InitializeComponent();
-			//
-			//TODO: Add the constructor code here
-			//
-		}
+
+//            int iMajor, iMinor, iBuild;
+            int     ^ iMajor = gcnew int;
+            int     ^ iMinor = gcnew int;
+            int     ^ iBuild = gcnew int;
+            String  ^ LibDateTime;
+
+            Irig106DotNet::Irig106Lib::DotNetLibVersion(iMajor, iMinor, iBuild);
+            LibDateTime = Irig106DotNet::Irig106Lib::DotNetLibDateTime();
+            DotNetLibVer->Text = String::Format("Irig 106 .NET Lib\n\rVer. {0}.{1}.{2}\n\r{3}", 
+                iMajor, iMinor, iBuild, LibDateTime);
+	    	}
 
 	protected:
 		/// <summary>
@@ -83,7 +91,8 @@ namespace I106Input {
 
     private: System::Windows::Forms::Button^        buttonClose;
     private: System::Windows::Forms::LinkLabel^     linkIrig106;
-    private: System::Windows::Forms::Label^  label1;
+    private: System::Windows::Forms::Label^         label1;
+    private: System::Windows::Forms::Label^         DotNetLibVer;
 
 	private:
 		/// <summary>
@@ -103,6 +112,7 @@ namespace I106Input {
             this->buttonClose = (gcnew System::Windows::Forms::Button());
             this->linkIrig106 = (gcnew System::Windows::Forms::LinkLabel());
             this->label1 = (gcnew System::Windows::Forms::Label());
+            this->DotNetLibVer = (gcnew System::Windows::Forms::Label());
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->pictureLogo))->BeginInit();
             this->SuspendLayout();
             // 
@@ -121,7 +131,7 @@ namespace I106Input {
             // 
             this->buttonClose->BackColor = System::Drawing::Color::LightGray;
             this->buttonClose->DialogResult = System::Windows::Forms::DialogResult::OK;
-            this->buttonClose->Location = System::Drawing::Point(234, 137);
+            this->buttonClose->Location = System::Drawing::Point(239, 203);
             this->buttonClose->Margin = System::Windows::Forms::Padding(2);
             this->buttonClose->Name = L"buttonClose";
             this->buttonClose->Size = System::Drawing::Size(76, 28);
@@ -135,7 +145,7 @@ namespace I106Input {
             this->linkIrig106->AutoSize = true;
             this->linkIrig106->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
                 static_cast<System::Byte>(0)));
-            this->linkIrig106->Location = System::Drawing::Point(202, 97);
+            this->linkIrig106->Location = System::Drawing::Point(31, 209);
             this->linkIrig106->Margin = System::Windows::Forms::Padding(2, 0, 2, 0);
             this->linkIrig106->Name = L"linkIrig106";
             this->linkIrig106->Size = System::Drawing::Size(136, 16);
@@ -149,11 +159,20 @@ namespace I106Input {
             this->label1->AutoSize = true;
             this->label1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point, 
                 static_cast<System::Byte>(0)));
-            this->label1->Location = System::Drawing::Point(216, 18);
+            this->label1->Location = System::Drawing::Point(217, 9);
             this->label1->Name = L"label1";
             this->label1->Size = System::Drawing::Size(117, 64);
             this->label1->TabIndex = 5;
             this->label1->Text = L"Display TMATS\r\nVerson 1.4.0\r\nCopyright 2009 \r\nirig106.org";
+            // 
+            // DotNetLibVer
+            // 
+            this->DotNetLibVer->AutoSize = true;
+            this->DotNetLibVer->Location = System::Drawing::Point(220, 84);
+            this->DotNetLibVer->Name = L"DotNetLibVer";
+            this->DotNetLibVer->Size = System::Drawing::Size(95, 39);
+            this->DotNetLibVer->TabIndex = 6;
+            this->DotNetLibVer->Text = L"IRIG 106 .NET Lib\r\n  Version x.x.x\r\n  Date Time";
             // 
             // AboutDisplayTmats
             // 
@@ -161,7 +180,8 @@ namespace I106Input {
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->BackColor = System::Drawing::Color::White;
             this->CancelButton = this->buttonClose;
-            this->ClientSize = System::Drawing::Size(346, 200);
+            this->ClientSize = System::Drawing::Size(346, 239);
+            this->Controls->Add(this->DotNetLibVer);
             this->Controls->Add(this->label1);
             this->Controls->Add(this->linkIrig106);
             this->Controls->Add(this->buttonClose);
