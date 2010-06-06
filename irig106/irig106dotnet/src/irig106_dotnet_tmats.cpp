@@ -35,26 +35,20 @@
 
  ****************************************************************************/
 
-
 #include "stdafx.h"
 
-
-//using namespace System;
 using namespace System;
 using namespace System::Diagnostics;
 using namespace System::Text;
 using namespace System::Runtime::InteropServices;
 
-//#include "irig106_dotnet_defs.h"
 #include "irig106_dotnet.h"
 #include "irig106_dotnet_tmats.h"
-
 
 #include <stdlib.h>
 #include <memory.h>
 #include "config.h"
 #include "irig106ch10.h"
-//#include "i106_time.h"
 #include "i106_decode_tmats.h"
 
 
@@ -663,7 +657,6 @@ void TmatsBufferToLines(String ^ sDataBuff, List<Tmats::SuTmatsLine ^> ^ Lines)
                 (sDataBuff[iInBuffIdx] != LF_CHAR   )  &&
                 (sDataBuff[iInBuffIdx] != ';'       ))
                 {
-//                sLine = sLine + Convert::ToChar(DataBuff[iInBuffIdx]);
                 sLine = sLine + sDataBuff[iInBuffIdx];
                 }
 
@@ -686,26 +679,26 @@ void TmatsBufferToLines(String ^ sDataBuff, List<Tmats::SuTmatsLine ^> ^ Lines)
         Tmats::SuTmatsLine ^ suLine = gcnew Tmats::SuTmatsLine;
         array<String^> ^ SplitLine = nullptr;
 
-        // Split the code name from the data item
-        SplitLine = sLine->Split(':',2);
+        int iPosColon;
 
-        // Only save if line has something
-        if (SplitLine != nullptr)
+        // Get the position of the code name / data item field delimiter
+        iPosColon = sLine->IndexOf(':');
+
+        // Code name and data item fields
+        if (iPosColon != -1)
             {
-            if (SplitLine->Length > 0)
-                suLine->CodeName = SplitLine[0];
-            else
-                suLine->CodeName = "";
+            suLine->CodeName = sLine->Substring(0,iPosColon);
+            suLine->DataItem = sLine->Substring(iPosColon+1);
+            }
+        // No colon so no data item field. It's wrong but it happens
+        else
+            {
+            suLine->CodeName = sLine;
+            suLine->DataItem = "";
+            }
 
-            // Get the data
-            if (SplitLine->Length > 1)
-                suLine->DataItem = SplitLine[1];
-            else
-                suLine->DataItem = "";
-
-            // Add it to the array of lines
-            Lines->Add(suLine);
-            } // end if valid line
+        // Add it to the array of lines
+        Lines->Add(suLine);
 
         // If errors tokenizing the line then skip over them
 //        if ((szCodeName == NULL) || (szDataItem == NULL))
