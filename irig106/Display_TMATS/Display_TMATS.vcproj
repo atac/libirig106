@@ -45,6 +45,8 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_USE_32BIT_TIME_T"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
+				ObjectFile="$(IntDir)\$(ProjectName)\"
+				XMLDocumentationFileName="$(IntDir)\$(ProjectName)\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -123,10 +125,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\irig106lib\src"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_USE_32BIT_TIME_T"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
+				ObjectFile="$(IntDir)\$(ProjectName)\"
+				XMLDocumentationFileName="$(IntDir)\$(ProjectName)\"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
