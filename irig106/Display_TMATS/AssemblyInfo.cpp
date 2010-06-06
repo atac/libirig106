@@ -11,12 +11,12 @@ using namespace System::Security::Permissions;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-[assembly:AssemblyTitleAttribute("i106_tmats")];
+[assembly:AssemblyTitleAttribute("Display_TMATS")];
 [assembly:AssemblyDescriptionAttribute("Decode and display IRIG 106 TMATS")];
 [assembly:AssemblyConfigurationAttribute("")];
 [assembly:AssemblyCompanyAttribute("irig106.org")];
-[assembly:AssemblyProductAttribute("i106_tmats")];
-[assembly:AssemblyCopyrightAttribute("Copyright (c) irig106.org 2009")];
+[assembly:AssemblyProductAttribute("Display_TMATS")];
+[assembly:AssemblyCopyrightAttribute("Copyright (c) irig106.org 2010")];
 [assembly:AssemblyTrademarkAttribute("")];
 [assembly:AssemblyCultureAttribute("")];
 
@@ -28,10 +28,10 @@ using namespace System::Security::Permissions;
 //      Build Number
 //      Revision
 //
-// You can specify all the value or you can default the Revision and Build Numbers
+// You can specify all the values or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
 
-[assembly:AssemblyVersionAttribute("1.4.*")];
+[assembly:AssemblyVersionAttribute("1.5.0.*")];
 
 [assembly:ComVisible(false)];
 
