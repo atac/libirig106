@@ -45,6 +45,8 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_USE_32BIT_TIME_T"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
+				ObjectFile="$(IntDir)\$(ProjectName)\"
+				XMLDocumentationFileName="$(IntDir)\$(ProjectName)\"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -121,6 +123,8 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_USE_32BIT_TIME_T"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
+				ObjectFile="$(IntDir)\$(ProjectName)\"
+				XMLDocumentationFileName="$(IntDir)\$(ProjectName)\"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -201,24 +205,6 @@
 			<File
 				RelativePath="..\src\irig106_dotnet.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)1.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)1.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\irig106_dotnet.h"
@@ -235,24 +221,6 @@
 			<File
 				RelativePath="..\src\AssemblyInfo.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)1.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)1.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\resource.h"
@@ -261,24 +229,6 @@
 			<File
 				RelativePath="..\src\Stdafx.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)1.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)1.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\src\Stdafx.h"
