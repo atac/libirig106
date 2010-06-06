@@ -15,26 +15,62 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_1CDD77DCAACB4CFCA5CDB9FAE988DD79"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_2C21B4BDEBB64E39990C2286BFA65B89"
+        "OwnerKey" = "8:_1CDD77DCAACB4CFCA5CDB9FAE988DD79"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_2C21B4BDEBB64E39990C2286BFA65B89"
+        "OwnerKey" = "8:_3E4B7B8D6A264F8A829A2164BF397BA5"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_3E4B7B8D6A264F8A829A2164BF397BA5"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_867A6047CB5441EEBBEC3544A55B85E8"
+        "MsmKey" = "8:_88880BA8C7F050C00D9C266112996CAA"
+        "OwnerKey" = "8:_1CDD77DCAACB4CFCA5CDB9FAE988DD79"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_88880BA8C7F050C00D9C266112996CAA"
         "OwnerKey" = "8:_3E4B7B8D6A264F8A829A2164BF397BA5"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_B72E85739B954BDCBE6720905A27DF96"
-        "OwnerKey" = "8:_867A6047CB5441EEBBEC3544A55B85E8"
+        "MsmKey" = "8:_FBFC4DB85129478D8BB29D9BC310F883"
+        "OwnerKey" = "8:_2C21B4BDEBB64E39990C2286BFA65B89"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_3E4B7B8D6A264F8A829A2164BF397BA5"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_1CDD77DCAACB4CFCA5CDB9FAE988DD79"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_88880BA8C7F050C00D9C266112996CAA"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -120,13 +156,44 @@
                 "Name" = "8:.NET Framework"
                 "Message" = "8:[VSDNETMSG]"
                 "Version" = "8:2.0.50727"
-                "AllowLaterVersions" = "11:FALSE"
+                "AllowLaterVersions" = "11:TRUE"
                 "InstallUrl" = "8:http://go.microsoft.com/fwlink/?LinkId=9832"
                 }
             }
         }
         "File"
         {
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_88880BA8C7F050C00D9C266112996CAA"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:irig106dotnet, Version=1.0.3805.36755, Culture=neutral, processorArchitecture=x86"
+                "ScatterAssemblies"
+                {
+                    "_88880BA8C7F050C00D9C266112996CAA"
+                    {
+                    "Name" = "8:irig106dotnet.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:irig106dotnet.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_B6E5CE3312B34EC681A274F8A217E14D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -183,7 +250,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Display_TMATS"
         "ProductCode" = "8:{D1C31521-CE58-4D3F-8BD4-FACE9571DBA5}"
-        "PackageCode" = "8:{F482E1CF-E020-4046-996E-DF65C139C7C9}"
+        "PackageCode" = "8:{6DC6162D-BA41-4C8D-AB21-4EE38270592A}"
         "UpgradeCode" = "8:{105FB980-D61F-4AA7-92E9-7493A356C07B}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
@@ -302,18 +369,18 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_5DE924133D2641329297584098161CE2"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_37AF9CAB8F724E88B914E1DEF6B14AF2"
             {
-            "Name" = "8:Display_TMATS"
+            "Name" = "8:Display TMATS"
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"
-            "IconIndex" = "3:110"
+            "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
             "Target" = "8:_3E4B7B8D6A264F8A829A2164BF397BA5"
             "Folder" = "8:_961C513D4C144D698DA19FB127EDB505"
             "WorkingFolder" = "8:_B6E5CE3312B34EC681A274F8A217E14D"
-            "Icon" = "8:_3E4B7B8D6A264F8A829A2164BF397BA5"
+            "Icon" = "8:"
             "Feature" = "8:"
             }
         }
@@ -712,7 +779,7 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_867A6047CB5441EEBBEC3544A55B85E8"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_2C21B4BDEBB64E39990C2286BFA65B89"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
@@ -726,7 +793,7 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_B72E85739B954BDCBE6720905A27DF96"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_FBFC4DB85129478D8BB29D9BC310F883"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
@@ -743,6 +810,34 @@
         }
         "ProjectOutput"
         {
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_1CDD77DCAACB4CFCA5CDB9FAE988DD79"
+            {
+            "SourcePath" = "8:Release\\irig106.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_B6E5CE3312B34EC681A274F8A217E14D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{AEDD17E1-E0C6-47C1-8612-B3329BBE8BA6}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_3E4B7B8D6A264F8A829A2164BF397BA5"
             {
             "SourcePath" = "8:Release\\Display_TMATS.exe"
