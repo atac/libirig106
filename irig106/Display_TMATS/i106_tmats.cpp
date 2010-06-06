@@ -38,6 +38,8 @@
 
 #include "stdafx.h"
 
+//#include "irig106_dotnet.h"
+
 #include "AboutDisplayTmats.h"
 #include "InputForm.h"
 
