@@ -36,5 +36,8 @@
  ****************************************************************************/
 
 #include "StdAfx.h"
+
+// #include "irig106_dotnet.h"
+
 #include "AboutDisplayTmats.h"
 
