@@ -44,6 +44,8 @@
 				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="_USE_32BIT_TIME_T"
 				RuntimeLibrary="3"
+				ObjectFile="$(IntDir)\$(ProjectName)\"
+				XMLDocumentationFileName="$(IntDir)\$(ProjectName)\"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 				CompileAs="2"
@@ -122,6 +124,7 @@
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="_USE_32BIT_TIME_T"
 				RuntimeLibrary="2"
+				ObjectFile="$(IntDir)\$(ProjectName)\"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 				CompileAs="2"
@@ -195,11 +198,27 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\irig106lib\src\i106_decode_arinc429.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\irig106lib\src\i106_decode_arinc429.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\irig106lib\src\i106_decode_discrete.c"
 			>
 		</File>
 		<File
 			RelativePath="..\..\irig106lib\src\i106_decode_discrete.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\irig106lib\src\i106_decode_ethernet.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\irig106lib\src\i106_decode_ethernet.h"
 			>
 		</File>
 		<File
