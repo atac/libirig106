@@ -37,18 +37,6 @@
 
 #pragma once
 
-/*
-#include <time.h>
-#include <sys\stat.h>
-#include <sys\timeb.h>
-
-#include "config.h"
-#include "stdint.h"
-#include "irig106ch10.h"
-#include "i106_decode_tmats.h"
-#include "irig106cl.h"
-*/
-
 //#using "irig106dotnet.dll"
 //using namespace Irig106DotNet;
 
