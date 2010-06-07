@@ -242,7 +242,7 @@ System::Void InputForm::DisplayRaw()
         {
         String ^ sRawText = "";
         for each(Tmats::SuTmatsLine ^ TmatsLine in Tmats->Lines)
-            sRawText = sRawText + String::Format("{0}:{1};\n\r\n\r", TmatsLine->CodeName, TmatsLine->DataItem);
+            sRawText = sRawText + String::Format("{0}:{1};\r\n", TmatsLine->CodeName, TmatsLine->DataItem);
 
         this->textRaw->Text = sRawText;
         }
