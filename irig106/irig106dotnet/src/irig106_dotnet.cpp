@@ -217,6 +217,7 @@ Irig106Lib::~Irig106Lib(void)
 //=========================================================================
 // irig106ch10
 
+// Open a Ch 10 file for reading or writing
 ReturnStatus Irig106Lib::Open(String ^ sFilename, Ch10FileMode enMode)
     {
     ReturnStatus    enStatus;
@@ -230,6 +231,7 @@ ReturnStatus Irig106Lib::Open(String ^ sFilename, Ch10FileMode enMode)
 
 //-------------------------------------------------------------------------
 
+// Close a Ch 10 file
 ReturnStatus Irig106Lib::Close(void)
     {
     ReturnStatus    enStatus;
@@ -241,6 +243,7 @@ ReturnStatus Irig106Lib::Close(void)
 
 //-------------------------------------------------------------------------
 
+// Read the next packet header without reading the packet data yet
 ReturnStatus Irig106Lib::ReadNextHeader(void)
     { 
     ReturnStatus    enStatus;
@@ -252,6 +255,7 @@ ReturnStatus Irig106Lib::ReadNextHeader(void)
 
 //-------------------------------------------------------------------------
 
+// Back up and read the previous packet header
 ReturnStatus Irig106Lib::ReadPrevHeader(void)
     {
     ReturnStatus    enStatus;
@@ -263,6 +267,7 @@ ReturnStatus Irig106Lib::ReadPrevHeader(void)
 
 //-------------------------------------------------------------------------
 
+// Read packet data after having read the packet header
 ReturnStatus Irig106Lib::ReadData(void)
     {
     ReturnStatus    enStatus;
@@ -283,6 +288,7 @@ ReturnStatus Irig106Lib::ReadData(void)
 
 //-------------------------------------------------------------------------
 
+// Write a packet with header and data buffer from this class data
 ReturnStatus Irig106Lib::WritePacket(void)
     { 
     ReturnStatus    enStatus;
@@ -297,6 +303,7 @@ ReturnStatus Irig106Lib::WritePacket(void)
 
 //-------------------------------------------------------------------------
 
+// Write a packet with passed header and data buffer
 ReturnStatus Irig106Lib::WriteMsg(SuI106Ch10Header       ^ Header,
                                   array<unsigned __int8> ^ DataBuff)
     {
@@ -312,6 +319,7 @@ ReturnStatus Irig106Lib::WriteMsg(SuI106Ch10Header       ^ Header,
 
 //-------------------------------------------------------------------------
 
+// Move the read file pointer to the first packet in the data file
 ReturnStatus Irig106Lib::FirstMsg(void)
     { 
     return DLL::enI106Ch10FirstMsg(this->Handle); 
@@ -321,6 +329,7 @@ ReturnStatus Irig106Lib::FirstMsg(void)
 
 //-------------------------------------------------------------------------
 
+// Move the read file pointer to the last packet in the data file
 ReturnStatus Irig106Lib::LastMsg(void)
     { 
     return DLL::enI106Ch10LastMsg(this->Handle); 
@@ -330,6 +339,8 @@ ReturnStatus Irig106Lib::LastMsg(void)
 
 //-------------------------------------------------------------------------
 
+// Set the read file pointer to the llOffset into the file.  The offset
+// doesn't need to fall on a packet boundary.
 ReturnStatus Irig106Lib::SetPos(int64_t   llOffset)
     {
     return DLL::enI106Ch10SetPos(this->Handle, llOffset);
@@ -339,6 +350,7 @@ ReturnStatus Irig106Lib::SetPos(int64_t   llOffset)
 
 //-------------------------------------------------------------------------
 
+// Get the current read offset into the data file
 ReturnStatus Irig106Lib::GetPos(int64_t % pllOffset)
     {
     return DLL::enI106Ch10GetPos(this->Handle, pllOffset);
