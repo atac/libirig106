@@ -106,7 +106,7 @@ namespace I106Input {
 
     private: System::Windows::Forms::Button^        buttonClose;
     private: System::Windows::Forms::LinkLabel^     linkIrig106;
-    private: System::Windows::Forms::Label^  lblVersion;
+    private: System::Windows::Forms::Label^         lblVersion;
 
     private: System::Windows::Forms::Label^         DotNetLibVer;
 
@@ -124,10 +124,10 @@ namespace I106Input {
 		void InitializeComponent(void)
 		{
             System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(AboutDisplayTmats::typeid));
-            this->pictureLogo = (gcnew System::Windows::Forms::PictureBox());
-            this->buttonClose = (gcnew System::Windows::Forms::Button());
-            this->linkIrig106 = (gcnew System::Windows::Forms::LinkLabel());
-            this->lblVersion = (gcnew System::Windows::Forms::Label());
+            this->pictureLogo  = (gcnew System::Windows::Forms::PictureBox());
+            this->buttonClose  = (gcnew System::Windows::Forms::Button());
+            this->linkIrig106  = (gcnew System::Windows::Forms::LinkLabel());
+            this->lblVersion   = (gcnew System::Windows::Forms::Label());
             this->DotNetLibVer = (gcnew System::Windows::Forms::Label());
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->pictureLogo))->BeginInit();
             this->SuspendLayout();

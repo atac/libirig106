@@ -154,9 +154,7 @@ bool InputForm::OpenAsIrigFile(String ^ Filename)
         {
         Irig106DotNet::IrigTime       suStartTime;
         IrigIn->Rel2IrigTime(%suStartTime);
-        //szTime = IrigTime2String(%suStartTime);
         String ^ sTime;
-        //sTime = String::Format("Start - {0}", Marshal::PtrToStringAnsi(System::IntPtr(szTime)));
         sTime = String::Format("Start - {0}", IrigIn->IrigTime2String(%suStartTime));
         this->statuslblStartTime->Text = sTime;
         }

@@ -15,20 +15,26 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_1942BEC68AC942B5B81364191ED31F19"
+        "OwnerKey" = "8:_1CDD77DCAACB4CFCA5CDB9FAE988DD79"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_1942BEC68AC942B5B81364191ED31F19"
+        "OwnerKey" = "8:_3E4B7B8D6A264F8A829A2164BF397BA5"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_1CDD77DCAACB4CFCA5CDB9FAE988DD79"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_2C21B4BDEBB64E39990C2286BFA65B89"
-        "OwnerKey" = "8:_1CDD77DCAACB4CFCA5CDB9FAE988DD79"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_2C21B4BDEBB64E39990C2286BFA65B89"
-        "OwnerKey" = "8:_3E4B7B8D6A264F8A829A2164BF397BA5"
+        "MsmKey" = "8:_2DEEFBCD96BB4F12886E8DAE386D760E"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -51,8 +57,14 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_FBFC4DB85129478D8BB29D9BC310F883"
-        "OwnerKey" = "8:_2C21B4BDEBB64E39990C2286BFA65B89"
+        "MsmKey" = "8:_99E59A9B015F486EB17E4C6EFE4FEBB0"
+        "OwnerKey" = "8:_1942BEC68AC942B5B81364191ED31F19"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_B374A2D3036D4112A4367EFB218753D5"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -163,18 +175,33 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2DEEFBCD96BB4F12886E8DAE386D760E"
+            {
+            "SourcePath" = "8:irig106_install_banner.jpg"
+            "TargetName" = "8:irig106_install_banner.jpg"
+            "Tag" = "8:"
+            "Folder" = "8:_B6E5CE3312B34EC681A274F8A217E14D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_88880BA8C7F050C00D9C266112996CAA"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:irig106dotnet, Version=1.0.3805.36755, Culture=neutral, processorArchitecture=x86"
+            "AssemblyAsmDisplayName" = "8:irig106dotnet, Version=1.0.3809.31444, Culture=neutral, processorArchitecture=x86"
                 "ScatterAssemblies"
                 {
-                    "_88880BA8C7F050C00D9C266112996CAA"
-                    {
-                    "Name" = "8:irig106dotnet.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:irig106dotnet.dll"
             "TargetName" = "8:"
@@ -194,6 +221,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B374A2D3036D4112A4367EFB218753D5"
+            {
+            "SourcePath" = "8:release_notes.txt"
+            "TargetName" = "8:release_notes.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_B6E5CE3312B34EC681A274F8A217E14D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -203,18 +250,29 @@
             "{1525181F-901A-416C-8A58-119130FE478E}:_05B4C555C93F42A7B44E87D4516F8DDC"
             {
             "Name" = "8:#1919"
-            "AlwaysCreate" = "11:FALSE"
+            "AlwaysCreate" = "11:TRUE"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Property" = "8:ProgramMenuFolder"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_271AB62145EA4ED7A7D3CC36C9C58A44"
+                    {
+                    "Name" = "8:irig106.org"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_483A0580BE49432D81A782447C34FCC0"
+                        "Folders"
+                        {
+                        }
+                    }
                 }
             }
             "{1525181F-901A-416C-8A58-119130FE478E}:_961C513D4C144D698DA19FB127EDB505"
             {
             "Name" = "8:#1916"
-            "AlwaysCreate" = "11:FALSE"
+            "AlwaysCreate" = "11:TRUE"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Property" = "8:DesktopFolder"
@@ -224,7 +282,7 @@
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_B6E5CE3312B34EC681A274F8A217E14D"
             {
-            "DefaultLocation" = "8:[ProgramFilesFolder][Manufacturer]"
+            "DefaultLocation" = "8:[ProgramFilesFolder][Manufacturer]\\Display_TMATS"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -250,7 +308,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Display_TMATS"
         "ProductCode" = "8:{D1C31521-CE58-4D3F-8BD4-FACE9571DBA5}"
-        "PackageCode" = "8:{6DC6162D-BA41-4C8D-AB21-4EE38270592A}"
+        "PackageCode" = "8:{E9063B25-E14A-44AE-9CC2-B1259BD8A127}"
         "UpgradeCode" = "8:{105FB980-D61F-4AA7-92E9-7493A356C07B}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
@@ -379,6 +437,20 @@
             "Transitive" = "11:FALSE"
             "Target" = "8:_3E4B7B8D6A264F8A829A2164BF397BA5"
             "Folder" = "8:_961C513D4C144D698DA19FB127EDB505"
+            "WorkingFolder" = "8:_B6E5CE3312B34EC681A274F8A217E14D"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_9B1820E3A48E49028694DEEDA2840343"
+            {
+            "Name" = "8:Display TMATS"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_3E4B7B8D6A264F8A829A2164BF397BA5"
+            "Folder" = "8:_271AB62145EA4ED7A7D3CC36C9C58A44"
             "WorkingFolder" = "8:_B6E5CE3312B34EC681A274F8A217E14D"
             "Icon" = "8:"
             "Feature" = "8:"
@@ -561,7 +633,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_2DEEFBCD96BB4F12886E8DAE386D760E"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "ShowProgress"
@@ -605,7 +678,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_2DEEFBCD96BB4F12886E8DAE386D760E"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "UpdateText"
@@ -634,7 +708,7 @@
                 {
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_0A83C1A2198149F5829545FF7E2B1230"
                     {
-                    "Sequence" = "3:300"
+                    "Sequence" = "3:400"
                     "DisplayName" = "8:Confirm Installation"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
@@ -649,7 +723,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_2DEEFBCD96BB4F12886E8DAE386D760E"
                             "UsePlugInResources" = "11:TRUE"
                             }
                         }
@@ -671,7 +746,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_2DEEFBCD96BB4F12886E8DAE386D760E"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "CopyrightWarning"
@@ -719,7 +795,8 @@
                             "Type" = "3:8"
                             "ContextData" = "8:Bitmap"
                             "Attributes" = "3:4"
-                            "Setting" = "3:1"
+                            "Setting" = "3:2"
+                            "Value" = "8:_2DEEFBCD96BB4F12886E8DAE386D760E"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "InstallAllUsersVisible"
@@ -779,7 +856,7 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_2C21B4BDEBB64E39990C2286BFA65B89"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_1942BEC68AC942B5B81364191ED31F19"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
@@ -793,7 +870,7 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_FBFC4DB85129478D8BB29D9BC310F883"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_99E59A9B015F486EB17E4C6EFE4FEBB0"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
