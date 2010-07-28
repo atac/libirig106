@@ -11,12 +11,12 @@ using namespace System::Security::Permissions;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-[assembly:AssemblyTitleAttribute("irig106net")];
+[assembly:AssemblyTitleAttribute("irig106dotnet")];
 [assembly:AssemblyDescriptionAttribute("")];
 [assembly:AssemblyConfigurationAttribute("")];
-[assembly:AssemblyCompanyAttribute("GTRI")];
-[assembly:AssemblyProductAttribute("irig106net")];
-[assembly:AssemblyCopyrightAttribute("Copyright (c) GTRI 2010")];
+[assembly:AssemblyCompanyAttribute("irig106.org")];
+[assembly:AssemblyProductAttribute("irig106dotnet")];
+[assembly:AssemblyCopyrightAttribute("Copyright (c) irig106.org 2010")];
 [assembly:AssemblyTrademarkAttribute("")];
 [assembly:AssemblyCultureAttribute("")];
 
@@ -28,7 +28,7 @@ using namespace System::Security::Permissions;
 //      Build Number
 //      Revision
 //
-// You can specify all the value or you can default the Revision and Build Numbers
+// You can specify all the values or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
 
 [assembly:AssemblyVersionAttribute("1.0.*")];
