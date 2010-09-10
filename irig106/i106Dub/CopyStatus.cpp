@@ -1,3 +1,41 @@
+/****************************************************************************
+
+ CopyStatus.cpp - Dialog to display copy progress.
+
+ Copyright (c) 2008 Irig106.org
+
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without 
+ modification, are permitted provided that the following conditions are 
+ met:
+
+   * Redistributions of source code must retain the above copyright 
+     notice, this list of conditions and the following disclaimer.
+
+   * Redistributions in binary form must reproduce the above copyright 
+     notice, this list of conditions and the following disclaimer in the 
+     documentation and/or other materials provided with the distribution.
+
+   * Neither the name Irig106.org nor the names of its contributors may 
+     be used to endorse or promote products derived from this software 
+     without specific prior written permission.
+
+ This software is provided by the copyright holders and contributors 
+ "as is" and any express or implied warranties, including, but not 
+ limited to, the implied warranties of merchantability and fitness for 
+ a particular purpose are disclaimed. In no event shall the copyright 
+ owner or contributors be liable for any direct, indirect, incidental, 
+ special, exemplary, or consequential damages (including, but not 
+ limited to, procurement of substitute goods or services; loss of use, 
+ data, or profits; or business interruption) however caused and on any 
+ theory of liability, whether in contract, strict liability, or tort 
+ (including negligence or otherwise) arising in any way out of the use 
+ of this software, even if advised of the possibility of such damage.
+
+ ****************************************************************************/
+
+
 #include "StdAfx.h"
 #include <malloc.h>
 #include <memory.h>
@@ -15,22 +53,24 @@ namespace i106Dub {
 
 System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mArgs)
     {
-    Irig106Lib        * IrigIn;
-    Irig106Lib        * IrigOut;
-    EnI106Status        enStatus;
-    int64_t             llPastTmats;
-    int64_t             llBeginRtcTime;
-    int64_t             llEndRtcTime;
-    int64_t             llCurrTime;
-    int64_t             llCurrOffset;
+    Irig106DotNet::Irig106Lib       ^ IrigIn;
+    Irig106DotNet::Irig106Lib       ^ IrigOut;
+
+    Irig106DotNet::ReturnStatus       enStatus;
+
+    __int64             llPastTmats;
+    __int64             llBeginRtcTime;
+    __int64             llEndRtcTime;
+    __int64             llCurrTime;
+    __int64             llCurrOffset;
     int                 iPercentDone;
     SuCopyParams      ^ mParams;
 
     mParams = safe_cast<SuCopyParams^>(mArgs->Argument);
 
     // Some stuff for writing out packets
-    SuI106Ch10Header        * psuOutHeader = new SuI106Ch10Header;
-    ChanSeqNums = gcnew array<uint8_t>(0x10000);
+//    SuI106Ch10Header        * psuOutHeader = new SuI106Ch10Header;
+    ChanSeqNums = gcnew array<__int8>(0x10000);
     Array::Clear(ChanSeqNums,0,ChanSeqNums->Length);
 
     // Lists of indexed packets
@@ -51,24 +91,24 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
 
         // Open the input file and get some info
         // -------------------------------------
-        IrigIn = new Irig106Lib;
-        IrigIn->Open(mParams->sInFile);
+        IrigIn = gcnew Irig106DotNet::Irig106Lib;
+        IrigIn->Open(mParams->sInFile, Irig106DotNet::Ch10FileMode::READ);
 
         // Get begin RTC
         IrigIn->SetPos(mParams->llBeginOffset);
         IrigIn->ReadNextHeader();
-        IrigIn->TimeArray2LLInt(&llBeginRtcTime);
+        IrigIn->RelTime2LLInt(llBeginRtcTime);
 
         // Get end RTC
         IrigIn->SetPos(mParams->llEndOffset);
         IrigIn->ReadPrevHeader();
-        IrigIn->TimeArray2LLInt(&llEndRtcTime);
+        IrigIn->RelTime2LLInt(llEndRtcTime);
 
         // Open output file
         // ----------------
         bCaller->ReportProgress(0, "Status - Open output file");
-        IrigOut = new Irig106Lib;
-        IrigOut->Open(mParams->sOutFile, I106_OVERWRITE);
+        IrigOut = gcnew Irig106DotNet::Irig106Lib;
+        IrigOut->Open(mParams->sOutFile, Irig106DotNet::Ch10FileMode::OVERWRITE);
 
         // Read, modify, write TMATS
         // -------------------------
@@ -78,7 +118,7 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
         IrigIn->ReadData();
         if (mParams->bCh0TMATSCopy)
             {
-            if (IrigIn->pHeader->ubyDataType != I106CH10_DTYPE_TMATS)
+            if (IrigIn->Header->ubyDataType != Irig106DotNet::DataType::TMATS)
                 {
                 MessageBox::Show( "TMATS data not found", "Error", 
                     MessageBoxButtons::OK, MessageBoxIcon::Exclamation );
@@ -86,15 +126,15 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
                 }
 //{
 //SuTmatsEditInfo     suEditInfo;
-//InitTmatsEditInfo(&(IrigIn->pDataBuff), IrigIn->pHeader->ulDataLen, uint32_t iBuffLength, &suEditInfo)
+//InitTmatsEditInfo(&(IrigIn->DataBuff), IrigIn->pHeader->ulDataLen, uint32_t iBuffLength, &suEditInfo)
 //}
-                FixSeqNum(IrigIn->pHeader);
+                FixSeqNum(IrigIn->Header);
                 IrigIn->SetHeaderChecksum();
-                IrigOut->WriteMsg(IrigIn->pHeader, IrigIn->pDataBuff);
+                IrigOut->WritePacket(IrigIn->Header, IrigIn->DataBuff);
             } // end if copy TMATS
 
         // Save this position in case we need it later
-        IrigIn->GetPos(&llPastTmats);
+        IrigIn->GetPos(llPastTmats);
 
         // Find closest time packet
         // ------------------------
@@ -119,36 +159,36 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
                 enStatus = IrigIn->ReadPrevHeader();
 
                 // If we can't read backwards any more then break out
-                if  (enStatus != I106_OK)
+                if  (enStatus != Irig106DotNet::ReturnStatus::OK)
                     break;
 
                 // If too much time has gone by then break out
-                IrigIn->TimeArray2LLInt(&llCurrTime);
+                IrigIn->RelTime2LLInt(llCurrTime);
                 if (llCurrTime < (llBeginRtcTime - 100000000))  // 10 seconds
                     {
-                    enStatus = I106_TIME_NOT_FOUND;
+                    enStatus = Irig106DotNet::ReturnStatus::TIME_NOT_FOUND;
                     break;
                     }
 
                 // If packet is time then write it
-                if (IrigIn->pHeader->ubyDataType == I106CH10_DTYPE_IRIG_TIME)
+                if (IrigIn->Header->ubyDataType == Irig106DotNet::DataType::IRIG_TIME)
                     {
                     IrigIn->ReadData();
 
                     // If index enabled for this channel then make an index entry
-                    if (mParams->ChanIndex[IrigIn->pHeader->uChID] != 0)
+                    if (mParams->ChanIndex[IrigIn->Header->uChID] != 0)
                         {
                         PacketIndex = gcnew SuPacketIndex;
-                        IrigIn->TimeArray2LLInt(PacketIndex->llTime);
-                        PacketIndex->uChannelID = IrigIn->pHeader->uChID;
-                        PacketIndex->uDataType  = IrigIn->pHeader->ubyDataType;
+                        IrigIn->RelTime2LLInt(PacketIndex->llTime);
+                        PacketIndex->uChannelID = IrigIn->Header->uChID;
+                        PacketIndex->uDataType  = IrigIn->Header->ubyDataType;
                         IrigOut->GetPos(PacketIndex->uOffset);
                         NodeIndexList->Add(PacketIndex);
                         } // end if index enabled
 
-                    FixSeqNum(IrigIn->pHeader);
+                    FixSeqNum(IrigIn->Header);
                     IrigIn->SetHeaderChecksum();
-                    IrigOut->WriteMsg(IrigIn->pHeader, IrigIn->pDataBuff);
+                    IrigOut->WritePacket(IrigIn->Header, IrigIn->DataBuff);
                     IrigIn->SetPos(mParams->llBeginOffset);
                     break;
                     } // end if IRIG time
@@ -156,7 +196,7 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
                 } // end while scanning backwards
 
             // Scan backwards didn't work so try forward
-            if (enStatus != I106_OK)
+            if (enStatus != Irig106DotNet::ReturnStatus::OK)
                 {
                 IrigIn->SetPos(mParams->llBeginOffset);        
 
@@ -172,35 +212,35 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
                     enStatus = IrigIn->ReadNextHeader();
 
                     // If we can't read backwards any more then break out
-                    if  (enStatus != I106_OK)
+                    if  (enStatus != Irig106DotNet::ReturnStatus::OK)
                         break;
 
                     // If too much time has gone by then break out
-                    IrigIn->TimeArray2LLInt(&llCurrTime);
+                    IrigIn->RelTime2LLInt(llCurrTime);
                     if (llCurrTime > (llBeginRtcTime + 100000000))  // 10 seconds
                         {
-                        enStatus = I106_TIME_NOT_FOUND;
+                        enStatus = Irig106DotNet::ReturnStatus::TIME_NOT_FOUND;
                         }
 
                     // If packet is time then write it
-                    if (IrigIn->pHeader->ubyDataType == I106CH10_DTYPE_IRIG_TIME)
+                    if (IrigIn->Header->ubyDataType == Irig106DotNet::DataType::IRIG_TIME)
                         {
                         IrigIn->ReadData();
 
                         // If index enabled for this channel then make an index entry
-                        if (mParams->ChanIndex[IrigIn->pHeader->uChID] != 0)
+                        if (mParams->ChanIndex[IrigIn->Header->uChID] != 0)
                             {
                             PacketIndex = gcnew SuPacketIndex;
-                            IrigIn->TimeArray2LLInt(PacketIndex->llTime);
-                            PacketIndex->uChannelID = IrigIn->pHeader->uChID;
-                            PacketIndex->uDataType  = IrigIn->pHeader->ubyDataType;
+                            IrigIn->RelTime2LLInt(PacketIndex->llTime);
+                            PacketIndex->uChannelID = IrigIn->Header->uChID;
+                            PacketIndex->uDataType  = IrigIn->Header->ubyDataType;
                             IrigOut->GetPos(PacketIndex->uOffset);
                             NodeIndexList->Add(PacketIndex);
                             } // end if index enabled
 
-                        FixSeqNum(IrigIn->pHeader);
+                        FixSeqNum(IrigIn->Header);
                         IrigIn->SetHeaderChecksum();
-                        IrigOut->WriteMsg(IrigIn->pHeader, IrigIn->pDataBuff);
+                        IrigOut->WritePacket(IrigIn->Header, IrigIn->DataBuff);
                         IrigIn->SetPos(mParams->llBeginOffset);
                         break;
                         } // end if IRIG time
@@ -209,7 +249,7 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
                 } // end if scan backwards not OK
 
             // Scan forward didn't work so get time from the beginning of the file
-            if (enStatus != I106_OK)
+            if (enStatus != Irig106DotNet::ReturnStatus::OK)
                 {
                 MessageBox::Show( "Suitable time packet not found", "Error", 
                     MessageBoxButtons::OK, MessageBoxIcon::Exclamation );
@@ -231,10 +271,10 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
             enStatus = IrigIn->ReadNextHeader();
 
             // Get a copy of the current packet time for later use
-            IrigIn->TimeArray2LLInt(&llCurrTime);
+            IrigIn->RelTime2LLInt(llCurrTime);
 
             // If anything but OK we're done
-            if  (enStatus != I106_OK)
+            if  (enStatus != Irig106DotNet::ReturnStatus::OK)
                 break;
 
             // If past dub end then we're done
@@ -250,7 +290,7 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
 
             // Put up current status
             // PROBABLY SHOULD OPTIMIZE THIS, GUI UPDATES CAN BE SLOW
-            IrigIn->GetPos(&llCurrOffset);
+            IrigIn->GetPos(llCurrOffset);
             iPercentDone = int(((llCurrOffset - mParams->llBeginOffset) * 100) / (mParams->llEndOffset - mParams->llBeginOffset));
             bCaller->ReportProgress(iPercentDone, "Status : Dubbing file");
 
@@ -258,49 +298,49 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
             // --------------------------------------------------------------------
 
             // Handle special Channel ID 0 case
-            if (IrigIn->pHeader->uChID == 0)
+            if (IrigIn->Header->uChID == 0)
                 {
-                switch (IrigIn->pHeader->ubyDataType)
+                switch (IrigIn->Header->ubyDataType)
                     {
-                    case I106CH10_DTYPE_TMATS :
+                    case Irig106DotNet::DataType::TMATS :
                         if (mParams->bCh0TMATSCopy)
                             {
                             IrigIn->ReadData();
                             if (mParams->bCh0TMATSIndex)
                                 {
                                 PacketIndex = gcnew SuPacketIndex;
-                                IrigIn->TimeArray2LLInt(PacketIndex->llTime);
+                                IrigIn->RelTime2LLInt(PacketIndex->llTime);
                                 PacketIndex->uChannelID = 0;
-                                PacketIndex->uDataType  = IrigIn->pHeader->ubyDataType;
+                                PacketIndex->uDataType  = IrigIn->Header->ubyDataType;
                                 IrigOut->GetPos(PacketIndex->uOffset);
                                 NodeIndexList->Add(PacketIndex);
                                 } // end if index enabled
-                            FixSeqNum(IrigIn->pHeader);
+                            FixSeqNum(IrigIn->Header);
                             IrigIn->SetHeaderChecksum();
-                            IrigOut->WriteMsg(IrigIn->pHeader, IrigIn->pDataBuff);
+                            IrigOut->WritePacket(IrigIn->Header, IrigIn->DataBuff);
                             }
                         break;
 
-                    case I106CH10_DTYPE_RECORDING_INDEX :
+                    case Irig106DotNet::DataType::RECORDING_INDEX :
                         // Don't copy indexes, they need to be fixed later
                         break;
 
-                    case I106CH10_DTYPE_RECORDING_EVENT :
+                    case Irig106DotNet::DataType::RECORDING_EVENT :
                         if (mParams->bCh0EventsCopy)
                             {
                             IrigIn->ReadData();
                             if (mParams->bCh0EventsIndex)
                                 {
                                 PacketIndex = gcnew SuPacketIndex;
-                                IrigIn->TimeArray2LLInt(PacketIndex->llTime);
+                                IrigIn->RelTime2LLInt(PacketIndex->llTime);
                                 PacketIndex->uChannelID = 0;
-                                PacketIndex->uDataType  = IrigIn->pHeader->ubyDataType;
+                                PacketIndex->uDataType  = IrigIn->Header->ubyDataType;
                                 IrigOut->GetPos(PacketIndex->uOffset);
                                 NodeIndexList->Add(PacketIndex);
                                 } // end if index enabled
-                            FixSeqNum(IrigIn->pHeader);
+                            FixSeqNum(IrigIn->Header);
                             IrigIn->SetHeaderChecksum();
-                            IrigOut->WriteMsg(IrigIn->pHeader, IrigIn->pDataBuff);
+                            IrigOut->WritePacket(IrigIn->Header, IrigIn->DataBuff);
                             }
                         break;
 
@@ -311,15 +351,15 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
                             if (mParams->bCh0OtherIndex)
                                 {
                                 PacketIndex = gcnew SuPacketIndex;
-                                IrigIn->TimeArray2LLInt(PacketIndex->llTime);
+                                IrigIn->RelTime2LLInt(PacketIndex->llTime);
                                 PacketIndex->uChannelID = 0;
-                                PacketIndex->uDataType  = IrigIn->pHeader->ubyDataType;
+                                PacketIndex->uDataType  = IrigIn->Header->ubyDataType;
                                 IrigOut->GetPos(PacketIndex->uOffset);
                                 NodeIndexList->Add(PacketIndex);
                                 } // end if index enabled
-                            FixSeqNum(IrigIn->pHeader);
+                            FixSeqNum(IrigIn->Header);
                             IrigIn->SetHeaderChecksum();
-                            IrigOut->WriteMsg(IrigIn->pHeader, IrigIn->pDataBuff);
+                            IrigOut->WritePacket(IrigIn->Header, IrigIn->DataBuff);
                             }
                         break;
                     } // end switch on data type                
@@ -328,15 +368,15 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
             // Channel ID other than 0
             else
                 {
-                if (mParams->ChanEnabled[IrigIn->pHeader->uChID] != 0)
+                if (mParams->ChanEnabled[IrigIn->Header->uChID] != 0)
                     {
                     IrigIn->ReadData();
-                    if (mParams->ChanIndex[IrigIn->pHeader->uChID] != 0)
+                    if (mParams->ChanIndex[IrigIn->Header->uChID] != 0)
                         {
                         PacketIndex = gcnew SuPacketIndex;
-                        IrigIn->TimeArray2LLInt(PacketIndex->llTime);
-                        PacketIndex->uChannelID = IrigIn->pHeader->uChID;
-                        PacketIndex->uDataType  = IrigIn->pHeader->ubyDataType;
+                        IrigIn->RelTime2LLInt(PacketIndex->llTime);
+                        PacketIndex->uChannelID = IrigIn->Header->uChID;
+                        PacketIndex->uDataType  = IrigIn->Header->ubyDataType;
                         IrigOut->GetPos(PacketIndex->uOffset);
                         NodeIndexList->Add(PacketIndex);
 
@@ -345,9 +385,9 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
 //    PacketIndex->uDataType, PacketIndex->uOffset);
 
                         } // end if index enabled
-                    FixSeqNum(IrigIn->pHeader);
+                    FixSeqNum(IrigIn->Header);
                     IrigIn->SetHeaderChecksum();
-                    IrigOut->WriteMsg(IrigIn->pHeader, IrigIn->pDataBuff);
+                    IrigOut->WritePacket(IrigIn->Header, IrigIn->DataBuff);
                     } // end if channel enabled
                 } // end if Channel ID not 0
 
@@ -355,16 +395,18 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
 
         // Write indexes
         // -------------
-
         // Only write index packets if the index list has items
         if (NodeIndexList->Count > 0)
             {
 
             // -- Make node index packet(s) --
 
-            SuIndex_NodePacket * psuNodeIndexPacket;
-            SuIndex_RootPacket * psuRootIndexPacket;
+////            SuIndex_NodePacket * psuNodeIndexPacket;
+////            SuIndex_RootPacket * psuRootIndexPacket;
+//            Irig106DotNet::PacketIndex::
+            Irig106DotNet::
 
+#if 0
             int PacketIndexIdx;     // Index into the list of index records
             int NodePacketIdx = 0;  // Index into the IRIG node index packet
             int RootPacketIdx = 0;  // Index into the IRIG root index packet
@@ -377,17 +419,17 @@ System::Void CopyStatus::DubFile(BackgroundWorker^ bCaller, DoWorkEventArgs^ mAr
 int max = 10;
 
             // Make most of the header
-//            memset(IrigOut->pHeader, 0, sizeof(SuI106Ch10Header));
-            IrigOut->pHeader->uSync          = IRIG106_SYNC;
-            IrigOut->pHeader->uChID          = 0;
-            IrigOut->pHeader->ubyHdrVer      = 0x03;
-            IrigOut->pHeader->ubyPacketFlags = I106CH10_PFLAGS_CHKSUM_32;
-            IrigOut->pHeader->ubyDataType    = I106CH10_DTYPE_RECORDING_INDEX;
+//            memset(IrigOut->Header, 0, sizeof(SuI106Ch10Header));
+            IrigOut->Header->uSync          = IRIG106_SYNC;
+            IrigOut->Header->uChID          = 0;
+            IrigOut->Header->ubyHdrVer      = 0x03;
+            IrigOut->Header->ubyPacketFlags = Irig106DotNet::HeaderFlag::CHKSUM_32;
+            IrigOut->Header->ubyDataType    = Irig106DotNet::DataType::RECORDING_INDEX;
 
             // Make some of the data buffer
             MaxDataBuffSize = IrigOut->CalcDataBuffReqSize(sizeof(SuIndex_ChanSpec) + max * sizeof(SuIndex_NodeEntry));
             psuNodeIndexPacket = (SuIndex_NodePacket *)malloc(MaxDataBuffSize);
-            IrigOut->pDataBuff = (void *)psuNodeIndexPacket;
+            IrigOut->DataBuff = (void *)psuNodeIndexPacket;
 //            memset(psuNodeIndexPacket, 0, MaxDataBuffSize); // MAY NOT REALLY NEED THIS
 
             // Make and write Node Index packets
@@ -399,14 +441,14 @@ int max = 10;
                     {
                     // Figure out how many nodes to write, data size, and packet size
                     NodesToWrite = Math::Min((IndexListCount - PacketIndexIdx), max);
-                    IrigOut->pHeader->ulDataLen = sizeof(SuIndex_ChanSpec) + NodesToWrite * sizeof(SuIndex_NodeEntry);
+                    IrigOut->Header->ulDataLen = sizeof(SuIndex_ChanSpec) + NodesToWrite * sizeof(SuIndex_NodeEntry);
                     IndexDataBuffSize = IrigOut->CalcDataBuffReqSize();
-                    IrigOut->pHeader->ulPacketLen = HEADER_SIZE + IndexDataBuffSize;
+                    IrigOut->Header->ulPacketLen = HEADER_SIZE + IndexDataBuffSize;
 
                     // Set some other header junk
                     llCurrTime++; // Some validators whine if two time stamps are the same
                     IrigOut->LLInt2TimeArray(&llCurrTime);  // TIME??????????
-                    FixSeqNum(IrigOut->pHeader);
+                    FixSeqNum(IrigOut->Header);
                     IrigOut->SetHeaderChecksum();
 
                     // Initialize the Channel Specific Data Word
@@ -444,7 +486,7 @@ int max = 10;
                     IrigOut->AddDataFillerChecksum();
 
                     // Write the Node Index packet
-                    IrigOut->WriteMsg();
+                    IrigOut->WritePacket();
 
                     // Get setup for the next node index packet
                     NodePacketIdx = 0;
@@ -465,7 +507,7 @@ int max = 10;
             // Make some of the data buffer
             MaxDataBuffSize    = IrigOut->CalcDataBuffReqSize(sizeof(SuIndex_ChanSpec) + max * sizeof(SuIndex_RootEntry));
             psuRootIndexPacket = (SuIndex_RootPacket *)malloc(MaxDataBuffSize);
-            IrigOut->pDataBuff = (void *)psuRootIndexPacket;
+            IrigOut->DataBuff = (void *)psuRootIndexPacket;
 //            memset(psuNodeIndexPacket, 0, MaxDataBuffSize); // MAY NOT REALLY NEED THIS
 
             // Save some root index info for linked list
@@ -481,14 +523,14 @@ int max = 10;
                     {
                     // Figure out how many nodes to write, data size, and packet size
                     NodesToWrite = Math::Min((IndexListCount - PacketIndexIdx + 1), max);
-                    IrigOut->pHeader->ulDataLen = sizeof(SuIndex_ChanSpec) + NodesToWrite * sizeof(SuIndex_RootEntry);
+                    IrigOut->Header->ulDataLen = sizeof(SuIndex_ChanSpec) + NodesToWrite * sizeof(SuIndex_RootEntry);
                     IndexDataBuffSize = IrigOut->CalcDataBuffReqSize();
-                    IrigOut->pHeader->ulPacketLen = HEADER_SIZE + IndexDataBuffSize;
+                    IrigOut->Header->ulPacketLen = HEADER_SIZE + IndexDataBuffSize;
 
                     // Set some other header junk
                     llCurrTime++; // Some validators whine if two time stamps are the same
                     IrigOut->LLInt2TimeArray(&llCurrTime);
-                    FixSeqNum(IrigOut->pHeader);
+                    FixSeqNum(IrigOut->Header);
                     IrigOut->SetHeaderChecksum();
 
                     // Initialize the Channel Specific Data Word
@@ -525,7 +567,7 @@ int max = 10;
                     IrigOut->AddDataFillerChecksum();
 
                     // Write the Node Index packet
-                    IrigOut->WriteMsg();
+                    IrigOut->WritePacket();
 
                     // Get setup for the next node index packet
                     RootPacketIdx = 0;
@@ -540,7 +582,7 @@ int max = 10;
                 } // end for each node packet
 
             free(psuRootIndexPacket);
-
+#endif
             } // end if writing node and root index packets
 
         } while (false);
@@ -565,10 +607,10 @@ int max = 10;
 
 // Put the next sequence number in the IRIG header
 
-System::Void CopyStatus::FixSeqNum(SuI106Ch10Header * pIrigHeader)
+System::Void CopyStatus::FixSeqNum(Irig106DotNet::SuI106Ch10Header ^ IrigHeader)
     {
-    pIrigHeader->ubySeqNum = ChanSeqNums[pIrigHeader->uChID];
-    ChanSeqNums[pIrigHeader->uChID]++;
+    IrigHeader->ubySeqNum = ChanSeqNums[IrigHeader->uChID];
+    ChanSeqNums[IrigHeader->uChID]++;
     return;
     }
 

@@ -1,12 +1,49 @@
+/****************************************************************************
+
+ CopyStatus.h - Dialog to display copy progress.
+
+ Copyright (c) 2008 Irig106.org
+
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without 
+ modification, are permitted provided that the following conditions are 
+ met:
+
+   * Redistributions of source code must retain the above copyright 
+     notice, this list of conditions and the following disclaimer.
+
+   * Redistributions in binary form must reproduce the above copyright 
+     notice, this list of conditions and the following disclaimer in the 
+     documentation and/or other materials provided with the distribution.
+
+   * Neither the name Irig106.org nor the names of its contributors may 
+     be used to endorse or promote products derived from this software 
+     without specific prior written permission.
+
+ This software is provided by the copyright holders and contributors 
+ "as is" and any express or implied warranties, including, but not 
+ limited to, the implied warranties of merchantability and fitness for 
+ a particular purpose are disclaimed. In no event shall the copyright 
+ owner or contributors be liable for any direct, indirect, incidental, 
+ special, exemplary, or consequential damages (including, but not 
+ limited to, procurement of substitute goods or services; loss of use, 
+ data, or profits; or business interruption) however caused and on any 
+ theory of liability, whether in contract, strict liability, or tort 
+ (including negligence or otherwise) arising in any way out of the use 
+ of this software, even if advised of the possibility of such damage.
+
+ ****************************************************************************/
+
 #pragma once
 
-#include "config.h"
-#include "stdint.h"
-#include "irig106ch10.h"
-#include "i106_time.h"
-#include "i106_decode_index.h"
+//#include "config.h"
+//#include "stdint.h"
+//#include "irig106ch10.h"
+//#include "i106_time.h"
+//#include "i106_decode_index.h"
 //#include "i106_decode_tmats.h"
-#include "irig106cl.h"
+//#include "irig106cl.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -42,7 +79,7 @@ public ref class CopyStatus : public System::Windows::Forms::Form
             CopyThread->RunWorkerCompleted += gcnew RunWorkerCompletedEventHandler(this, &CopyStatus::CopyDone);
 
             // Initialize sequence numbers
-            ChanSeqNums = gcnew array<uint8_t>(0x10000);
+////            ChanSeqNums = gcnew array<uint8_t>(0x10000);
             Array::Clear(ChanSeqNums,0,ChanSeqNums->Length);
 
     		}
@@ -69,8 +106,8 @@ public ref class CopyStatus : public System::Windows::Forms::Form
         // Elements
         String        ^ sInFile;
         String        ^ sOutFile;
-        int64_t         llBeginOffset;
-        int64_t         llEndOffset;
+        __int64         llBeginOffset;
+        __int64         llEndOffset;
         bool            bSkipTime;
         bool            bCh0TMATSCopy;
         bool            bCh0TMATSIndex;
@@ -91,10 +128,10 @@ public ref class CopyStatus : public System::Windows::Forms::Form
 
     ref struct SuPacketIndex
         {
-        int64_t     llTime; 
-        int         uChannelID;
-        int         uDataType;
-        int64_t     uOffset;
+        __int64                     llTime; 
+        unsigned __int16            uChannelID;
+        Irig106DotNet::DataType     uDataType;
+        __int64                     uOffset;
         };
 
     // Functions
@@ -104,7 +141,7 @@ public ref class CopyStatus : public System::Windows::Forms::Form
     protected: 
 
         // List of current per channel sequence number
-        array<uint8_t>    ^ ChanSeqNums;
+        array<__int8>    ^ ChanSeqNums;
 
     // Form controls
     private: System::Windows::Forms::ProgressBar^       pgbCopyStatus;
@@ -348,7 +385,7 @@ private: System::Void cmdClose_Click(System::Object^  sender, System::EventArgs^
         }
 
     protected:
-    System::Void CopyStatus::FixSeqNum(Irig106::SuI106Ch10Header * pIrigHeader);
+    System::Void CopyStatus::FixSeqNum(Irig106DotNet::SuI106Ch10Header ^ IrigHeader);
 
 }; // end class CopyStatus
 

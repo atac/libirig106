@@ -4,6 +4,7 @@
 #include "AboutDub.h"
 #include "SelectForm.h"
 
+using namespace Irig106DotNet;
 using namespace i106Dub;
 
 [STAThreadAttribute]

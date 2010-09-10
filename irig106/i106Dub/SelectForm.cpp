@@ -1,6 +1,7 @@
 /****************************************************************************
 
- about.cpp - A .NET 2005 class that implements the "about" dialog
+ SelectForm.cpp - The main user interface dialog that allows the user to 
+   select channels and a time interval to copy.
 
  Copyright (c) 2008 Irig106.org
 
@@ -48,7 +49,6 @@ using namespace System::Windows::Forms;
 using namespace System::Diagnostics;
 
 using namespace i106Dub;
-using namespace Irig106;
 
 
 // --------------------------------------------------------------------------
@@ -57,13 +57,14 @@ using namespace Irig106;
 
 System::Void SelectForm::InitFormFromIrig()
     {
-    EnI106Status        enStatus;
-    uint8_t             uLastPacketType;
+#if 1
+    Irig106DotNet::ReturnStatus     enStatus;
+//    unsigned __int8                 uLastPacketType;
 
     // Open the data file
     IrigIn->Close();
-    enStatus = IrigIn->Open(txtInFile->Text);
-    if (enStatus != Irig106::I106_OK)
+    enStatus = IrigIn->Open(txtInFile->Text, Irig106DotNet::Ch10FileMode::READ);
+    if (enStatus != Irig106DotNet::ReturnStatus::OK)
         {
         MessageBox::Show( "Error opening input data file.", "Error",
             MessageBoxButtons::OK, MessageBoxIcon::Exclamation );
@@ -79,7 +80,7 @@ System::Void SelectForm::InitFormFromIrig()
 
     // Read the TMATS and populate form from TMATS info
     enStatus = IrigIn->ReadNextHeader();
-    if (enStatus != I106_OK)
+    if (enStatus != Irig106DotNet::ReturnStatus::OK)
         {
         MessageBox::Show( "Error reading header.", "Error",
             MessageBoxButtons::OK, MessageBoxIcon::Exclamation );
@@ -88,13 +89,14 @@ System::Void SelectForm::InitFormFromIrig()
     else
         {
         // See if it's TMATS
-        if (IrigIn->pHeader->ubyDataType == I106CH10_DTYPE_TMATS)
+        if (IrigIn->Header->ubyDataType == Irig106DotNet::DataType::TMATS)
             {
             // Read the data into the buffer
             enStatus = IrigIn->ReadData();
 
             //SuTmatsInfo   suTmatsInfo;
-            IrigIn->Decode_Tmats();
+//            IrigIn->Decode_Tmats();
+            Tmats->DecodeTmats(IrigIn->Header, IrigIn->DataBuff);
             PopulateChannelTable();
 
             } // end if TMATS
@@ -113,37 +115,37 @@ System::Void SelectForm::InitFormFromIrig()
 
     // Get the first packet info
     enStatus = IrigIn->ReadNextHeader();
-    if (enStatus == I106_OK)
+    if (enStatus == Irig106DotNet::ReturnStatus::OK)
         {
         IrigIn->Rel2IrigTime(psuFileBeginTime);
-        psuDubBegin->suITime = *psuFileBeginTime;
-        IrigIn->TimeArray2LLInt(&(psuDubBegin->llRtcTime));
+        psuDubBegin->suITime = psuFileBeginTime;
+        IrigIn->RelTime2LLInt(psuDubBegin->llRtcTime);
 
         this->statuslblStartTime->Text = 
-            String::Format("Begin - {0}", IrigIn->strTime2String(psuFileBeginTime));
-        this->txtStartTime->Text = IrigIn->strTime2String(psuFileBeginTime);
-        this->traStartTime->Value = 0;
+            String::Format("Begin - {0}", IrigIn->IrigTime2String(psuFileBeginTime));
+        this->txtStartTime->Text    = IrigIn->IrigTime2String(psuFileBeginTime);
+        this->traStartTime->Value   = 0;
         this->traStartTime->Enabled = true;
         }
 
     // Get the last packet info
     enStatus = IrigIn->LastMsg();
     enStatus = IrigIn->ReadNextHeader();
-    if (enStatus == I106_OK)
+    if (enStatus == Irig106DotNet::ReturnStatus::OK)
         {
         IrigIn->Rel2IrigTime(psuFileEndTime);
-        psuDubEnd->suITime = *psuFileEndTime;
-        IrigIn->TimeArray2LLInt(&(psuDubEnd->llRtcTime));
+        psuDubEnd->suITime = psuFileEndTime;
+        IrigIn->RelTime2LLInt(psuDubEnd->llRtcTime);
 
         this->statuslblStopTime->Text = 
-            String::Format("End - {0}", IrigIn->strTime2String(psuFileEndTime));
-        this->txtStopTime->Text = IrigIn->strTime2String(psuFileEndTime);
+            String::Format("End - {0}", IrigIn->IrigTime2String(psuFileEndTime));
+        this->txtStopTime->Text = IrigIn->IrigTime2String(psuFileEndTime);
         this->traStopTime->Value = this->traStopTime->Maximum;
         this->traStopTime->Enabled = true;
 
-        uLastPacketType = IrigIn->pHeader->ubyDataType;
+//        uLastPacketType = IrigIn->Header->ubyDataType;
         }
-
+#endif
     return;
     }
 
@@ -153,12 +155,16 @@ System::Void SelectForm::InitFormFromIrig()
 
 System::Void SelectForm::PopulateChannelTable()
     {
+#if 1
     int                     iGIndex;
     int                     iRIndex;
     int                     iRDsiIndex;
-    SuGDataSource         * psuGDataSource;
-    SuRRecord             * psuRRecord;
-    SuRDataSource         * psuRDataSource;
+////    SuGDataSource         * psuGDataSource;
+////    SuRRecord             * psuRRecord;
+////    SuRDataSource         * psuRDataSource;
+//    Irig106DotNet::Tmats::SuGDataSource         ^ psuGDataSource;
+    Irig106DotNet::Tmats::SuRRecord             ^ psuRRecord;
+//    Irig106DotNet::Tmats::SuRDataSource         ^ psuRDataSource;
     int                     iCurrRow = 0;
 
     System::Windows::Forms::Label    ^ pTextBox;
@@ -228,11 +234,18 @@ System::Void SelectForm::PopulateChannelTable()
     pIndexCheckBox->Anchor   = AnchorStyles::None;
     pIndexCheckBox->AutoSize = true;
     pIndexCheckBox->Checked  = false;
+#if 0
     if ((IrigIn->suTmatsInfo.psuFirstRRecord->szIndexEnabled != NULL) &&
         (IrigIn->suTmatsInfo.psuFirstRRecord->bIndexEnabled))
+#else
+    psuRRecord = Tmats->RRecords[0];
+    if ((psuRRecord->sIndexEnabled != nullptr) &&
+        (psuRRecord->bIndexEnabled))
+#endif
          pIndexCheckBox->Enabled  = true;
     else
          pIndexCheckBox->Enabled  = false;
+
     tlpChannels->Controls->Add(pIndexCheckBox, 1, iCurrRow);
 
     pTextBox = gcnew System::Windows::Forms::Label;
@@ -279,8 +292,14 @@ System::Void SelectForm::PopulateChannelTable()
     pIndexCheckBox->Anchor   = AnchorStyles::None;
     pIndexCheckBox->AutoSize = true;
 //  pIndexCheckBox->Checked  = true;
+#if 0
     if ((IrigIn->suTmatsInfo.psuFirstRRecord->szIndexEnabled != NULL) &&
         (IrigIn->suTmatsInfo.psuFirstRRecord->bIndexEnabled))
+#else
+    psuRRecord = Tmats->RRecords[0];
+    if ((psuRRecord->sIndexEnabled != nullptr) &&
+        (psuRRecord->bIndexEnabled))
+#endif
         {
          pIndexCheckBox->Enabled  = true;
          pIndexCheckBox->Checked  = true;
@@ -290,6 +309,7 @@ System::Void SelectForm::PopulateChannelTable()
          pIndexCheckBox->Enabled  = false;
          pIndexCheckBox->Checked  = false;
         }
+
     tlpChannels->Controls->Add(pIndexCheckBox, 1, iCurrRow);
 
     pTextBox = gcnew System::Windows::Forms::Label;
@@ -317,8 +337,14 @@ System::Void SelectForm::PopulateChannelTable()
     pIndexCheckBox->Anchor   = AnchorStyles::None;
     pIndexCheckBox->AutoSize = true;
     pIndexCheckBox->Checked  = false;
+#if 0
     if ((IrigIn->suTmatsInfo.psuFirstRRecord->szIndexEnabled != NULL) &&
         (IrigIn->suTmatsInfo.psuFirstRRecord->bIndexEnabled))
+#else
+    psuRRecord = Tmats->RRecords[0];
+    if ((psuRRecord->sIndexEnabled != nullptr) &&
+        (psuRRecord->bIndexEnabled))
+#endif
          pIndexCheckBox->Enabled  = true;
     else
          pIndexCheckBox->Enabled  = false;
@@ -336,37 +362,40 @@ System::Void SelectForm::PopulateChannelTable()
     iCurrRow++;
 
     // Data sources
-    psuGDataSource =  IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource;
-    while (true)  
+//    psuGDataSource =  IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource;
+//    while (true)  
+    // Walk the G record data sources
+    for each (Irig106DotNet::Tmats::SuGDataSource ^ psuGDataSource in Tmats->GRecord->GDataSources)
         {
-        if (psuGDataSource == NULL) break;
+//        if (psuGDataSource == NULL) break;
 
         // G record data source info
         iGIndex = psuGDataSource->iDataSourceNum;
 
         // R record info
-        psuRRecord = psuGDataSource->psuRRecord;
+        psuRRecord = psuGDataSource->RRecord;
         while (true)
             {
-            if (psuRRecord == NULL) 
+            if (psuRRecord == nullptr) 
                 break;
             iRIndex = psuRRecord->iRecordNum;
 
             // Check for time index
-            if ((psuRRecord->szIndexEnabled != NULL) &&
-                (psuRRecord->bIndexEnabled == bTRUE))
+            if ((psuRRecord->sIndexEnabled != nullptr) &&
+                (psuRRecord->bIndexEnabled == true))
                 {
 //                tlpChannels->Controls->
                 }
 
             // Get the first R record data sources
-            psuRDataSource = psuRRecord->psuFirstDataSource;
-
+//            psuRDataSource = psuRRecord->psuFirstDataSource;
             // Loop through all the R record data sources
-            while (true)
+//            while (true)
+            // Walk the R record data sources
+            for each (Irig106DotNet::Tmats::SuRDataSource ^ psuRDataSource in psuRRecord->RDataSources)
                 {
                 // If record pointer is null then we're done
-                if (psuRDataSource == NULL) 
+                if (psuRDataSource == nullptr) 
                     break;
 
                 iRDsiIndex = psuRDataSource->iDataSourceNum;
@@ -379,7 +408,7 @@ System::Void SelectForm::PopulateChannelTable()
                 pCopyCheckBox->Text =
                     String::Format(" {0,2}",
                     psuRDataSource->iTrackNumber);
-                if ((psuRDataSource->szEnabled == NULL) || (psuRDataSource->bEnabled == false))
+                if ((psuRDataSource->sEnabled == nullptr) || (psuRDataSource->bEnabled == false))
                     pCopyCheckBox->Enabled = false;
                 tlpChannels->Controls->Add(pCopyCheckBox, 0, iCurrRow);
 
@@ -388,7 +417,8 @@ System::Void SelectForm::PopulateChannelTable()
                 pTypeTextBox->AutoSize = true;
                 pTypeTextBox->Text =
                     String::Format("{0}",
-                    Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szChannelDataType));
+//                    Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szChannelDataType));
+                    psuRDataSource->sChannelDataType);
                 pTypeTextBox->Anchor = AnchorStyles::Left;
                 pTypeTextBox->AutoSize = true;
                 tlpChannels->Controls->Add(pTypeTextBox, 2, iCurrRow);
@@ -408,10 +438,14 @@ System::Void SelectForm::PopulateChannelTable()
                     pCopyCheckBox->Checked  = false;
 
                 // If no index then don't enable the check box
-                if ((IrigIn->suTmatsInfo.psuFirstRRecord->szIndexEnabled == NULL ) ||
-                    (IrigIn->suTmatsInfo.psuFirstRRecord->bIndexEnabled  == false) ||
-                    (psuRDataSource->szEnabled                           == NULL ) ||
-                    (psuRDataSource->bEnabled                            == false))
+//                if ((IrigIn->suTmatsInfo.psuFirstRRecord->sIndexEnabled == nullptr) ||
+//                    (IrigIn->suTmatsInfo.psuFirstRRecord->bIndexEnabled == false  ) ||
+//                    (psuRDataSource->szEnabled                          == nullptr) ||
+//                    (psuRDataSource->bEnabled                           == false  ))
+                if ((Tmats->RRecords[0]->sIndexEnabled == nullptr) ||
+                    (Tmats->RRecords[0]->bIndexEnabled == false  ) ||
+                    (psuRDataSource->sEnabled          == nullptr) ||
+                    (psuRDataSource->bEnabled          == false  ))
                     pIndexCheckBox->Enabled = false;
 
                 // Index so enable index check box
@@ -430,28 +464,29 @@ System::Void SelectForm::PopulateChannelTable()
                 pNameTextBox = gcnew System::Windows::Forms::Label;
                 pNameTextBox->AutoSize = true;
                 pNameTextBox->Text =
-                    String::Format("{0}",
-                    Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szDataSourceID));
+                    String::Format("{0}",psuRDataSource->sDataSourceID);
+//                    Marshal::PtrToStringAnsi((System::IntPtr)psuRDataSource->szDataSourceID));
                 pNameTextBox->Anchor = AnchorStyles::Left;
                 pNameTextBox->AutoSize = true;
                 tlpChannels->Controls->Add(pNameTextBox, 3, iCurrRow);
 
                 // Put channel info into list for later
-                SuChannelInfo ^ NewChanInfo = gcnew SuChannelInfo;
+                SuChannelInfo ^ NewChanInfo  = gcnew SuChannelInfo;
                 NewChanInfo->iChannelNum     = psuRDataSource->iTrackNumber;
                 NewChanInfo->pCopyCheckBox   = pCopyCheckBox;
                 NewChanInfo->pIndexCheckBox  = pIndexCheckBox;
-                NewChanInfo->ChannelType = gcnew String(psuRDataSource->szChannelDataType,0,strlen(psuRDataSource->szChannelDataType));
+//                NewChanInfo->ChannelType = gcnew String(psuRDataSource->szChannelDataType,0,strlen(psuRDataSource->szChannelDataType));
+                NewChanInfo->ChannelType     = psuRDataSource->sChannelDataType;
                 ChannelInfo->Add(NewChanInfo);
 
                 iCurrRow++;
-                psuRDataSource = psuRDataSource->psuNextRDataSource;
+//                psuRDataSource = psuRDataSource->psuNextRDataSource;
                 } // end looping on all R data source records
 
-            psuRRecord = psuRRecord->psuNextRRecord;
+//            psuRRecord = psuRRecord->psuNextRRecord;
             } // end looping on all R records
 
-        psuGDataSource = IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource->psuNextGDataSource;
+//        psuGDataSource = IrigIn->suTmatsInfo.psuFirstGRecord->psuFirstGDataSource->psuNextGDataSource;
         } // end looping  on all G records
 
     // Jink with the size of the table to make it fit right on the form
@@ -460,6 +495,7 @@ System::Void SelectForm::PopulateChannelTable()
     tlpChannels->ResumeLayout();
     tlpChannels->PerformLayout();
 
+#endif
     return;
     }
 
@@ -469,7 +505,6 @@ System::Void SelectForm::PopulateChannelTable()
 
 // The TablePanelLayout control is so goofy.  Getting the height just right
 // for the number of rows is a PITA.  Hopefully this will do it.
-
 System::Void SelectForm::SetTableHeight()
     {
     int     iCurrRow;

@@ -1,6 +1,6 @@
 /****************************************************************************
 
- about.cpp - A .NET 2005 class that implements the "about" dialog
+ AboutDub.cpp - A .NET 2005 class that implements the "about" dialog
 
  Copyright (c) 2008 Irig106.org
 

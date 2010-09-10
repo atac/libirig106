@@ -191,6 +191,10 @@
 			RelativePath="System.XML.dll"
 			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
 		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{12FBB6F8-7131-48CA-81E1-33FB482AB2E3}"
+			RelativePathToProject="..\irig106dotnet\dotnet2005\irig106dotnet.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter

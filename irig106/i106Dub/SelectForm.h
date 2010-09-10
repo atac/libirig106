@@ -1,3 +1,42 @@
+/****************************************************************************
+
+ SelectForm.h - The main user interface dialog that allows the user to 
+   select channels and a time interval to copy.
+
+ Copyright (c) 2008 Irig106.org
+
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without 
+ modification, are permitted provided that the following conditions are 
+ met:
+
+   * Redistributions of source code must retain the above copyright 
+     notice, this list of conditions and the following disclaimer.
+
+   * Redistributions in binary form must reproduce the above copyright 
+     notice, this list of conditions and the following disclaimer in the 
+     documentation and/or other materials provided with the distribution.
+
+   * Neither the name Irig106.org nor the names of its contributors may 
+     be used to endorse or promote products derived from this software 
+     without specific prior written permission.
+
+ This software is provided by the copyright holders and contributors 
+ "as is" and any express or implied warranties, including, but not 
+ limited to, the implied warranties of merchantability and fitness for 
+ a particular purpose are disclaimed. In no event shall the copyright 
+ owner or contributors be liable for any direct, indirect, incidental, 
+ special, exemplary, or consequential damages (including, but not 
+ limited to, procurement of substitute goods or services; loss of use, 
+ data, or profits; or business interruption) however caused and on any 
+ theory of liability, whether in contract, strict liability, or tort 
+ (including negligence or otherwise) arising in any way out of the use 
+ of this software, even if advised of the possibility of such damage.
+
+ ****************************************************************************/
+
+
 #pragma once
 
 //#include <stdio.h>
@@ -8,11 +47,11 @@
 
 #include <list>
 
-#include "config.h"
-#include "stdint.h"
-#include "irig106ch10.h"
-#include "i106_decode_tmats.h"
-#include "irig106cl.h"
+//#include "config.h"
+//#include "stdint.h"
+//#include "irig106ch10.h"
+//#include "i106_decode_tmats.h"
+//#include "irig106cl.h"
 
 using namespace std;
 
@@ -24,16 +63,16 @@ using namespace System::Windows::Forms;
 using namespace System::Data;
 using namespace System::Drawing;
 
-using namespace Irig106;
+//using namespace Irig106;
 
 
 namespace i106Dub {
 
-    struct FilePoint
+     public ref struct FilePoint
         {
-        int64_t             llOffset;  // File offset
-        int64_t             llRtcTime; // Relative time
-        SuIrig106Time       suITime;   // IRIG time
+        __int64                     llOffset;   // File offset
+        __int64                     llRtcTime;  // Relative time
+        Irig106DotNet::IrigTime     suITime;    // IRIG time
         };
 
 	public ref class SelectForm : public System::Windows::Forms::Form
@@ -48,16 +87,18 @@ namespace i106Dub {
     		{
 			InitializeComponent();
 
-            IrigIn = new Irig106::Irig106Lib();
+            // Initialize the IRIG objects
+            this->IrigIn        = gcnew Irig106DotNet::Irig106Lib();
+            this->Tmats         = gcnew Irig106DotNet::Tmats();
 
-            Channel0Info = gcnew SuChannel0Info;
-            ChannelInfo  = gcnew List<SuChannelInfo^>();
+            Channel0Info        = gcnew SuChannel0Info;
+            ChannelInfo         = gcnew List<SuChannelInfo^>();
 
-            psuDubBegin      = new FilePoint;
-            psuDubEnd        = new FilePoint;
+            psuDubBegin         = gcnew FilePoint;
+            psuDubEnd           = gcnew FilePoint;
 
-            psuFileBeginTime = new SuIrig106Time;
-            psuFileEndTime   = new SuIrig106Time;
+            psuFileBeginTime    = gcnew Irig106DotNet::IrigTime;
+            psuFileEndTime      = gcnew Irig106DotNet::IrigTime;
 
 	    	}
 
@@ -75,13 +116,12 @@ namespace i106Dub {
 			}
 
             IrigIn->Close();
-            delete IrigIn;
 
-            delete psuDubBegin;
-            delete psuDubEnd;
+//            delete psuDubBegin;
+//            delete psuDubEnd;
 
-            delete this->psuFileBeginTime;
-            delete this->psuFileEndTime;
+//            delete this->psuFileBeginTime;
+//            delete this->psuFileEndTime;
 		    }
 
 
@@ -115,14 +155,15 @@ namespace i106Dub {
     System::Void SelectForm::SetTableHeight();
 
     // Class variables
-    protected: 
-        Irig106Lib                    * IrigIn;
+    protected:
+        Irig106DotNet::Irig106Lib       ^ IrigIn;
+        Irig106DotNet::Tmats            ^ Tmats;
 
-        SuIrig106Time                 * psuFileBeginTime;   // File begin time
-        SuIrig106Time                 * psuFileEndTime;     // File end time
+        Irig106DotNet::IrigTime         ^ psuFileBeginTime;   // File begin time
+        Irig106DotNet::IrigTime         ^ psuFileEndTime;     // File end time
         long long                       llFileSize;
-        FilePoint                     * psuDubBegin;
-        FilePoint                     * psuDubEnd;
+        FilePoint                     ^ psuDubBegin;
+        FilePoint                     ^ psuDubEnd;
 
         SuChannel0Info                ^ Channel0Info;
         List<SuChannelInfo ^>         ^ ChannelInfo;
@@ -504,12 +545,12 @@ namespace i106Dub {
         {
         int             iSliderVal;
         int             iSliderMax;
-        int64_t         iFilePos;
+        __int64         iFilePos;
 
         // Set the relative file position
         iSliderVal = traStartTime->Value;
         iSliderMax = traStartTime->Maximum;
-        iFilePos = int64_t(double(iSliderVal) / double(iSliderMax) * double(llFileSize));
+        iFilePos = __int64(double(iSliderVal) / double(iSliderMax) * double(llFileSize));
         IrigIn->SetPos(iFilePos);
 
         // Get some info about where we're currently at in the file
@@ -517,13 +558,13 @@ namespace i106Dub {
         IrigIn->ReadNextHeader();
 
         // Don't start at TMATS, it messes up the real data start time
-        if (IrigIn->pHeader->ubyDataType == I106CH10_DTYPE_TMATS)
+        if (IrigIn->Header->ubyDataType == Irig106DotNet::DataType::TMATS)
             IrigIn->ReadNextHeader();
-        IrigIn->Rel2IrigTime(&(psuDubBegin->suITime));
-        IrigIn->TimeArray2LLInt(IrigIn->pHeader->aubyRefTime, &(psuDubBegin->llRtcTime));
+        IrigIn->Rel2IrigTime(%psuDubBegin->suITime);
+        IrigIn->RelTime2LLInt(IrigIn->Header->suRelTime, psuDubBegin->llRtcTime);
 
         // Update the time display
-        txtStartTime->Text = IrigIn->strTime2String(&(psuDubBegin->suITime));
+        txtStartTime->Text = IrigIn->IrigTime2String(%psuDubBegin->suITime);
 
         // Make sure stop time slider is >= start time slider
         if (traStopTime->Value < traStartTime->Value)
@@ -542,16 +583,16 @@ namespace i106Dub {
         // Set the relative file position
         iSliderVal = traStopTime->Value;
         iSliderMax = traStopTime->Maximum;
-        IrigIn->SetPos(int64_t(double(iSliderVal) / double(iSliderMax) * double(llFileSize)));
+        IrigIn->SetPos(__int64(double(iSliderVal) / double(iSliderMax) * double(llFileSize)));
 
         // Get some info about where we're currently at in the file
         IrigIn->GetPos(psuDubEnd->llOffset);
         IrigIn->ReadNextHeader();
-        IrigIn->Rel2IrigTime(&(psuDubEnd->suITime));
-        IrigIn->TimeArray2LLInt(IrigIn->pHeader->aubyRefTime, &(psuDubEnd->llRtcTime));
+        IrigIn->Rel2IrigTime(%psuDubEnd->suITime);
+        IrigIn->RelTime2LLInt(IrigIn->Header->suRelTime, psuDubEnd->llRtcTime);
 
         // Update the time display
-        txtStopTime->Text = IrigIn->strTime2String(&(psuDubEnd->suITime));
+        txtStopTime->Text = IrigIn->IrigTime2String(%psuDubEnd->suITime);
 
         // Make sure start time slider is <= stop time slider
         if (traStartTime->Value > traStopTime->Value)
@@ -562,18 +603,17 @@ namespace i106Dub {
     // Done with mouse so resync time
     private: System::Void traStartTime_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) 
         {
-
         // Get some info about where we're currently at in the file
         IrigIn->GetPos(psuDubBegin->llOffset);
         IrigIn->ReadNextHeader();
         IrigIn->SetPos(psuDubBegin->llOffset);
 
         IrigIn->SyncTime();
-        IrigIn->Rel2IrigTime(&(psuDubBegin->suITime));
-        IrigIn->TimeArray2LLInt(IrigIn->pHeader->aubyRefTime, &(psuDubBegin->llRtcTime));
+        IrigIn->Rel2IrigTime(%psuDubBegin->suITime);
+        IrigIn->RelTime2LLInt(IrigIn->Header->suRelTime, psuDubBegin->llRtcTime);
 
         // Update the time display
-        txtStartTime->Text = IrigIn->strTime2String(&(psuDubBegin->suITime));
+        txtStartTime->Text = IrigIn->IrigTime2String(%psuDubBegin->suITime);
         }
 
 
