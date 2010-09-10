@@ -275,6 +275,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Index"
+			>
+			<File
+				RelativePath="..\src\irig106_dotnet_index.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\irig106_dotnet_index.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>
