@@ -6,20 +6,8 @@
 
  All rights reserved.
 
- Redistribution and use in source and binary forms, with or without 
- modification, are permitted provided that the following conditions are 
- met:
-
-   * Redistributions of source code must retain the above copyright 
-     notice, this list of conditions and the following disclaimer.
-
-   * Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in the 
-     documentation and/or other materials provided with the distribution.
-
-   * Neither the name Irig106.org nor the names of its contributors may 
-     be used to endorse or promote products derived from this software 
-     without specific prior written permission.
+ Redistribution and use in source and binary forms without prior
+ written consent from irig106.org is prohibited.
 
  This software is provided by the copyright holders and contributors 
  "as is" and any express or implied warranties, including, but not 
@@ -44,19 +32,19 @@ using namespace System::Runtime::InteropServices;
 
 //=========================================================================
 
-namespace Irig106DotNet
-    {
-
-    namespace DLL
-        {
-        // Main 
-        //[DllImport("irig106.dll", CharSet=CharSet::Ansi, EntryPoint="enI106Ch10Open")]
-        //    extern "C" ReturnStatus I106Ch10Open(int ^, String ^, Ch10FileMode);
-
-
-        } // end namespace DLL
-
-    } // end namespace Irig106DLL
+//namespace Irig106DotNet
+//    {
+//
+//    namespace DLL
+//        {
+//        // Main 
+//        //[DllImport("irig106.dll", CharSet=CharSet::Ansi, EntryPoint="enI106Ch10Open")]
+//        //    extern "C" ReturnStatus I106Ch10Open(int ^, String ^, Ch10FileMode);
+//
+//
+//        } // end namespace DLL
+//
+//    } // end namespace Irig106DotNet
 
 /* There may be some easy way to drag version information out of a DLL or EXE but it has 
  * eluded me in the past.  Maybe it's the Reflection junk.  I don't know know.  So I 

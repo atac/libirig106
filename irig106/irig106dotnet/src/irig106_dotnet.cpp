@@ -6,20 +6,8 @@
 
  All rights reserved.
 
- Redistribution and use in source and binary forms, with or without 
- modification, are permitted provided that the following conditions are 
- met:
-
-   * Redistributions of source code must retain the above copyright 
-     notice, this list of conditions and the following disclaimer.
-
-   * Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in the 
-     documentation and/or other materials provided with the distribution.
-
-   * Neither the name Irig106.org nor the names of its contributors may 
-     be used to endorse or promote products derived from this software 
-     without specific prior written permission.
+ Redistribution and use in source and binary forms without prior
+ written consent from irig106.org is prohibited.
 
  This software is provided by the copyright holders and contributors 
  "as is" and any express or implied warranties, including, but not 
@@ -152,6 +140,26 @@ namespace Irig106DotNet
                             SuIrig106Time         * psuSeekTime);
 #endif
 
+//int I106_CALL_DECL
+//    iHeaderInit(SuI106Ch10Header * psuHeader,
+//                unsigned int       uChanID,
+//                unsigned int       uDataType,
+//                unsigned int       uFlags,
+//                unsigned int       uSeqNum);
+//
+        [DllImport("irig106.dll", CharSet=CharSet::Ansi)]
+            extern "C" int iGetHeaderLen(Irig106DotNet::SuI106Ch10Header ^);
+
+        [DllImport("irig106.dll", CharSet=CharSet::Ansi)]
+            extern "C" unsigned int uGetDataLen(Irig106DotNet::SuI106Ch10Header ^);
+
+        [DllImport("irig106.dll", CharSet=CharSet::Ansi)]
+            extern "C" unsigned __int16 uCalcHeaderChecksum(Irig106DotNet::SuI106Ch10Header ^);
+
+        [DllImport("irig106.dll", CharSet=CharSet::Ansi)]
+            extern "C" unsigned __int16 uCalcSecHeaderChecksum(Irig106DotNet::SuI106Ch10Header ^);
+
+
 // General purpose time utilities
 // ------------------------------
 
@@ -183,6 +191,7 @@ Irig106Lib::Irig106Lib(void)
 
     this->Header                = gcnew Irig106DotNet::SuI106Ch10Header;
     this->DataBuff              = gcnew array<SByte>(100000);
+    this->OpenMode              = Ch10FileMode::CLOSED;
 
 /*
     // Initialize the TMATS info data structure
@@ -224,6 +233,11 @@ ReturnStatus Irig106Lib::Open(String ^ sFilename, Ch10FileMode enMode)
 
     enStatus = DLL::I106Ch10Open(this->Handle, sFilename, enMode);
 
+    if (enStatus == ReturnStatus::OK)
+        this->OpenMode = enMode;
+    else
+        this->OpenMode = Ch10FileMode::CLOSED;        
+
     return enStatus;
     }
 
@@ -236,6 +250,9 @@ ReturnStatus Irig106Lib::Close(void)
     {
     ReturnStatus    enStatus;
     enStatus = DLL::enI106Ch10Close(Handle);
+
+    this->OpenMode = Ch10FileMode::CLOSED;
+
     return enStatus;
     }
 
@@ -267,6 +284,8 @@ ReturnStatus Irig106Lib::ReadPrevHeader(void)
 
 //-------------------------------------------------------------------------
 
+// TODO change this to ReadPacket()
+
 // Read packet data after having read the packet header
 ReturnStatus Irig106Lib::ReadData(void)
     {
@@ -292,7 +311,7 @@ ReturnStatus Irig106Lib::ReadData(void)
 ReturnStatus Irig106Lib::WritePacket(void)
     { 
     ReturnStatus    enStatus;
-    pin_ptr<SByte>   pDataBuff   = &this->DataBuff[0];
+    pin_ptr<SByte>  pDataBuff   = &this->DataBuff[0];
 
     enStatus = DLL::enI106Ch10WriteMsg(this->Handle, this->Header, pDataBuff); 
 
@@ -304,11 +323,11 @@ ReturnStatus Irig106Lib::WritePacket(void)
 //-------------------------------------------------------------------------
 
 // Write a packet with passed header and data buffer
-ReturnStatus Irig106Lib::WriteMsg(SuI106Ch10Header       ^ Header,
-                                  array<unsigned __int8> ^ DataBuff)
+ReturnStatus Irig106Lib::WritePacket(SuI106Ch10Header ^ Header,
+                                     array<SByte>     ^ DataBuff)
     {
     ReturnStatus    enStatus;
-    pin_ptr<unsigned __int8>   pDataBuff   = &DataBuff[0];
+    pin_ptr<SByte>  pDataBuff   = &DataBuff[0];
 
     enStatus = DLL::enI106Ch10WriteMsg(this->Handle, Header, pDataBuff); 
 
@@ -341,7 +360,7 @@ ReturnStatus Irig106Lib::LastMsg(void)
 
 // Set the read file pointer to the llOffset into the file.  The offset
 // doesn't need to fall on a packet boundary.
-ReturnStatus Irig106Lib::SetPos(int64_t   llOffset)
+ReturnStatus Irig106Lib::SetPos(__int64   llOffset)
     {
     return DLL::enI106Ch10SetPos(this->Handle, llOffset);
     }
@@ -351,10 +370,83 @@ ReturnStatus Irig106Lib::SetPos(int64_t   llOffset)
 //-------------------------------------------------------------------------
 
 // Get the current read offset into the data file
-ReturnStatus Irig106Lib::GetPos(int64_t % pllOffset)
+ReturnStatus Irig106Lib::GetPos(__int64 % pllOffset)
     {
     return DLL::enI106Ch10GetPos(this->Handle, pllOffset);
     }
+
+
+//-------------------------------------------------------------------------
+//       Utilities
+
+//-------------------------------------------------------------------------
+
+int Irig106Lib::GetHeaderLen()
+    {
+    return DLL::iGetHeaderLen(this->Header);
+    }
+
+//-------------------------------------------------------------------------
+
+unsigned int Irig106Lib::GetDataLen()
+    {
+    return DLL::uGetDataLen(this->Header);
+    }
+
+//-------------------------------------------------------------------------
+
+unsigned __int16 Irig106Lib::CalcHeaderChecksum()
+    { 
+    return DLL::uCalcHeaderChecksum(this->Header); 
+    }
+
+
+//-------------------------------------------------------------------------
+
+System::Void Irig106Lib::SetHeaderChecksum()
+    { 
+    this->Header->uChecksum = this->CalcHeaderChecksum();
+    }
+
+
+//-------------------------------------------------------------------------
+#if 0
+unsigned __int32 Irig106Lib::CalcDataBuffReqSize(unsigned __int32 uDataLen, int iChecksumType)
+    { 
+    return uCalcDataBuffReqSize(uDataLen, iChecksumType); 
+    }
+
+//-------------------------------------------------------------------------
+
+unsigned __int32 Irig106Lib::CalcDataBuffReqSize(uint32_t uDataLen)
+    { 
+    return uCalcDataBuffReqSize(uDataLen, this->pHeader->ubyPacketFlags & I106CH10_PFLAGS_CHKSUM_MASK); 
+    }
+
+//-------------------------------------------------------------------------
+
+unsigned __int32 Irig106Lib::CalcDataBuffReqSize()
+    { 
+    return uCalcDataBuffReqSize(this->pHeader->ulDataLen, 
+                                this->pHeader->ubyPacketFlags & I106CH10_PFLAGS_CHKSUM_MASK); 
+    }
+
+//-------------------------------------------------------------------------
+
+ReturnStatus Irig106Lib::AddDataFillerChecksum(SuI106Ch10Header * psuI106Hdr, unsigned char achData[])
+    { 
+    return uAddDataFillerChecksum(psuI106Hdr, achData); 
+    }
+
+//-------------------------------------------------------------------------
+
+ReturnStatus Irig106Lib::AddDataFillerChecksum()
+    { 
+    return uAddDataFillerChecksum(this->pHeader, (unsigned char *)(this->pDataBuff)); 
+    }
+#endif
+
+
 
 
 // ========================================================================
@@ -459,6 +551,15 @@ void Irig106Lib::RelTime2LLInt(SuRelTime ^ suRelTime, __int64 ^ pllRelTime)
     {
     pllRelTime = (__int64)((((unsigned __int64)suRelTime->uLo      ) & 0x00000000ffffffff) |
                            (((unsigned __int64)suRelTime->uHi << 32) & 0xffffffff00000000));
+    }
+
+
+
+//-------------------------------------------------------------------------
+
+void Irig106Lib::RelTime2LLInt(__int64 ^ pllRelTime)
+    {
+    RelTime2LLInt(this->Header->suRelTime, pllRelTime);
     }
 
 

@@ -6,20 +6,8 @@
 
  All rights reserved.
 
- Redistribution and use in source and binary forms, with or without 
- modification, are permitted provided that the following conditions are 
- met:
-
-   * Redistributions of source code must retain the above copyright 
-     notice, this list of conditions and the following disclaimer.
-
-   * Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in the 
-     documentation and/or other materials provided with the distribution.
-
-   * Neither the name Irig106.org nor the names of its contributors may 
-     be used to endorse or promote products derived from this software 
-     without specific prior written permission.
+ Redistribution and use in source and binary forms without prior
+ written consent from irig106.org is prohibited.
 
  This software is provided by the copyright holders and contributors 
  "as is" and any express or implied warranties, including, but not 
@@ -34,7 +22,6 @@
  of this software, even if advised of the possibility of such damage.
 
  ****************************************************************************/
-
 
 #pragma once
 
@@ -61,8 +48,8 @@ namespace Irig106DotNet
 
             int                         Handle;
             SuI106Ch10Header          ^ Header;
-            array<SByte>    ^ DataBuff;
-
+            array<SByte>              ^ DataBuff;
+            Ch10FileMode                OpenMode;
 
         // Constructor / Destructor
         // ------------------------
@@ -79,26 +66,41 @@ namespace Irig106DotNet
         // -----------
 
         // Open / close
-        ReturnStatus Open(String ^ sFilename, Ch10FileMode enMode);
-        ReturnStatus Close(void);
+        ReturnStatus        Open(String ^ sFilename, Ch10FileMode enMode);
+        ReturnStatus        Close(void);
 
         // Read / Write
         // ------------
 
-        ReturnStatus ReadNextHeader(void);
-        ReturnStatus ReadPrevHeader(void);
+        ReturnStatus        ReadNextHeader(void);
+        ReturnStatus        ReadPrevHeader(void);
 
-        ReturnStatus ReadData(void);
+        ReturnStatus        ReadData(void);
 
-        ReturnStatus WritePacket(void);
-        ReturnStatus WriteMsg(SuI106Ch10Header       ^ Header,
-                              array<unsigned __int8> ^ DataBuff);
+        ReturnStatus        WritePacket(void);
+        ReturnStatus        WritePacket(SuI106Ch10Header  ^ Header,
+                                        array<SByte>      ^ DataBuff);
 
-        ReturnStatus FirstMsg(void);
-        ReturnStatus LastMsg(void);
+        ReturnStatus        FirstMsg(void);
+        ReturnStatus        LastMsg(void);
 
-        ReturnStatus SetPos(int64_t   llOffset);
-        ReturnStatus GetPos(int64_t % pllOffset);
+        ReturnStatus        SetPos(__int64   llOffset);
+        ReturnStatus        GetPos(__int64 % pllOffset);
+
+        // Utilities
+        int                 GetHeaderLen(void);
+        unsigned int        GetDataLen(void);
+
+        unsigned __int16    CalcHeaderChecksum();
+        System::Void        SetHeaderChecksum();
+
+        //uint16_t uCalcSecHeaderChecksum(SuI106Ch10Header * psuHeader);
+
+        //unsigned __int32 CalcDataBuffReqSize(unsigned __int32 uDataLen, int iChecksumType);
+        //unsigned __int32 CalcDataBuffReqSize(uint32_t uDataLen);
+        //unsigned __int32 CalcDataBuffReqSize();
+        //EnI106Status AddDataFillerChecksum(SuI106Ch10Header * psuI106Hdr, unsigned char achData[]);
+        //EnI106Status AddDataFillerChecksum();
 
         // irig106_time
         // ------------
@@ -106,18 +108,19 @@ namespace Irig106DotNet
         ReturnStatus SetRelTime(IrigTime ^ psuTime, SuRelTime ^ suRelTime);
 
         ReturnStatus Rel2IrigTime(SuRelTime ^ suRelTime, IrigTime ^ psuTime);
-        ReturnStatus Rel2IrigTime(IrigTime ^ psuTime);
+        ReturnStatus Rel2IrigTime(IrigTime  ^ psuTime);
 
         ReturnStatus RelInt2IrigTime(__int64 llRelTime, IrigTime ^ psuTime);
         ReturnStatus Irig2RelTime(IrigTime ^ psuTime, SuRelTime ^ suRelTime);
 
         void         LLInt2RelTime(__int64 ^ pllRelTime, SuRelTime ^ suRelTime);
         void         RelTime2LLInt(SuRelTime ^ suRelTime, __int64 ^ pllRelTime);
+        void         RelTime2LLInt(__int64 ^ pllRelTime);
 
         ReturnStatus SyncTime(bool bRequireSync, int iTimeLimit);
         ReturnStatus SyncTime();
 
-        String ^ IrigTime2String(IrigTime ^ psuTime);
+        String     ^ IrigTime2String(IrigTime ^ psuTime);
 
     };
 }

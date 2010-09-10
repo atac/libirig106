@@ -6,20 +6,8 @@
 
  All rights reserved.
 
- Redistribution and use in source and binary forms, with or without 
- modification, are permitted provided that the following conditions are 
- met:
-
-   * Redistributions of source code must retain the above copyright 
-     notice, this list of conditions and the following disclaimer.
-
-   * Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in the 
-     documentation and/or other materials provided with the distribution.
-
-   * Neither the name Irig106.org nor the names of its contributors may 
-     be used to endorse or promote products derived from this software 
-     without specific prior written permission.
+ Redistribution and use in source and binary forms without prior
+ written consent from irig106.org is prohibited.
 
  This software is provided by the copyright holders and contributors 
  "as is" and any express or implied warranties, including, but not 
@@ -34,6 +22,8 @@
  of this software, even if advised of the possibility of such damage.
 
  ****************************************************************************/
+
+#pragma once
 
 // Integer size typedef's to make it easier to copy structures over from
 // the IRIG 106 C library.
@@ -151,6 +141,7 @@ namespace Irig106DotNet
     //  --------------------
     public enum class Ch10FileMode
         {
+        CLOSED             = 0,    // File is closed
         READ               = 1,    // Open an existing file for reading
         OVERWRITE          = 2,    // Create a new file or overwrite an exising file
         APPEND             = 3,    // Append data to the end of an existing file
@@ -172,21 +163,30 @@ namespace Irig106DotNet
         };
 
     [StructLayout(LayoutKind::Sequential, Pack=1)]
-    public ref struct IrigTime
+    public ref class IrigTime
         {
+        public :
         unsigned __int32        ulSecs;     // This is a time_t
         unsigned __int32        ulFrac;     // LSB = 100ns
         DateFmt                 enFmt;      // Day or DMY format
+
+        // Assignment operators
+        IrigTime ^ operator=(const IrigTime ^ Time) 
+            {
+            ulSecs = Time->ulSecs;
+            ulFrac = Time->ulFrac;
+            enFmt  = Time->enFmt;
+            return this;
+            }
         };
 
 
     // IRIG 106 header and optional secondary header data structure
     // ------------------------------------------------------------
-// THIS WORKS IN THE HEADER STRUCT BELOW AS A VALUE STRUCT BUT NOT AS A REF STRUCT
-// AND I REALLY DON'T KNOW WHY.  THAT'S DANGEROUS.
     [StructLayout(LayoutKind::Sequential, Pack=1)]
-    public value struct    SuRelTime
+    public value class    SuRelTime
         {
+        public :
         uint32_t      uLo;              ///< Low 4 bytes of relative time
         uint16_t      uHi;              ///< High 2 bytes of relative time
         };
@@ -194,6 +194,7 @@ namespace Irig106DotNet
     [StructLayout(LayoutKind::Sequential, Pack=1)]
     public ref struct SuI106Ch10Header
         {
+        public :
         uint16_t      uSync;                // Packet Sync Pattern
         uint16_t      uChID;                // Channel ID
         uint32_t      ulPacketLen;          // Total packet length
@@ -203,19 +204,13 @@ namespace Irig106DotNet
         HeaderFlag    ubyPacketFlags;       // PacketFlags
         DataType      ubyDataType;          // Data type
         SuRelTime     suRelTime;            // Relative time counter
-//        uint32_t      uLo;              ///< Low 4 bytes of relative time
-//        uint16_t      uHi;              ///< High 2 bytes of relative time
-        //ref struct    suRelTime
-        //    {
-        //    uint32_t      uLo;              ///< Low 4 bytes of relative time
-        //    uint16_t      uHi;              ///< High 2 bytes of relative time
-        //    };
-
         uint16_t      uChecksum;            // Header Checksum
         uint64_t      ullTime;              // Time (start secondary header)
         uint16_t      uReserved;            //
         uint16_t      uSecChecksum;         // Secondary Header Checksum
         };
+
+
 
     } // end namespace Irig106DotNet
 

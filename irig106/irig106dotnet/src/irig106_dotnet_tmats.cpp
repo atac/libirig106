@@ -6,20 +6,8 @@
 
  All rights reserved.
 
- Redistribution and use in source and binary forms, with or without 
- modification, are permitted provided that the following conditions are 
- met:
-
-   * Redistributions of source code must retain the above copyright 
-     notice, this list of conditions and the following disclaimer.
-
-   * Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in the 
-     documentation and/or other materials provided with the distribution.
-
-   * Neither the name Irig106.org nor the names of its contributors may 
-     be used to endorse or promote products derived from this software 
-     without specific prior written permission.
+ Redistribution and use in source and binary forms without prior
+ written consent from irig106.org is prohibited.
 
  This software is provided by the copyright holders and contributors 
  "as is" and any express or implied warranties, including, but not 
@@ -51,6 +39,25 @@ using namespace System::Runtime::InteropServices;
 #include "irig106ch10.h"
 #include "i106_decode_tmats.h"
 
+using namespace Irig106DotNet;
+
+// Local functions
+// ---------------
+void Copy_GRecord     (Irig106::SuGRecord     * pFirstGRecord,          Tmats::SuGRecord       ^% GRecord);
+void Copy_GDataSources(Irig106::SuGDataSource * pFirstGDataSource, List<Tmats::SuGDataSource ^> % GDataSources);
+void Copy_RRecords    (Irig106::SuRRecord     * pFirstRRecord,     List<Tmats::SuRRecord     ^> % RRecords);
+void Copy_RDataSources(Irig106::SuRDataSource * pFirstRDataSource, List<Tmats::SuRDataSource ^> % RDataSources);
+void Copy_MRecords    (Irig106::SuMRecord     * pFirstMRecord,     List<Tmats::SuMRecord     ^> % MRecords);
+void Copy_BRecords    (Irig106::SuBRecord     * pFirstBRecord,     List<Tmats::SuBRecord     ^> % BRecords);
+void Copy_PRecords    (Irig106::SuPRecord     * pFirstPRecord,     List<Tmats::SuPRecord     ^> % PRecords);
+
+void ConnectG(Irig106DotNet::Tmats ^ TmatsInfo);
+void ConnectR(Irig106DotNet::Tmats ^ TmatsInfo);
+void ConnectM(Irig106DotNet::Tmats ^ TmatsInfo);
+
+void TmatsBufferToString(array<SByte> ^ DataBuff, int DataLen, String ^% StringBuff);
+void TmatsBufferToLines (String ^ sDataBuff, List<Tmats::SuTmatsLine ^> ^ Lines);
+
 
 namespace Irig106DotNet
     {
@@ -76,22 +83,9 @@ namespace Irig106DotNet
 
         } // end namespace DLL
 
-    void Copy_GRecord     (Irig106::SuGRecord     * pFirstGRecord,          Tmats::SuGRecord       ^% GRecord);
-    void Copy_GDataSources(Irig106::SuGDataSource * pFirstGDataSource, List<Tmats::SuGDataSource ^> % GDataSources);
-    void Copy_RRecords    (Irig106::SuRRecord     * pFirstRRecord,     List<Tmats::SuRRecord     ^> % RRecords);
-    void Copy_RDataSources(Irig106::SuRDataSource * pFirstRDataSource, List<Tmats::SuRDataSource ^> % RDataSources);
-    void Copy_MRecords    (Irig106::SuMRecord     * pFirstMRecord,     List<Tmats::SuMRecord     ^> % MRecords);
-    void Copy_BRecords    (Irig106::SuBRecord     * pFirstBRecord,     List<Tmats::SuBRecord     ^> % BRecords);
-    void Copy_PRecords    (Irig106::SuPRecord     * pFirstPRecord,     List<Tmats::SuPRecord     ^> % PRecords);
+    } // end Irig106DotNet namespace
 
-    void ConnectG(Irig106DotNet::Tmats ^ TmatsInfo);
-    void ConnectR(Irig106DotNet::Tmats ^ TmatsInfo);
-    void ConnectM(Irig106DotNet::Tmats ^ TmatsInfo);
 
-    void TmatsBufferToString(array<SByte> ^ DataBuff, int DataLen, String ^% StringBuff);
-    void TmatsBufferToLines (String ^ sDataBuff, List<Tmats::SuTmatsLine ^> ^ Lines);
-
-    } // end DLL namespace
 
 namespace Irig106DotNet 
 {
@@ -213,6 +207,9 @@ ReturnStatus Tmats::DecodeTmats(String ^ sDataBuff)
 
     return Status;
     }
+
+}; // end Irig106DotNet namespace
+
 
 
 // ------------------------------------------------------------------------
@@ -625,7 +622,7 @@ void TmatsBufferToString(array<SByte> ^ DataBuff, int DataLen, String ^% StringB
 
 // Copy a TMATS buffer into a list of strings, skipping the CSDW at the front
 
-void TmatsBufferToLines(String ^ sDataBuff, List<Tmats::SuTmatsLine ^> ^ Lines)
+void TmatsBufferToLines(String ^ sDataBuff, List<Irig106DotNet::Tmats::SuTmatsLine ^> ^ Lines)
     {
     int           iInBuffIdx = 0;
     String      ^ sLine;
@@ -676,7 +673,7 @@ void TmatsBufferToLines(String ^ sDataBuff, List<Tmats::SuTmatsLine ^> ^ Lines)
         // ---------------------
 
         // Go ahead and split the line into left hand and right hand sides
-        Tmats::SuTmatsLine ^ suLine = gcnew Tmats::SuTmatsLine;
+        Irig106DotNet::Tmats::SuTmatsLine ^ suLine = gcnew Irig106DotNet::Tmats::SuTmatsLine;
         array<String^> ^ SplitLine = nullptr;
 
         int iPosColon;
@@ -709,4 +706,3 @@ void TmatsBufferToLines(String ^ sDataBuff, List<Tmats::SuTmatsLine ^> ^ Lines)
     return;
     }
 
-}; // end Irig106DotNet namespace
