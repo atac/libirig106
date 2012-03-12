@@ -81,6 +81,15 @@ namespace Irig106DotNet
         [DllImport("irig106.dll", CharSet=CharSet::Ansi)]
             extern "C" void enI106_Free_TmatsInfo(Irig106::SuTmatsInfo * psuTmatsInfo);
 
+        [DllImport("irig106.dll", CharSet=CharSet::Ansi)]
+            extern "C" Irig106DotNet::ReturnStatus enI106_Tmats_Signature(
+                    void                                * pvBuff,
+                    uint32_t                              ulDataLen,
+                    int                                   iSigVersion,
+                    int                                   iSigFlags,
+                    uint8_t                             * piOpCode,
+                    uint32_t                            * piSignature);
+ 
         } // end namespace DLL
 
     } // end Irig106DotNet namespace
@@ -604,7 +613,7 @@ void TmatsBufferToString(array<SByte> ^ DataBuff, int DataLen, String ^% StringB
         if (iInBuffIdx >= DataLen)
             break;
 
-        if (DataBuff[iInBuffIdx] == NULL_CHAR )
+        if (DataBuff[iInBuffIdx] == NULL_CHAR)
             break;
 
         StringBuff = StringBuff + Convert::ToChar(DataBuff[iInBuffIdx]);
@@ -706,3 +715,80 @@ void TmatsBufferToLines(String ^ sDataBuff, List<Irig106DotNet::Tmats::SuTmatsLi
     return;
     }
 
+
+
+// ------------------------------------------------------------------------
+
+/// Generate TMATS signature from a buffer of ASCII TMATS
+
+ReturnStatus Tmats::Signature(
+        array<SByte>  ^ DataBuff,       ///< Buffer of ASCII TMATS, no CSWD
+        int             BuffLen,        ///< Length of DataBuff
+        int             SigVersion,     ///< Signature version
+        int             SigFlags,       ///< Optional signature flags
+        SByte         % OpCode,         ///< Returned op code
+        UInt32        % Signature)      ///< Returned signature
+    {
+    uint8_t                         OpCodeNative;
+    uint32_t                        SignatureNative;
+    Irig106DotNet::ReturnStatus     Status;
+    pin_ptr<SByte>                  pDataBuff = &DataBuff[0];
+
+    Status = DLL::enI106_Tmats_Signature(
+                    pDataBuff,
+                    BuffLen,
+                    SigVersion,
+                    SigFlags,
+                    &OpCodeNative,
+                    &SignatureNative);
+    if (Status != ReturnStatus::OK)
+        {
+        OpCode    = 0;
+        Signature = 0;
+        return Status;
+        }
+
+    OpCode    = OpCodeNative;
+    Signature = SignatureNative;
+
+    return ReturnStatus::OK;
+    }
+
+
+
+// ------------------------------------------------------------------------
+
+/// Generate TMATS signature from a string containing TMATS
+
+ReturnStatus Tmats::Signature(
+        String    ^ sDataBuff,      ///< String with TMATS
+        int         SigVersion,     ///< Signature version
+        int         SigFlags,       ///< Optional signature flags
+        SByte     % OpCode,         ///< Returned op code
+        UInt32    % Signature)      ///< Returned signature
+    {
+    uint8_t                         OpCodeNative;
+    uint32_t                        SignatureNative;
+    Irig106DotNet::ReturnStatus     Status;
+
+    char * pDataBuff = (char *)(void *)Marshal::StringToHGlobalAnsi(sDataBuff);
+
+    Status = DLL::enI106_Tmats_Signature(
+                    pDataBuff,
+                    sDataBuff->Length,
+                    SigVersion,
+                    SigFlags,
+                    &OpCodeNative,
+                    &SignatureNative);
+    if (Status != ReturnStatus::OK)
+        {
+        OpCode    = 0;
+        Signature = 0;
+        return Status;
+        }
+
+    OpCode    = OpCodeNative;
+    Signature = SignatureNative;
+
+    return ReturnStatus::OK;
+    }

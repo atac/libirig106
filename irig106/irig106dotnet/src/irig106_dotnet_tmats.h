@@ -25,6 +25,7 @@
 
 #pragma once
 
+using namespace System;
 using namespace System::Collections::Generic;
 
 namespace Irig106DotNet 
@@ -37,6 +38,25 @@ namespace Irig106DotNet
         // ===============
 
         public:
+
+        /// TMATS signature generating options
+        //  ----------------------------------
+        enum class SignatureOptions
+            {
+            SIGFLAG_NONE          = 0x0000,
+            SIGFLAG_INC_COMMENT   = 0x0001, ///< Include comment fields
+            SIGFLAG_INC_VENDOR    = 0x0002, ///< Include vendor fields
+            SIGFLAG_INC_ALL       = 0x000F  ///< Include all fields
+            };
+
+        /// TMATS signature version
+        //  -----------------------
+//        enum class SignatureVersion
+//            {
+//            SIGVER_1              1,
+//            SIGVER_DEFAULT        SIGVER_1
+//            };
+
 
 // TODO : Go ahead and get with the program, make these classes instead of structs
 
@@ -214,6 +234,9 @@ namespace Irig106DotNet
         ReturnStatus DecodeTmats(Irig106DotNet::SuI106Ch10Header ^ Header, array<SByte> ^ DataBuff);
         ReturnStatus DecodeTmats(String ^ sDataBuff);
 
+        ReturnStatus Signature(array<SByte> ^ DataBuff, int BuffLen, int SigVersion, int SigFlags, SByte % OpCode, UInt32 % Signature);
+        ReturnStatus Signature(String ^ sDataBuff, int SigVersion, int SigFlags, SByte % OpCode, UInt32 % Signature);
+ 
         }; // end class Tmats
 
     } // end namespace Irig106DotNet
