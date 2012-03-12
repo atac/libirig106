@@ -103,6 +103,17 @@ namespace I106Input {
 
     protected: 
         Irig106DotNet::Irig106Lib       ^ IrigIn;
+    private: System::Windows::Forms::TabPage^  tabSignature;
+    private: System::Windows::Forms::Label^  lblSignature;
+
+    private: System::Windows::Forms::CheckBox^  chkIncludeAll;
+    private: System::Windows::Forms::CheckBox^  chkIncludeVendor;
+    private: System::Windows::Forms::CheckBox^  chkIncludeComments;
+
+    private: System::Windows::Forms::TextBox^  textBox1;
+    protected: 
+
+    protected: 
         Irig106DotNet::Tmats            ^ Tmats;
 
 
@@ -120,6 +131,7 @@ namespace I106Input {
     System::Void InputForm::DisplayChannels();
     System::Void InputForm::DisplayTree();
     System::Void InputForm::DisplayRaw();
+    System::Void InputForm::DisplaySignature();
 
     // ----------------------------------------------------------------
     // Form components
@@ -163,6 +175,12 @@ namespace I106Input {
             this->textChannels = (gcnew System::Windows::Forms::TextBox());
             this->tabTree = (gcnew System::Windows::Forms::TabPage());
             this->treeTree = (gcnew System::Windows::Forms::TreeView());
+            this->tabSignature = (gcnew System::Windows::Forms::TabPage());
+            this->textBox1 = (gcnew System::Windows::Forms::TextBox());
+            this->lblSignature = (gcnew System::Windows::Forms::Label());
+            this->chkIncludeAll = (gcnew System::Windows::Forms::CheckBox());
+            this->chkIncludeVendor = (gcnew System::Windows::Forms::CheckBox());
+            this->chkIncludeComments = (gcnew System::Windows::Forms::CheckBox());
             this->statusStrip1 = (gcnew System::Windows::Forms::StatusStrip());
             this->statuslblStartTime = (gcnew System::Windows::Forms::ToolStripStatusLabel());
             this->statuslblStopTime = (gcnew System::Windows::Forms::ToolStripStatusLabel());
@@ -172,6 +190,7 @@ namespace I106Input {
             this->tabRaw->SuspendLayout();
             this->tabChannels->SuspendLayout();
             this->tabTree->SuspendLayout();
+            this->tabSignature->SuspendLayout();
             this->statusStrip1->SuspendLayout();
             this->SuspendLayout();
             // 
@@ -205,12 +224,14 @@ namespace I106Input {
             this->tabTMATS->Controls->Add(this->tabRaw);
             this->tabTMATS->Controls->Add(this->tabChannels);
             this->tabTMATS->Controls->Add(this->tabTree);
+            this->tabTMATS->Controls->Add(this->tabSignature);
             this->tabTMATS->Location = System::Drawing::Point(3, 45);
             this->tabTMATS->Margin = System::Windows::Forms::Padding(2);
             this->tabTMATS->Name = L"tabTMATS";
             this->tabTMATS->SelectedIndex = 0;
             this->tabTMATS->Size = System::Drawing::Size(540, 441);
             this->tabTMATS->TabIndex = 2;
+            this->tabTMATS->Resize += gcnew System::EventHandler(this, &InputForm::tabTMATS_Resize);
             // 
             // tabRaw
             // 
@@ -318,6 +339,79 @@ namespace I106Input {
             this->treeTree->Size = System::Drawing::Size(528, 409);
             this->treeTree->TabIndex = 0;
             // 
+            // tabSignature
+            // 
+            this->tabSignature->Controls->Add(this->textBox1);
+            this->tabSignature->Controls->Add(this->lblSignature);
+            this->tabSignature->Controls->Add(this->chkIncludeAll);
+            this->tabSignature->Controls->Add(this->chkIncludeVendor);
+            this->tabSignature->Controls->Add(this->chkIncludeComments);
+            this->tabSignature->Location = System::Drawing::Point(4, 22);
+            this->tabSignature->Name = L"tabSignature";
+            this->tabSignature->Padding = System::Windows::Forms::Padding(3);
+            this->tabSignature->Size = System::Drawing::Size(532, 415);
+            this->tabSignature->TabIndex = 3;
+            this->tabSignature->Text = L"Signature";
+            this->tabSignature->UseVisualStyleBackColor = true;
+            // 
+            // textBox1
+            // 
+            this->textBox1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Left) 
+                | System::Windows::Forms::AnchorStyles::Right));
+            this->textBox1->BorderStyle = System::Windows::Forms::BorderStyle::None;
+            this->textBox1->Location = System::Drawing::Point(17, 125);
+            this->textBox1->Multiline = true;
+            this->textBox1->Name = L"textBox1";
+            this->textBox1->Size = System::Drawing::Size(515, 284);
+            this->textBox1->TabIndex = 4;
+            this->textBox1->Text = resources->GetString(L"textBox1.Text");
+            // 
+            // lblSignature
+            // 
+            this->lblSignature->AutoSize = true;
+            this->lblSignature->BackColor = System::Drawing::Color::Gainsboro;
+            this->lblSignature->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+            this->lblSignature->Font = (gcnew System::Drawing::Font(L"Courier New", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point, 
+                static_cast<System::Byte>(0)));
+            this->lblSignature->Location = System::Drawing::Point(17, 12);
+            this->lblSignature->Name = L"lblSignature";
+            this->lblSignature->Size = System::Drawing::Size(120, 20);
+            this->lblSignature->TabIndex = 3;
+            this->lblSignature->Text = L"XX-XXXXXXXX";
+            // 
+            // chkIncludeAll
+            // 
+            this->chkIncludeAll->AutoSize = true;
+            this->chkIncludeAll->Location = System::Drawing::Point(17, 90);
+            this->chkIncludeAll->Name = L"chkIncludeAll";
+            this->chkIncludeAll->Size = System::Drawing::Size(105, 17);
+            this->chkIncludeAll->TabIndex = 2;
+            this->chkIncludeAll->Text = L"Include All Fields";
+            this->chkIncludeAll->UseVisualStyleBackColor = true;
+            this->chkIncludeAll->CheckedChanged += gcnew System::EventHandler(this, &InputForm::chkIncludeAll_CheckedChanged);
+            // 
+            // chkIncludeVendor
+            // 
+            this->chkIncludeVendor->AutoSize = true;
+            this->chkIncludeVendor->Location = System::Drawing::Point(17, 67);
+            this->chkIncludeVendor->Name = L"chkIncludeVendor";
+            this->chkIncludeVendor->Size = System::Drawing::Size(128, 17);
+            this->chkIncludeVendor->TabIndex = 1;
+            this->chkIncludeVendor->Text = L"Include Vendor Fields";
+            this->chkIncludeVendor->UseVisualStyleBackColor = true;
+            this->chkIncludeVendor->CheckedChanged += gcnew System::EventHandler(this, &InputForm::chkIncludeVendor_CheckedChanged);
+            // 
+            // chkIncludeComments
+            // 
+            this->chkIncludeComments->AutoSize = true;
+            this->chkIncludeComments->Location = System::Drawing::Point(17, 44);
+            this->chkIncludeComments->Name = L"chkIncludeComments";
+            this->chkIncludeComments->Size = System::Drawing::Size(138, 17);
+            this->chkIncludeComments->TabIndex = 0;
+            this->chkIncludeComments->Text = L"Include Comment Fields";
+            this->chkIncludeComments->UseVisualStyleBackColor = true;
+            this->chkIncludeComments->CheckedChanged += gcnew System::EventHandler(this, &InputForm::chkIncludeComments_CheckedChanged);
+            // 
             // statusStrip1
             // 
             this->statusStrip1->GripStyle = System::Windows::Forms::ToolStripGripStyle::Visible;
@@ -395,6 +489,8 @@ namespace I106Input {
             this->tabChannels->ResumeLayout(false);
             this->tabChannels->PerformLayout();
             this->tabTree->ResumeLayout(false);
+            this->tabSignature->ResumeLayout(false);
+            this->tabSignature->PerformLayout();
             this->statusStrip1->ResumeLayout(false);
             this->statusStrip1->PerformLayout();
             this->ResumeLayout(false);
@@ -459,12 +555,60 @@ private: System::Void cmdRawFormat_Click(System::Object^  sender, System::EventA
 
 // --------------------------------------------------------------------------
 
+private: System::Void chkIncludeComments_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
+    {
+    DisplaySignature();
+    }
+
+
+// --------------------------------------------------------------------------
+
+private: System::Void chkIncludeVendor_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
+    {
+    DisplaySignature();
+    }
+
+
+// --------------------------------------------------------------------------
+
+private: System::Void chkIncludeAll_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
+    {
+    if (chkIncludeAll->Checked)
+        {
+        chkIncludeComments->Checked = true;
+        chkIncludeVendor->Checked   = true;
+        chkIncludeComments->Enabled = false;
+        chkIncludeVendor->Enabled   = false;
+        }
+    else
+        {
+        chkIncludeComments->Checked = false;
+        chkIncludeVendor->Checked   = false;
+        chkIncludeComments->Enabled = true;
+        chkIncludeVendor->Enabled   = true;
+        }
+
+    DisplaySignature();
+    }
+
+
+// --------------------------------------------------------------------------
+
 // Put up the "About" dialog
 
 private: System::Void statuslblAbout_Click(System::Object^  sender, System::EventArgs^  e) 
     {
     AboutDisplayTmats ^ About = gcnew AboutDisplayTmats();
     About->Show();
+    }
+
+
+// --------------------------------------------------------------------------
+
+private: System::Void tabTMATS_Resize(System::Object^  sender, System::EventArgs^  e) 
+    {
+    tabTMATS->Refresh();
+    tabTMATS->Show();
     }
 
 }; // end of Input_Form class

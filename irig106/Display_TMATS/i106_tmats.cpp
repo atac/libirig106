@@ -217,6 +217,7 @@ System::Void InputForm::DecodeDisplayTMATS()
     DisplayRaw();
     DisplayChannels();
     DisplayTree();
+    DisplaySignature();
 
     } // end DecodeDisplayTMATS()
 
@@ -742,3 +743,26 @@ void InputForm::DisplayChannels()
     }
 
 
+/* ------------------------------------------------------------------------ */
+
+void InputForm::DisplaySignature()
+    {
+    int     SigFlags   = (int)Tmats::SignatureOptions::SIGFLAG_NONE;
+    int     SigVersion = 1;//Tmats::SignatureVersion::SIGVER_DEFAULT;
+    SByte   OpCode;
+    UInt32  Signature;
+
+    if (chkIncludeComments->Checked)
+        SigFlags |= (int)Tmats::SignatureOptions::SIGFLAG_INC_COMMENT;
+
+    if (chkIncludeVendor->Checked)
+        SigFlags |= (int)Tmats::SignatureOptions::SIGFLAG_INC_VENDOR;
+
+    if (chkIncludeAll->Checked)
+        SigFlags |= (int)Tmats::SignatureOptions::SIGFLAG_INC_ALL;
+
+    Tmats->Signature(Tmats->sDataBuff, SigVersion, SigFlags, OpCode, Signature);
+    lblSignature->Text = String::Format("{0:X2}-{1:X8}", OpCode, Signature);
+
+    return;
+    }

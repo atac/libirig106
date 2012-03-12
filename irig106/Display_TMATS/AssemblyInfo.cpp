@@ -16,7 +16,7 @@ using namespace System::Security::Permissions;
 [assembly:AssemblyConfigurationAttribute("")];
 [assembly:AssemblyCompanyAttribute("irig106.org")];
 [assembly:AssemblyProductAttribute("Display_TMATS")];
-[assembly:AssemblyCopyrightAttribute("Copyright (c) irig106.org 2010")];
+[assembly:AssemblyCopyrightAttribute("Copyright (c) irig106.org 2012")];
 [assembly:AssemblyTrademarkAttribute("")];
 [assembly:AssemblyCultureAttribute("")];
 
@@ -31,7 +31,8 @@ using namespace System::Security::Permissions;
 // You can specify all the values or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
 
-[assembly:AssemblyVersionAttribute("1.5.1.*")];
+// Be sure to change the app.rc version resource and copyright in AboutDisplayTmats()
+[assembly:AssemblyVersionAttribute("1.6.0.*")];
 
 [assembly:ComVisible(false)];
 

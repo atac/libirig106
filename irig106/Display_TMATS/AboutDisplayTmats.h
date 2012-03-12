@@ -70,7 +70,7 @@ namespace I106Input {
             AssemblyName ^ ExeName     = ExeAssembly->GetName();
             Version      ^ ExeVersion  = ExeName->Version;
             lblVersion->Text = String::Format(
-                "Display TMATS\r\nVerson {0}.{1}.{2}\n\rCopyright 2010\n\ririg106.org",
+                "Display TMATS\r\nVerson {0}.{1}.{2}\n\rCopyright 2012\n\ririg106.org",
                 ExeVersion->Major, ExeVersion->Minor, ExeVersion->Build);
 
 //            Assembly     ^ DllAssembly = Assembly::GetAssembly(
