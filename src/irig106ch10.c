@@ -43,7 +43,12 @@
 #include <errno.h>
 #include <assert.h>
 
-#if defined(__GNUC__)
+#if __APPLE__
+#define off64_t off_t
+#define fopen64 fopen
+#define lseek64 lseek
+/* #include <sys/uio.h> */
+#elif defined(__GNUC__)
 #include <sys/io.h>
 #else
 #include <io.h>
@@ -164,7 +169,11 @@ EnI106Status I106_CALL_DECL
 #if defined(_MSC_VER)
         iFlags = O_RDONLY | O_BINARY;
 #elif defined(__GNUC__)
+#if __APPLE__
+        iFlags = O_RDONLY;
+#else
         iFlags = O_RDONLY | O_LARGEFILE;
+#endif
 #else
         iFlags = O_RDONLY;
 #endif
@@ -252,7 +261,11 @@ EnI106Status I106_CALL_DECL
         iFlags    = O_WRONLY | O_CREAT | _O_TRUNC | O_BINARY;
         iFileMode = _S_IREAD | _S_IWRITE;
 #elif defined(__GNUC__)
+#if __APPLE__
+        iFlags    = O_WRONLY | O_CREAT;
+#else
         iFlags    = O_WRONLY | O_CREAT | O_LARGEFILE;
+#endif
         iFileMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 #else
         iFlags    = O_WRONLY | O_CREAT;
@@ -1735,7 +1748,11 @@ int I106_CALL_DECL
     iFlags    = O_WRONLY | O_CREAT | O_BINARY;
         iFileMode = _S_IREAD | _S_IWRITE;
 #elif defined(__GNUC__)
+#if __APPLE__
+        iFlags    = O_WRONLY | O_CREAT;
+#else
         iFlags    = O_WRONLY | O_CREAT | O_LARGEFILE;
+#endif
         iFileMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 #else
     iFlags    = O_WRONLY | O_CREAT;

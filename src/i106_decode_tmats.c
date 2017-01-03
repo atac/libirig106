@@ -38,7 +38,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if __APPLE__
+#else
 #include <malloc.h>
+#endif
 #include <ctype.h>
 #include <assert.h>
 
