@@ -2,9 +2,9 @@
 # Makefile - A makefile for the IRIG 106 Chapter 10 utilities
 # ---------------------------------------------------------------------------
 
-SRC_DIR=../src
-CFLAGS=-DIRIG_NETWORKING -iquote../../irig106lib/src -ggdb -fpack-struct=1
-LIBS=../../irig106lib/gcc/libirig106.a
+SRC_DIR=src
+CFLAGS=-DIRIG_NETWORKING -iquote../src -ggdb -fpack-struct=1
+LIBS=../libirig106.a
 
 #all: i106stat i106trim i106vid idmptmat idmp1553 idmpins idmpuart idmpeth idmp429 idmpindex idmptime idmpgps
 all: i106stat i106vid i106udprcv idmptmat idmp1553 idmpins idmpuart idmpeth idmp429 idmpindex idmptime idmpgps idmpcan idmppcm idmpanalog
