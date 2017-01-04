@@ -1,6 +1,7 @@
 # IRIG106LIB
 
 Copyright (c) 2017 Irig106.org
+
 Originally created by Bob Baggerman <bob@irig106.org>
 
 irig106lib is an open source library for reading and writing IRIG 106 
@@ -12,7 +13,7 @@ a static library):
 * DJGPP
 
 A Python wrapper for the compiled DLL is also included.  The Python wrapper is
-incomplete but demostrates how to make calls into the DLL from Python.
+incomplete but demonstrates how to make calls into the DLL from Python.
 
 
 ## Using the library
@@ -110,6 +111,8 @@ These header files are necessary for every application that uses the IRIG 106 li
 ## To Do
 
 * Automated tests
+* /docs directory?
+* Coding standards (eliminate hungarian notation please?!!!)
 * Update and spinoff python wrapper
 * Update and spinoff utils?
 * Implement support for index records.
