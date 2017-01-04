@@ -1,23 +1,22 @@
-----------
 IRIG106LIB
 ----------
 
-Copyright (c) 2014 Irig106.org
-Created by Bob Baggerman
-bob@irig106.org
-
-
+Copyright (c) 2017 Irig106.org
+Originally created by Bob Baggerman <bob@irig106.org>
 
 irig106lib is an open source library for reading and writing IRIG 106 
-Chapter 10 format files.  The libary supports the Microsoft Visual C 
-6.0, Visual Studio 2005, 2008, and 2010 compilers.  It compiles into a 
-Win32 static library and DLL.  The library alos supports GNU GCC compiler 
-under Linux and DJGPP and compiles into a static library.  A Python wrapper
+Chapter 10 format files. The libary supports the following compilers (building
+a static library):
+
+* Microsoft Visual C (Win32 static library and DLL)
+* GNU GCC compiler (Linux and macOS)
+* DJGPP
+
+A Python wrapper
 for the compiled DLL is also included.  The Python wrapper is incomplete
 but demostrates how to make calls into the DLL from Python.
 
 
------------------
 Using the library
 -----------------
 
