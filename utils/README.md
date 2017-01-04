@@ -1,8 +1,7 @@
-==================
 IRIG 106 Utilities
 ==================
 
-Copyright (C) 2010 Irig106.org
+Copyright (C) 2017 Irig106.org
 
 Introduction
 ------------
@@ -19,10 +18,10 @@ I106STAT
 Generate a summary of data channels and message types found in an IRIG 106
 data file.
 
-Usage: i106stat <input file> <output file> [flags]
-   <filename> Input/output file names
-   -r         Log both sides of RT to RT transfers
-   -v         Verbose
+    Usage: i106stat <input file> <output file> [flags]
+    <filename> Input/output file names
+    -r         Log both sides of RT to RT transfers
+    -v         Verbose
 
 
 I106TRIM
@@ -37,11 +36,11 @@ There are some new requirements for modifying or adding TMATS records when
 rewriting data files. This utility makes no attempt to modify TMATS and so
 technically may result in a non-IRIG106 compliant data file.
 
-Usage: i106trim <infile> <outfile> [+hh:mm:ss] [-hh:mm:ss]
-  +hh:mm:ss - Start copy time
-  -hh:mm:ss - Stop copy time
-  +<num>%   - Start copy at position <num> percent into the file
-  -<num>%   - Stop copy at position <num> percent into the file
+    Usage: i106trim <infile> <outfile> [+hh:mm:ss] [-hh:mm:ss]
+    +hh:mm:ss - Start copy time
+    -hh:mm:ss - Stop copy time
+    +<num>%   - Start copy at position <num> percent into the file
+    -<num>%   - Stop copy at position <num> percent into the file
 
 Or:    fftrim <infile> to get stats
 
@@ -51,10 +50,10 @@ IDMPTMATS
 
 Read and print out the TMATS record in various formats
 
-Usage: idmptmat <infile> <outfile> <flags>
-  -c      Output channel summary format (default)
-  -t      Output tree view format
-  -r      Output raw TMATS
+    Usage: idmptmat <infile> <outfile> <flags>
+    -c      Output channel summary format (default)
+    -t      Output tree view format
+    -r      Output raw TMATS
 
 
 IDMP1553
@@ -65,18 +64,18 @@ parameters, all 1553 messages are dumped.  Output can be filtered by Channel ID,
 RT number, T/R bit, and Subaddress number.  Output can be further limited by
 a decimation factor, useful for thing like INS data.
 
-Usage: idmp1553 <input file> <output file> [flags]
-   <filename> Input/output file names
-   -v         Verbose
-   -c ChNum   Channel Number (default all)
-   -r RT      RT Address(1-30) (default all)
-   -t T/R     T/R Bit (0=R 1=T) (default all)
-   -s SA      Subaddress (default all)
-   -d Num     Dump 1 in 'Num' messages
-   -i         Dump data as decimal integers
-   -u         Dump status response
+    Usage: idmp1553 <input file> <output file> [flags]
+    <filename> Input/output file names
+    -v         Verbose
+    -c ChNum   Channel Number (default all)
+    -r RT      RT Address(1-30) (default all)
+    -t T/R     T/R Bit (0=R 1=T) (default all)
+    -s SA      Subaddress (default all)
+    -d Num     Dump 1 in 'Num' messages
+    -i         Dump data as decimal integers
+    -u         Dump status response
 
-   -T         Print TMATS summary and exit
+    -T         Print TMATS summary and exit
 
 The output data fields are:
   Time Bus RT T/R SA WC Errs Data...
@@ -111,22 +110,22 @@ distance from the reference point.
 The -T flag can be used to dump a brief TMATS summary of the data file to
 help in choosing command line parameters.
 
-Usage: idmpins <input file> <output file> [flags]
-   <filename>       Input/output file names
-   -v               Verbose
-   -a               Dump aircraft INS attitude
-   -c Bus           IRIG Channel Number
-   -r RT            INS RT Address(1-30) (default 6)
-   -t T/R           INS T/R Bit (0=R 1=T) (default 1)
-   -s SA            INS Message Subaddress (default 16)
-   -d Num           Dump 1 in 'Num' messages (default all)
-   -i Type          INS Type (default 1)
-                      1 = F-16/C-130/A-10 EGI
-                      2 = F-15
-   -g Lat Lon Elev  Ground target position (ft)
-   -m Dist          Only dump within this many nautical miles
-                      of ground target position
-   -T               Print TMATS summary and exit
+    Usage: idmpins <input file> <output file> [flags]
+    <filename>       Input/output file names
+    -v               Verbose
+    -a               Dump aircraft INS attitude
+    -c Bus           IRIG Channel Number
+    -r RT            INS RT Address(1-30) (default 6)
+    -t T/R           INS T/R Bit (0=R 1=T) (default 1)
+    -s SA            INS Message Subaddress (default 16)
+    -d Num           Dump 1 in 'Num' messages (default all)
+    -i Type          INS Type (default 1)
+                        1 = F-16/C-130/A-10 EGI
+                        2 = F-15
+    -g Lat Lon Elev  Ground target position (ft)
+    -m Dist          Only dump within this many nautical miles
+                        of ground target position
+    -T               Print TMATS summary and exit
 
 IDMPGPS
 -------
@@ -143,16 +142,16 @@ include position and attitude information relative to that point.  The -m
 flag can be used to only dump GPS data points when within a prescribed 
 distance from the reference point.
 
-Usage: idmpgps <input file> <output file> [flags]
-   <filename> Input/output file names
-   -v               Verbose
-   -c ChNum         Channel Number (required)
-   -G               Print NMEA GGA data
-   -C               Print NMEA RMC data
-   -g Lat Lon Elev  Ground target position (ft)
-   -m Dist          Only dump within this many nautical miles
-                      of ground target position
-   -T               Print TMATS summary and exit
+    Usage: idmpgps <input file> <output file> [flags]
+    <filename> Input/output file names
+    -v               Verbose
+    -c ChNum         Channel Number (required)
+    -G               Print NMEA GGA data
+    -C               Print NMEA RMC data
+    -g Lat Lon Elev  Ground target position (ft)
+    -m Dist          Only dump within this many nautical miles
+                        of ground target position
+    -T               Print TMATS summary and exit
 
 
 IDMPUART
@@ -171,12 +170,12 @@ hexidecimal value.
 The -T flag can be used to dump a brief TMATS summary of the data file to help 
 in choosing command line parameters.
 
-Usage: idmpUART <input file> <output file> [flags]
-   <filename> Input/output file names
-   -v         Verbose
-   -c ChNum   Channel Number (default all)
-   -s         Print out data as ASCII string
-   -T         Print TMATS summary and exit
+    Usage: idmpUART <input file> <output file> [flags]
+    <filename> Input/output file names
+    -v         Verbose
+    -c ChNum   Channel Number (default all)
+    -s         Print out data as ASCII string
+    -T         Print TMATS summary and exit
 
 The output data fields are:
   Time Chan-Subchan Data...
@@ -187,11 +186,11 @@ IDMPTIME
 
 Read and dump time packets.  This is useful for debugging time problems.
 
-Usage: idmptime <input file> <output file> [flags]
-   <filename> Input/output file names
-   -v         Verbose
-   -c ChNum   Channel Number (default all)
-   -T         Print TMATS summary and exit
+    Usage: idmptime <input file> <output file> [flags]
+    <filename> Input/output file names
+    -v         Verbose
+    -c ChNum   Channel Number (default all)
+    -T         Print TMATS summary and exit
 
 Time columns are:
   Channel ID
@@ -209,12 +208,12 @@ Read and dump ARINC 429 packets.  Use the "-c" flag to restrict dumps to
 a specific channel number.  Each channel may have multiple 429 buses.  Use
 the "-b" flag to restrict dumps to a specific 429 bus.
 
-Usage: idmpa429 <input file> <output file> [flags]
-   <filename> Input/output file names
-   -v         Verbose
-   -c ChNum   Channel Number (default all)
-   -b BusNum  429 Bus Number (default all)
-   -T         Print TMATS summary and exit
+    Usage: idmpa429 <input file> <output file> [flags]
+    <filename> Input/output file names
+    -v         Verbose
+    -c ChNum   Channel Number (default all)
+    -b BusNum  429 Bus Number (default all)
+    -T         Print TMATS summary and exit
 
 The output data fields are:
 Time  ChanID  BusNum  Label  SDI  Data  SSM
