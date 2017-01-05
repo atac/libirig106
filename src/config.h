@@ -10,6 +10,12 @@ extern "C" {
 
 #define PUBLIC
 
+#if __APPLE__
+#define off64_t off_t
+#define fopen64 fopen
+#define lseek64 lseek
+#endif
+
 // .NET 2005 (and probably earlier, but I'm not sure) define time_t to be a 64 bit value.
 // And by default, all the CRT time routines are the 64 bit versions.  For best portability,
 // time_t is assumed to be a 32 bit value.  The following #define tells .NET to use 32 bits

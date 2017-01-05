@@ -12,15 +12,12 @@
 #include <errno.h>
 #include <assert.h>
 
-#if __APPLE__
-#define off64_t off_t
-#define fopen64 fopen
-#define lseek64 lseek
-/* #include <sys/uio.h> */
-#elif defined(__GNUC__)
+#ifndef __APPLE__
+#if defined(__GNUC__)
 #include <sys/io.h>
 #else
 #include <io.h>
+#endif
 #endif
 
 #if defined(IRIG_NETWORKING) & !defined(_WIN32)
