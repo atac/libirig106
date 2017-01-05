@@ -1,8 +1,5 @@
-/****************************************************************************
 
- config.h - Define features and OS portability macros
-
- ****************************************************************************/
+// config.h - Define features and OS portability macros
 
 #ifndef _config_h_
 #define _config_h_
@@ -11,15 +8,7 @@
 extern "C" {
 #endif
 
-// .NET 2005 C++ wants structures that are passed as function parameters to be declared
-// as public.  .NET 2003 and native C pukes on that. C++ Interop doesn't seem to care.
-//  Grrrr...  Just define out PUBLIC for now but leave in the macro logic in case I want
-// to revisit this someday.  Yeah, right!
-//#if _MSC_VER >= 1400
-//#define PUBLIC public
-//#else
 #define PUBLIC
-//#endif
 
 // .NET 2005 (and probably earlier, but I'm not sure) define time_t to be a 64 bit value.
 // And by default, all the CRT time routines are the 64 bit versions.  For best portability,
@@ -27,9 +16,9 @@ extern "C" {
 // as the default time_t size.  This needs to be set in the project properties.  This forces
 // a puke if it isn't set.
 #if _MSC_VER >= 1400
-  #if !defined(_USE_32BIT_TIME_T)
-  #pragma message("WARNING - '_USE_32BIT_TIME_T' not set!")
-  #endif
+#if !defined(_USE_32BIT_TIME_T)
+#pragma message("WARNING - '_USE_32BIT_TIME_T' not set!")
+#endif
 #endif
 
 // .NET managed code extends good ol' Stroustrup C++ in some interesting and unique ways.
@@ -46,7 +35,7 @@ extern "C" {
  * non-standard stricmp(). Fix it up with a macro if necessary
  */
 
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
 #define strcasecmp(s1, s2)          _stricmp(s1, s2)
 #define strncasecmp(s1, s2, n)      _strnicmp(s1, s2, n)
 #pragma warning(disable : 4996)
@@ -62,7 +51,3 @@ extern "C" {
 #endif
 
 #endif
-
-
-
-
