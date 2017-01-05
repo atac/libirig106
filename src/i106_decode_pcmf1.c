@@ -13,8 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if __APPLE__
-#else
+#ifndef __APPLE__
 #include <malloc.h>
 #endif
 #include <ctype.h>
