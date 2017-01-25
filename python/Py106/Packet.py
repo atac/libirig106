@@ -256,8 +256,10 @@ class IO(object):
 
 # Make the IRIG 106 DLL ctypes object 
 FilePath, FileName = os.path.split(__file__)
-DllFileName = FilePath + "\\irig106.dll"
-IrigDataDll = ctypes.cdll.LoadLibrary(DllFileName)
+if sys.platform == 'win32':
+    IrigDataDll = ctypes.cdll.LoadLibrary(FilePath + "\\irig106.dll")
+else:
+    IrigDataDll = ctypes.CDLL(FilePath + '/../../libirig106.so')
 
 # This test code just opens an IRIG file and does a histogram of the 
 # data types

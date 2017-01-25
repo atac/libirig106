@@ -279,3 +279,4 @@ __pycache__/
 *.a
 test/run_tests
 test/test_runners/*
+*.so
