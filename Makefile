@@ -61,8 +61,8 @@ i106_decode_can.o: $(SRC_DIR)/i106_decode_can.c
 	gcc $(CFLAGS) -c $(SRC_DIR)/i106_decode_can.c
 
 clean:
-	rm *.o libirig106.so
 	$(MAKE) -C test clean
+	rm *.o libirig106.so
 
 tests:
 	$(MAKE) -C test
