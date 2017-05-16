@@ -8,6 +8,8 @@
 #ifndef _I106_DECODE_INDEX_H
 #define _I106_DECODE_INDEX_H
 
+#include "config.h"
+
 #ifdef __cplusplus
 namespace Irig106 {
 extern "C" {
@@ -19,12 +21,6 @@ extern "C" {
 #if defined(_MSC_VER)
 #pragma pack(push)
 #pragma pack(1)
-#endif
-
-#if defined(__GNUC__)
-#define PACKED __attribute__ ((packed))
-#else
-#define PACKED
 #endif
 
 

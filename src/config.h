@@ -10,6 +10,12 @@ extern "C" {
 
 #define PUBLIC
 
+#if defined(__GNUC__)
+#define PACKED __attribute__ ((packed))
+#else
+#define PACKED
+#endif
+
 #if __APPLE__
 #define off64_t off_t
 #define fopen64 fopen
