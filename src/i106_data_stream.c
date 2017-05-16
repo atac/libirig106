@@ -1,15 +1,12 @@
 /****************************************************************************
 
- i106_data_stream.c - 
+ i106_data_stream.c
 
  ****************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <fcntl.h>
-//#include <sys/types.h>
-//#include <sys/stat.h>
 
 #if defined(__GNUC__)
 #define SOCKET            int
@@ -42,10 +39,8 @@
 namespace Irig106 {
 #endif
 
-/*
- * Macros and definitions
- * ----------------------
- */
+
+// Macros and definitions
 
 // Make a min() function
 #if defined(_WIN32)
@@ -56,17 +51,12 @@ namespace Irig106 {
 
 #define RCV_BUFFER_START_SIZE   32768
 #define MAX_UDP_WRITE_SIZE      32726   // From Chapter 10.3.9.1.3
-//#define MAX_UDP_WRITE_SIZE      104   // From Chapter 10.3.9.1.3
 
 
-/*
- * Data structures
- * ---------------
- */
+// Data structures
 
 /// Data structure for IRIG 106 network handle
-typedef struct
-    {
+typedef struct {
     EnI106Ch10Mode      enNetMode;
     SOCKET              suIrigSocket;
     unsigned int        uUdpSeqNum;
@@ -81,32 +71,20 @@ typedef struct
     struct sockaddr_in  suSendIpAddress;
     uint16_t            uSendPort;
     unsigned int        uMaxUdpSize;    // Max size of Ch 10 message(s) not including transfer header
-    } SuI106Ch10NetHandle;
+} SuI106Ch10NetHandle;
 
-/*
- * Module data
- * -----------
- */
+// Module data
 
 static int                  m_bHandlesInited = bFALSE;
 static SuI106Ch10NetHandle  m_suNetHandle[MAX_HANDLES];
 
 
-/*
- * Function Declaration
- * --------------------
- */
-
-
-/* ----------------------------------------------------------------------- */
-
+// Function Declaration
 
 // Open / Close
 
 /// Open an IRIG 106 Live Data Streaming receive socket
-EnI106Status I106_CALL_DECL
-    enI106_OpenNetStreamRead(int iHandle, uint16_t uPort)
-    {
+EnI106Status I106_CALL_DECL enI106_OpenNetStreamRead(int iHandle, uint16_t uPort){
     int                     iIdx;
     int                     iResult;
     struct sockaddr_in      ServerAddr;
@@ -116,15 +94,11 @@ EnI106Status I106_CALL_DECL
 #endif
 
     // Initialize handle data if necessary
-    if (m_bHandlesInited == bFALSE)
-        {
+    if (m_bHandlesInited == bFALSE){
         for (iIdx=0; iIdx<MAX_HANDLES; iIdx++)
-            {
             m_suNetHandle[iIdx].enNetMode  = I106_CLOSED;
-            }
         m_bHandlesInited = bTRUE;
-        } // end if file handles not inited yet
-
+    }
 
 #ifdef MULTICAST
     int                     iInterfaceIdx;
@@ -142,22 +116,17 @@ EnI106Status I106_CALL_DECL
     iResult = WSAStartup(wVersionRequested, &wsaData);
 
     if (iResult != 0)
-        {
-//      printf("Unable to initialize Winsock 2.2\n");
         return I106_OPEN_ERROR;
-        }
 #endif
 
     // Create a socket for listening to UDP
     m_suNetHandle[iHandle].suIrigSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (m_suNetHandle[iHandle].suIrigSocket == INVALID_SOCKET) 
-        {
-//        printf("socket() failed with error: %ld\n", WSAGetLastError());
+    if (m_suNetHandle[iHandle].suIrigSocket == INVALID_SOCKET) {
 #if defined(_MSC_VER) 
         WSACleanup();
 #endif
         return I106_OPEN_ERROR;
-        }
+    }
 
     // Bind to any local address
     ServerAddr.sin_family      = AF_INET;
@@ -165,9 +134,7 @@ EnI106Status I106_CALL_DECL
     ServerAddr.sin_port        = htons(uPort);
 
     iResult = bind(m_suNetHandle[iHandle].suIrigSocket, (SOCKADDR*) &ServerAddr, sizeof(ServerAddr));
-    if (iResult == SOCKET_ERROR) 
-        {
-//        printf("bind() failed with error: %ld\n", WSAGetLastError());
+    if (iResult == SOCKET_ERROR) {
 #if defined(_MSC_VER) 
         closesocket(m_suNetHandle[iHandle].suIrigSocket);
         WSACleanup();
@@ -175,7 +142,7 @@ EnI106Status I106_CALL_DECL
         close(m_suNetHandle[iHandle].suIrigSocket);
 #endif
         return I106_OPEN_ERROR;
-        }
+    }
 
 #ifdef MULTICAST
     // Put the appropriate interface into multicast receive mode
@@ -183,14 +150,12 @@ EnI106Status I106_CALL_DECL
     LocalInterfaceAddr.s_addr = inet_addr("192.0.0.0");
     LocalInterfaceMask.s_addr = inet_addr("255.0.0.0");
     IrigMulticastGroup.s_addr = inet_addr("239.0.1.1");
-    for (iInterfaceIdx = 0; iInterfaceIdx < iNumInterfaces; iInterfaceIdx++)
-        {
-        if ((NetInterfaces[iInterfaceIdx].s_addr & LocalInterfaceMask.s_addr) == LocalInterfaceAddr.s_addr)
-            {
+    for (iInterfaceIdx = 0; iInterfaceIdx < iNumInterfaces; iInterfaceIdx++){
+        if ((NetInterfaces[iInterfaceIdx].s_addr & LocalInterfaceMask.s_addr) == LocalInterfaceAddr.s_addr){
             join_source_group(m_suNetHandle[iHandle].suIrigSocket, IrigMulticastGroup, NetInterfaces[iInterfaceIdx]);
             break;
-            }
         }
+    }
 #endif
 
     // Make sure the receive buffer is big enough for at least one UDP packet
@@ -205,16 +170,11 @@ EnI106Status I106_CALL_DECL
     m_suNetHandle[iHandle].enNetMode          = I106_READ_NET_STREAM;
 
     return I106_OK;
-    }
+}
 
-
-
-/* ----------------------------------------------------------------------- */
 
 /// Open an IRIG 106 Live Data Streaming send socket
-EnI106Status I106_CALL_DECL
-    enI106_OpenNetStreamWrite(int iHandle, uint32_t uIpAddress, uint16_t uUdpPort)
-    {
+EnI106Status I106_CALL_DECL enI106_OpenNetStreamWrite(int iHandle, uint32_t uIpAddress, uint16_t uUdpPort){
     int                     iIdx;
     int                     iResult;
 #ifdef SO_MAX_MSG_SIZE
@@ -230,15 +190,13 @@ EnI106Status I106_CALL_DECL
 
 
     // Initialize handle data if necessary
-    if (m_bHandlesInited == bFALSE)
-        {
-        for (iIdx=0; iIdx<MAX_HANDLES; iIdx++)
-            {
+    if (m_bHandlesInited == bFALSE){
+        for (iIdx=0; iIdx<MAX_HANDLES; iIdx++){
             m_suNetHandle[iIdx].enNetMode  = I106_CLOSED;
             m_suNetHandle[iIdx].uUdpSeqNum = 0;
-            }
+        }
         m_bHandlesInited = bTRUE;
-        } // end if file handles not inited yet
+    }
 
 
 #if defined(_MSC_VER) 
@@ -247,22 +205,17 @@ EnI106Status I106_CALL_DECL
     iResult = WSAStartup(wVersionRequested, &wsaData);
 
     if (iResult != 0)
-        {
-//      printf("Unable to initialize Winsock 2.2\n");
         return I106_OPEN_ERROR;
-        }
 #endif
 
     // Create a socket for writing to UDP
     m_suNetHandle[iHandle].suIrigSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (m_suNetHandle[iHandle].suIrigSocket == INVALID_SOCKET) 
-        {
-//        printf("socket() failed with error: %ld\n", WSAGetLastError());
+    if (m_suNetHandle[iHandle].suIrigSocket == INVALID_SOCKET) {
 #if defined(_MSC_VER) 
         WSACleanup();
 #endif
         return I106_OPEN_ERROR;
-        }
+    }
 
     // Fill in the remote host information
     m_suNetHandle[iHandle].suSendIpAddress.sin_family      = AF_INET;
@@ -278,24 +231,18 @@ EnI106Status I106_CALL_DECL
 #endif
 
     if (iResult == 0)
-        {
         // Use smaller, taking into account Ch 10 UDP transfer header
         m_suNetHandle[iHandle].uMaxUdpSize = MIN(iMaxMsgSize-6,MAX_UDP_WRITE_SIZE);
-        }
     else
         m_suNetHandle[iHandle].uMaxUdpSize = MAX_UDP_WRITE_SIZE;
 
     m_suNetHandle[iHandle].enNetMode = I106_WRITE_NET_STREAM;
 
     return I106_OK;
-    }
+}
 
 
-/* ----------------------------------------------------------------------- */
-
-EnI106Status I106_CALL_DECL
-    enI106_CloseNetStream(int iHandle)
-    {
+EnI106Status I106_CALL_DECL enI106_CloseNetStream(int iHandle){
 
 #ifdef MULTICAST
     // Restore the appropriate interface out of multicast receive mode
@@ -303,19 +250,16 @@ EnI106Status I106_CALL_DECL
     LocalInterfaceAddr.s_addr = inet_addr("192.0.0.0");
     LocalInterfaceMask.s_addr = inet_addr("255.0.0.0");
     IrigMulticastGroup.s_addr = inet_addr("224.0.0.1");
-    for (iInterfaceIdx = 0; iInterfaceIdx < iNumInterfaces; iInterfaceIdx++)
-        {
-        if ((NetInterfaces[iInterfaceIdx].s_addr & LocalInterfaceMask.s_addr) == LocalInterfaceAddr.s_addr)
-            {
+    for (iInterfaceIdx = 0; iInterfaceIdx < iNumInterfaces; iInterfaceIdx++){
+        if ((NetInterfaces[iInterfaceIdx].s_addr & LocalInterfaceMask.s_addr) == LocalInterfaceAddr.s_addr){
             leave_source_group(IrigSocket, IrigMulticastGroup, NetInterfaces[iInterfaceIdx]);
             break;
-            }
         }
+    }
 #endif
 
-    switch (m_suNetHandle[iHandle].enNetMode)
-        {
-        case I106_READ_NET_STREAM :
+    switch (m_suNetHandle[iHandle].enNetMode){
+        case I106_READ_NET_STREAM:
             // Close the receive socket
 #if defined(_MSC_VER) 
             closesocket(m_suNetHandle[iHandle].suIrigSocket);
@@ -329,7 +273,7 @@ EnI106Status I106_CALL_DECL
             m_suNetHandle[iHandle].ulRcvBufferLen     = 0L;
             break;
 
-        case I106_WRITE_NET_STREAM :
+        case I106_WRITE_NET_STREAM:
             // Close the transmit socket
 #if defined(_MSC_VER) 
             closesocket(m_suNetHandle[iHandle].suIrigSocket);
@@ -339,43 +283,33 @@ EnI106Status I106_CALL_DECL
 #endif
             break;
 
-        default :
+        default:
             break;
-        } // end switch on enNetMode
+    }
 
     // Mark this case closed
     m_suNetHandle[iHandle].enNetMode = I106_CLOSED;
 
     return I106_OK;
-    }
+}
 
 
-
-// ------------------------------------------------------------------------
-//! @brief Utility method for cross-platform recvmsg
-//! @details Used by enI106_ReadNetStream to split a read across the
-//!          header buffer and a body buffer.
-//! @param suSocket The SOCKET handle to recv from
-//! @param[out] pvBuffer1 Pointer to the first buffer to fill
-//! @param[in]  ulBufLen1 Length of the first buffer, in bytes 
-//! @param[out] pvBuffer2 Pointer to the second buffer to fill
-//! @param[in]  ulBufLen2 Length of the second buffer, in bytes
-//! @param[out] ulBytesRcvdOut Returns the number of bytes received and copied into the buffers
-//! @return I106_OK On success;
-//!         ulBytesRcvdOut contains the number of bytes read.
-//! @return I106_MORE_DATA On a successful, but truncated, read;
-//!         ulBytesRcvdOut contains the actual number of bytes read. Some data was lost.
-//! @return I106_READ_ERROR On error;
-//!         ulBytesRcvdOut is undefined
-static EnI106Status
-    RecvMsgSplit(SOCKET suSocket,
-                 void * const pvBuffer1,
-                 unsigned long ulBufLen1,
-                 void * const pvBuffer2,
-                 unsigned long ulBufLen2,
-                 unsigned long * pulBytesRcvdOut)
+/* Utility method for cross-platform recvmsg. Used by enI106_ReadNetStream to
+ * split a read across the header buffer and a body buffer.
+ * suSocket       : The SOCKET handle to recv from
+ * pvBuffer1      : Pointer to the first buffer to fill
+ * ulBufLen1      : Length of the first buffer, in bytes 
+ * pvBuffer2      : Pointer to the second buffer to fill
+ * ulBufLen2      : Length of the second buffer, in bytes
+ * ulBytesRcvdOut : Returns the number of bytes received and copied into the buffers
+ * Return         : I106_OK On success;
+ *     ulBytesRcvdOut contains the number of bytes read.
+ * Return         : I106_MORE_DATA On a successful, but truncated, read;
+ *     ulBytesRcvdOut contains the actual number of bytes read. Some data was lost.
+ * Return         : I106_READ_ERROR On error;
+ *     ulBytesRcvdOut is undefined */
+static EnI106Status RecvMsgSplit(SOCKET suSocket, void * const pvBuffer1, unsigned long ulBufLen1, void * const pvBuffer2, unsigned long ulBufLen2, unsigned long * pulBytesRcvdOut){
 #if defined(_MSC_VER)
-    {
     WSABUF         asuUdpRcvBuffs[2];
     DWORD          UdpRcvFlags = 0;
     DWORD          dwBytesRcvd = 0;
@@ -393,17 +327,14 @@ static EnI106Status
 
     if( 0 == iResult )
         return I106_OK;
-    else
-        {
+    else {
         int const err = WSAGetLastError();
         if( WSAEMSGSIZE == err )
             return I106_MORE_DATA;
         else
             return I106_READ_ERROR;
-        }
     }
 #else
-    {
     struct msghdr  suMsgHdr = { 0 };
     struct iovec   asuUdpRcvBuffs[2];
     const int      UdpRcvFlags = 0;
@@ -428,33 +359,25 @@ static EnI106Status
         return I106_MORE_DATA;
     else
         return I106_OK;
-    }
+}
 #endif
 
-// ------------------------------------------------------------------------
-//! @brief Utility method for dropping a peek'd bad packet
-//! @details If enI106_ReadNetStream MSG_PEEK's a packet that is too small,
-//!     then we have to remove it from the socket buffer before we can bail.
-//!     Otherwise, the next MSG_PEEK will see the same bad packet.
-static void
-    DropBadPacket(int iHandle)
-{
+
+/* Utility method for dropping a peek'd bad packet. If enI106_ReadNetStream
+ * MSG_PEEK's a packet that is too small, then we have to remove it from the
+ * socket buffer before we can bail. Otherwise, the next MSG_PEEK will see the
+ * same bad packet. */
+static void DropBadPacket(int iHandle){
     char dummy;
     // We don't care about the return value, we're failing anyways.
     (void)recvfrom(m_suNetHandle[iHandle].suIrigSocket, &dummy, sizeof(dummy), 0, 0, 0);
 }
 
 
-// ------------------------------------------------------------------------
 // Get the next header.
-
-int I106_CALL_DECL
-    enI106_ReadNetStream(int            iHandle,
-                         void         * pvBuffer,
-                         unsigned int   iBuffSize)
-    {
+int I106_CALL_DECL enI106_ReadNetStream(int iHandle, void * pvBuffer, unsigned int iBuffSize){
     // The minimum packet size needed for a valid segmented message packet
-    enum { MIN_SEG_LEN = sizeof(SuUDP_Transfer_Header_Seg)-1 + sizeof(SuI106Ch10Header) };
+    enum {MIN_SEG_LEN = sizeof(SuUDP_Transfer_Header_Seg)-1 + sizeof(SuI106Ch10Header)};
 
     int                             iResult;
     SuUDP_Transfer_Header_Seg       suUdpSeg;  // Same prefix as the header of an unsegmented msg
@@ -465,80 +388,64 @@ int I106_CALL_DECL
     SuI106Ch10Header              * psuHeader;
 
     // If we don't have a buffer ready to read from then read network packets
-    if (m_suNetHandle[iHandle].bBufferReady == bFALSE)
-        {
+    if (m_suNetHandle[iHandle].bBufferReady == bFALSE){
         // Get ready for a new buffer of data
         m_suNetHandle[iHandle].bBufferReady     = bFALSE;
         m_suNetHandle[iHandle].bGotFirstSegment = bFALSE;
         m_suNetHandle[iHandle].ulBufferPosIdx   = 0L;
 
         // Read until we've got a complete Ch 10 packet(s)
-        while (m_suNetHandle[iHandle].bBufferReady == bFALSE)
-            {
+        while (m_suNetHandle[iHandle].bBufferReady == bFALSE){
             // Peek at the message to determine the msg type (segmented or non-segmented)
             iResult = recvfrom(m_suNetHandle[iHandle].suIrigSocket, (char *)&suUdpSeg, sizeof(suUdpSeg), MSG_PEEK, NULL, NULL);
-//printf("recvfrom = %d\n", iResult);
 #if defined(_MSC_VER)
             // Make the WinSock return code more like POSIX to simplify the logic
             // WinSock returns -1 when the message is larger than the buffer
             // Thus, (iResult==-1) && WSAEMSGSIZE is expected, as we're only reading the header
-            if( (iResult == -1)  )
-                {
+            if (iResult == -1){
                 int const err = WSAGetLastError(); // called out for debugging
                 if( err == WSAEMSGSIZE)
                     iResult = sizeof(suUdpSeg); // The buffer was filled
-                }
+            }
 #endif
 
-            if( iResult == -1 )
-                {
+            if(iResult == -1){
                 enI106_DumpNetStream(iHandle);
                 return -1;
-                }
+            }
 
             // If I don't have at least enough for a common header then drop and bail
             // We'll check length again later, which depends on the msg type
-            if( iResult < UDP_Transfer_Header_NonSeg_Len )
-                {
-//printf("msg bytes (%d) < transfer header length (%d)\n", iResult, UDP_Transfer_Header_NonSeg_Len);
+            if (iResult < UDP_Transfer_Header_NonSeg_Len){
                 // Because we're peeking, we have to make sure to drop the bad packet.
                 DropBadPacket(iHandle);
                 enI106_DumpNetStream(iHandle);
                 continue;
-                }
+            }
 
-            //! @todo Check the version field for a known version
+            // @TODO Check the version field for a known version
 
             // Check and handle UDP sequence number
             if (suUdpSeg.uSeqNum != m_suNetHandle[iHandle].uUdpSeqNum+1)
-                {
                 enI106_DumpNetStream(iHandle);
-//printf("UDP Sequence Gap - %u  %u\n", m_suNetHandle[iHandle].uUdpSeqNum, suUdpSeg.uSeqNum);
-                }
             m_suNetHandle[iHandle].uUdpSeqNum = suUdpSeg.uSeqNum;
 
             // Handle full and segmented packet types
-            switch (suUdpSeg.uMsgType)
-                {
+            switch (suUdpSeg.uMsgType){
                 case 0 : // Full packet(s)
-//printf("Full - ");
-
                     iResult = RecvMsgSplit(m_suNetHandle[iHandle].suIrigSocket,
                                            &suUdpSeg,
                                            UDP_Transfer_Header_NonSeg_Len,
                                            m_suNetHandle[iHandle].pchRcvBuffer,
                                            m_suNetHandle[iHandle].ulRcvBufferLen,
                                            &ulBytesRcvd);
-                    if (I106_OK != iResult)
-                        {
+                    if (I106_OK != iResult){
                         enI106_DumpNetStream(iHandle);
                         if( I106_READ_ERROR == iResult )
                             return -1;
                         else
                             continue;
-                        }
-
-//printf("Size = %lu\n", ulBytesRcvd - UDP_Transfer_Header_NonSeg_Len);
+                    }
 
                     m_suNetHandle[iHandle].ulRcvBufferDataLen = ulBytesRcvd - UDP_Transfer_Header_NonSeg_Len;
                     m_suNetHandle[iHandle].bBufferReady       = bTRUE;
@@ -546,81 +453,65 @@ int I106_CALL_DECL
                     break;
 
                 case 1 : // Segmented packet
-//printf("Segmented - ");
-
                     // We need at least enough for a segmented header to do the next read.
-                    if( iResult < UDP_Transfer_Header_Seg_Len )
-                        {
+                    if( iResult < UDP_Transfer_Header_Seg_Len ){
                         DropBadPacket(iHandle);
                         enI106_DumpNetStream(iHandle);
                         continue;
-                        }
+                    }
 
                     // Always write to the beginning of the buffer while waiting for the first segment
                     // The first UDP packet is guaranteed to fit our default starting size
                     if (m_suNetHandle[iHandle].bGotFirstSegment == bFALSE)
-                        {
                         iResult = RecvMsgSplit(m_suNetHandle[iHandle].suIrigSocket,
                                                &suUdpSeg,
                                                UDP_Transfer_Header_Seg_Len,
                                                m_suNetHandle[iHandle].pchRcvBuffer,
                                                m_suNetHandle[iHandle].ulRcvBufferLen,
                                                &ulBytesRcvd);
-                        }
                     else
-                        {
                         iResult = RecvMsgSplit(m_suNetHandle[iHandle].suIrigSocket,
                                                &suUdpSeg,
                                                UDP_Transfer_Header_Seg_Len,
                                                &(m_suNetHandle[iHandle].pchRcvBuffer[suUdpSeg.uSegmentOffset]),
                                                m_suNetHandle[iHandle].ulRcvBufferLen - suUdpSeg.uSegmentOffset,
                                                &ulBytesRcvd);
-                        }
 
-                    if (I106_OK != iResult)
-                        {
+                    if (I106_OK != iResult){
                         enI106_DumpNetStream(iHandle);
                         if( I106_READ_ERROR == iResult )
                             return -1;
                         else
                             continue;
-                        }
-
-//printf("Offset = %u\n", suUdpSeg.uSegmentOffset);
+                    }
 
                     // Make sure we can access Ch 10 header info
-                    if( ulBytesRcvd < MIN_SEG_LEN )
-                        {
+                    if (ulBytesRcvd < MIN_SEG_LEN){
                         DropBadPacket(iHandle);
                         enI106_DumpNetStream(iHandle);
                         continue;
-                        }
+                    }
 
                     psuHeader = (SuI106Ch10Header *)m_suNetHandle[iHandle].pchRcvBuffer;
 
                     // If it's the first packet then figure out if our buffer is large enough for the whole Ch10 packet
-                    if (suUdpSeg.uSegmentOffset == 0)
-                        {
-                        if (psuHeader->ulPacketLen > m_suNetHandle[iHandle].ulRcvBufferLen)
-                            {
+                    if (suUdpSeg.uSegmentOffset == 0){
+                        if (psuHeader->ulPacketLen > m_suNetHandle[iHandle].ulRcvBufferLen){
                             m_suNetHandle[iHandle].ulRcvBufferLen = psuHeader->ulPacketLen + 0x4000;
                             m_suNetHandle[iHandle].pchRcvBuffer   = (char *)realloc(m_suNetHandle[iHandle].pchRcvBuffer,m_suNetHandle[iHandle].ulRcvBufferLen);
                             psuHeader = (SuI106Ch10Header *)m_suNetHandle[iHandle].pchRcvBuffer;
-                            } // end if buffer too small for whole Ch 10 packet
+                        }
                         m_suNetHandle[iHandle].bGotFirstSegment   = bTRUE;
                         m_suNetHandle[iHandle].ulRcvBufferDataLen = psuHeader->ulPacketLen;
-                        } // end if first packet
+                    }
 
                     // If we've gotten the first and last packets then mark the buffer as full and ready
                     if ((m_suNetHandle[iHandle].bGotFirstSegment == bTRUE) &&                     // First UDP buffer
-                        ((suUdpSeg.uSegmentOffset + ulBytesRcvd - UDP_Transfer_Header_Seg_Len) >= psuHeader->ulPacketLen)) // Last UDP buffer
-                        {
-//if ((suUdpSeg.uSegmentOffset + ulBytesRcvd - UDP_Transfer_Header_Seg_Len) > psuHeader->ulPacketLen)
-    //printf("Last packet too long");
+                        ((suUdpSeg.uSegmentOffset + ulBytesRcvd - UDP_Transfer_Header_Seg_Len) >= psuHeader->ulPacketLen)){ // Last UDP buffer
                         m_suNetHandle[iHandle].bBufferReady     = bTRUE;
                         m_suNetHandle[iHandle].bGotFirstSegment = bFALSE;
                         m_suNetHandle[iHandle].ulBufferPosIdx     = 0L;
-                        } // end if got first and last packet
+                    }
 
                     break;
 
@@ -630,9 +521,9 @@ int I106_CALL_DECL
                     DropBadPacket(iHandle);
                     enI106_DumpNetStream(iHandle);
                     continue;
-                } // end switch on UDP packet type
-            } // end while reading for a complete buffer
-        } // end if called and buffer not ready
+            }
+        }
+    }
 
     // Copy data to the user buffer
     iCopySize = MIN(m_suNetHandle[iHandle].ulRcvBufferDataLen - m_suNetHandle[iHandle].ulBufferPosIdx, iBuffSize);
@@ -641,66 +532,45 @@ int I106_CALL_DECL
     // Update buffer status
     m_suNetHandle[iHandle].ulBufferPosIdx += iCopySize;
     if (m_suNetHandle[iHandle].ulBufferPosIdx >= m_suNetHandle[iHandle].ulRcvBufferDataLen)
-        {
         m_suNetHandle[iHandle].bBufferReady = bFALSE;
-        }
 
     return iCopySize;
-    }
+}
 
-
-// ------------------------------------------------------------------------
 
 // Manipulate receive buffer
-// -------------------------
 
 // Invalidate the receive buffer so that the next enI106_ReadNetStream()
 // causes a new complete buffer to be read from the network
-
-EnI106Status I106_CALL_DECL
-    enI106_DumpNetStream(int iHandle)
-    {
+EnI106Status I106_CALL_DECL enI106_DumpNetStream(int iHandle){
     m_suNetHandle[iHandle].bBufferReady     = bFALSE;
     m_suNetHandle[iHandle].bGotFirstSegment = bFALSE;
     m_suNetHandle[iHandle].ulBufferPosIdx   = 0L;
 
     return I106_OK;
-    }
+}
 
 
-
-// ------------------------------------------------------------------------
-
-EnI106Status I106_CALL_DECL
-    enI106_MoveReadPointer(int iHandle, long iRelOffset)
-    {
+EnI106Status I106_CALL_DECL enI106_MoveReadPointer(int iHandle, long iRelOffset){
     long    lNewPosition;
 
     lNewPosition = m_suNetHandle[iHandle].ulBufferPosIdx + iRelOffset;
     if (lNewPosition < 0)
         m_suNetHandle[iHandle].ulBufferPosIdx = 0L;
 
-    else if ((unsigned long)lNewPosition >= m_suNetHandle[iHandle].ulRcvBufferDataLen)
-        {
+    else if ((unsigned long)lNewPosition >= m_suNetHandle[iHandle].ulRcvBufferDataLen){
         m_suNetHandle[iHandle].ulBufferPosIdx = 0L;
         m_suNetHandle[iHandle].bBufferReady   = bFALSE;
-        }
+    }
 
     else
         m_suNetHandle[iHandle].ulBufferPosIdx = (unsigned long)lNewPosition;
 
     return I106_OK;
-    }
+}
 
 
-
-// ------------------------------------------------------------------------
-
-EnI106Status I106_CALL_DECL
-    enI106_WriteNetStream(int           iHandle,
-                          void        * pvBuffer,
-                          uint32_t      uBuffSize)
-    {
+EnI106Status I106_CALL_DECL enI106_WriteNetStream(int iHandle, void * pvBuffer, uint32_t uBuffSize){
     EnI106Status        enStatus;
     EnI106Status        enReturnStatus;
     void              * pvCurrSendBuffPos;
@@ -714,28 +584,18 @@ EnI106Status I106_CALL_DECL
     if (m_suNetHandle[iHandle].enNetMode != I106_WRITE_NET_STREAM)
         return I106_NOT_OPEN;
 
-    // THIS WOULD BE A GOOD PLACE TO CHECK DATA PACKET INTEGRITY SOMEDAY
+    // @TODO THIS WOULD BE A GOOD PLACE TO CHECK DATA PACKET INTEGRITY SOMEDAY
 
     // Queue up the first IRIG packet
     psuCurrCh10Header = (SuI106Ch10Header *)pvBuffer;
     uCurrSendBuffLen  = psuCurrCh10Header->ulPacketLen;
     pvCurrSendBuffPos = pvBuffer;
-//    psuNextCh10Header = (SuI106Ch10Header  *)((char *)pvBuffer + psuCurrCh10Header->ulPacketLen);
-
-//    if ((char *)psuNextCh10Header >= ((char *)pvBuffer + uBuffSize))
-//        psuNextCh10Header = NULL;
-
-    // If psuNextCh10Header > pvBuffer + uBuffSize then this is a malformed buffer.
-//    assert((char *)psuNextCh10Header <= ((char *)pvBuffer + uBuffSize));
 
     // Step through IRIG packets until the length would exceed max UDP packet size
-    while (1==1)
-        {
+    while (1){
         // If current packet size > max then send segmented packet
-        if (psuCurrCh10Header->ulPacketLen > m_suNetHandle[iHandle].uMaxUdpSize)
-            {
+        if (psuCurrCh10Header->ulPacketLen > m_suNetHandle[iHandle].uMaxUdpSize){
             // This big packet had better be the first one in our current send buffer
-//          assert(pvCurrSendBuffPos == psuCurrCh10Header);
             assert(psuCurrCh10Header->uSync == 0xEB25);
 
             // Send segmented packet
@@ -747,23 +607,18 @@ EnI106Status I106_CALL_DECL
             pvCurrSendBuffPos = ((char *)pvCurrSendBuffPos + psuCurrCh10Header->ulPacketLen);
             psuCurrCh10Header = (SuI106Ch10Header *)pvCurrSendBuffPos;
             if ((char *)pvCurrSendBuffPos >= ((char *)pvBuffer + uBuffSize))
-                {
                 break;
-                }
-            else
-                {
+            else{
                 uCurrSendBuffLen  = psuCurrCh10Header->ulPacketLen;
                 continue;
-                }
-            } // end if big segmented packet
+            }
+        }
 
         // If no more Ch 10 packets then send what we have, done
-        if (((char *)psuCurrCh10Header + psuCurrCh10Header->ulPacketLen) >= ((char *)pvBuffer + uBuffSize))
-            {
+        if (((char *)psuCurrCh10Header + psuCurrCh10Header->ulPacketLen) >= ((char *)pvBuffer + uBuffSize)){
             // If psuNextCh10Header > pvBuffer + uBuffSize then this is a malformed buffer.
-//          assert((char *)psuNextCh10Header <= ((char *)pvBuffer + uBuffSize));
-
             assert(uCurrSendBuffLen <= m_suNetHandle[iHandle].uMaxUdpSize);
+
             // Send non-segmented packet
             enStatus = enI106_WriteNetNonSegmented(iHandle, pvCurrSendBuffPos, uCurrSendBuffLen);
             if (enStatus != I106_OK)
@@ -771,16 +626,16 @@ EnI106Status I106_CALL_DECL
 
             // Done sending packets
             break;
-            } // end if last message(s) in buffer
+        }
 
         // There is another buffer so let's check its size. If next packet would put us over 
         // max size then send what we have
         psuNextCh10Header = (SuI106Ch10Header *)((char *)psuCurrCh10Header + psuCurrCh10Header->ulPacketLen);
+
         // Might want to validate sync word, packet header checksum, and packet checksum
         assert(psuNextCh10Header->uSync == 0xEB25);
 
-        if ((uCurrSendBuffLen + psuNextCh10Header->ulPacketLen) > m_suNetHandle[iHandle].uMaxUdpSize)
-            {
+        if ((uCurrSendBuffLen + psuNextCh10Header->ulPacketLen) > m_suNetHandle[iHandle].uMaxUdpSize){
             assert(psuCurrCh10Header->uSync == 0xEB25);
 
             // Send non-segmented packet
@@ -792,43 +647,32 @@ EnI106Status I106_CALL_DECL
             pvCurrSendBuffPos = psuNextCh10Header;
             psuCurrCh10Header = psuNextCh10Header;
             uCurrSendBuffLen  = psuCurrCh10Header->ulPacketLen;
-            if ((char *)pvCurrSendBuffPos >= ((char *)pvBuffer + uBuffSize))
-                {
+            if ((char *)pvCurrSendBuffPos >= ((char *)pvBuffer + uBuffSize)){
                 // We should never get here but just in case
                 assert(1==0);
                 break;
-                }
+            }
             else
-                {
                 continue;
-                }
-            } // end if next packet puts us over the max size
+        }
 
         // Nothing to send so advance to the next Ch 10 packet
         psuCurrCh10Header += psuCurrCh10Header->ulPacketLen;
+
         // Might want to validate sync word, packet header checksum, and packet checksum
         assert(psuCurrCh10Header->uSync == 0xEB25);
 
-        } // Done stepping through all IRIG packets
-
-    return enReturnStatus;
     }
 
+    return enReturnStatus;
+}
 
-// ------------------------------------------------------------------------
 
 // Send a non-segmented UDP packet
-
-EnI106Status I106_CALL_DECL
-    enI106_WriteNetNonSegmented(
-            int           iHandle,
-            void        * pvBuffer,
-            uint32_t      uBuffSize)
-    {
+EnI106Status I106_CALL_DECL enI106_WriteNetNonSegmented(int iHandle, void * pvBuffer, uint32_t uBuffSize){
     EnI106Status        enReturnStatus;
 
 #if defined(_MSC_VER)
-//  SOCKET_ADDRESS      suMsSendIpAddress;
     WSAMSG              suMsMsgInfo;
     WSABUF              suMsBuffInfo[2];
     WSABUF              suMsControl;
@@ -878,19 +722,11 @@ EnI106Status I106_CALL_DECL
     m_suNetHandle[iHandle].uUdpSeqNum++;
 
     return enReturnStatus;
-    }
+}
 
-
-// ------------------------------------------------------------------------
 
 // Send a segmented UDP packet
-
-EnI106Status I106_CALL_DECL
-    enI106_WriteNetSegmented(
-            int           iHandle,
-            void        * pvBuffer,
-            uint32_t      uBuffSize)
-    {
+EnI106Status I106_CALL_DECL enI106_WriteNetSegmented(int iHandle, void * pvBuffer, uint32_t uBuffSize){
     EnI106Status        enReturnStatus;
     uint32_t            uBuffIdx;
     char              * pchBuffer;
@@ -920,8 +756,7 @@ EnI106Status I106_CALL_DECL
 
     // Send the IRIG UDP packets
     uBuffIdx = 0;
-    while (uBuffIdx < uBuffSize)
-        {
+    while (uBuffIdx < uBuffSize){
         suUdpHeaderSeg.uSeqNum        = m_suNetHandle[iHandle].uUdpSeqNum;
         suUdpHeaderSeg.uSegmentOffset = uBuffIdx;
 
@@ -950,11 +785,10 @@ EnI106Status I106_CALL_DECL
 
         // Send it. Done!
         iSendStatus = WSASendMsg(m_suNetHandle[iHandle].suIrigSocket, &suMsMsgInfo, 0, &lBytesSent, NULL, NULL);
-        if (iSendStatus != 0)
-            {
+        if (iSendStatus != 0){
             enReturnStatus = I106_WRITE_ERROR;
             break;
-            }
+        }
 
 #else
 // TODO - LINUX CODE
@@ -966,10 +800,11 @@ EnI106Status I106_CALL_DECL
         // Increment the sequence number for next time
         m_suNetHandle[iHandle].uUdpSeqNum++;
 
-        } // end while not at the end of the buffer
+    }
 
     return enReturnStatus;
-    }
+}
+
 #ifdef __cplusplus
 } // end namespace
 #endif
