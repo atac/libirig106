@@ -9,55 +9,31 @@
 
 #ifdef __cplusplus
 namespace Irig106 {
-extern "C" {
+    extern "C" {
 #endif
 
-/*
- * Macros and definitions
- * ----------------------
- */
 
+/* Data structures */
 
-/*
- * Data structures
- * ---------------
- */
-
-typedef struct
-    {
+typedef struct{
     uint16_t        uChID;              ///< Channel ID
     uint8_t         ubyDataType;        ///< Data type
     int64_t         lRelTime;           ///< 48 bit relative time
     SuIrig106Time   suIrigTime;         ///< Absolute time
     int64_t         lFileOffset;        ///< File offset to packet
-    } SuPacketIndexInfo;
+} SuPacketIndexInfo;
 
 
-/*
- * Global data
- * -----------
- */
-
-
-/*
- * Function Declaration
- * --------------------
- */
+/* Function Declarations */
 
 void InitIndex(int iHandle);
-
 EnI106Status I106_CALL_DECL enIndexPresent(const int iHandle, int * bFoundIndex);
-
 EnI106Status I106_CALL_DECL enReadIndexes(const int iHandle);
-
 EnI106Status I106_CALL_DECL enMakeIndex(const int iHandle, uint16_t uChID);
 
-//EnI106Status I106_CALL_DECL SaveIndexTable(char* strFileName);
-
 #ifdef __cplusplus
-}
+    }
 }
 #endif
 
 #endif
-

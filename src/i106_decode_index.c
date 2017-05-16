@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_index.c - 
+ i106_decode_index.c
 
  ****************************************************************************/
 
@@ -19,35 +19,10 @@ namespace Irig106 {
 #endif
 
 
-
-/*
- * Macros and definitions
- * ----------------------
- */
-
-
-/*
- * Data structures
- * ---------------
- */
-
-
-/*
- * Module data
- * -----------
- */
-
-
-
-/*
- * Function Declaration
- * --------------------
- */
+// Function Declaration
 
 EnI106Status vFillInMsgPtrs(SuIndex_CurrMsg * psuCurrMsg);
 
-
-/* ======================================================================= */
 
 /* These Decode_First / Decode_Next routines take an index packet and return
  * successive root or node index entries.  Indexes are complicated with a lot
@@ -56,22 +31,17 @@ EnI106Status vFillInMsgPtrs(SuIndex_CurrMsg * psuCurrMsg);
  * index packet will have their data pointers set to NULL.  It is important
  * to check the SuIndex_CurrMsg data pointers for the NULL value before trying
  * to use them.
- *
+ 
  * Calls to decode a root index packet will fill in a non-NULL pointer for the 
  * psuRootInfo pointer until the end of the packet is reached.  The last call to 
  * decode a root index packet will fill in a NULL pointer for psuRootInfo, and 
  * will fill in a non-NULL pointer for psuNextRootOffset, the pointer to the 
  * offset of the next root packet.
- *
+ 
  * Calls to decode a node index packet will fill in a non-NULL pointer for the
- * psuNodeInfo pointer.
+ * psuNodeInfo pointer. */
 
- */
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_FirstIndex(SuI106Ch10Header * psuHeader,
-                             void             * pvBuff,
-                             SuIndex_CurrMsg  * psuMsg)
-    {
+EnI106Status I106_CALL_DECL enI106_Decode_FirstIndex(SuI106Ch10Header * psuHeader, void * pvBuff, SuIndex_CurrMsg * psuMsg){
     EnI106Status    RetStatus;
     int64_t         lCurrOffset = 0;
 
@@ -85,11 +55,10 @@ EnI106Status I106_CALL_DECL
     // If there is a file size then make a pointer to it
     if (psuMsg->psuChanSpec->bFileSize == 0)
         psuMsg->piFileSize = NULL;
-    else
-        {
+    else {
         psuMsg->piFileSize = (int64_t *)((char *)(pvBuff) + lCurrOffset);
         lCurrOffset += sizeof(int64_t);
-        }
+    }
         
     // Set pointer to the beginning of the index array
     psuMsg->pvIndexArray = (char *)(pvBuff) + lCurrOffset;
@@ -109,15 +78,10 @@ EnI106Status I106_CALL_DECL
     RetStatus = vFillInMsgPtrs(psuMsg);
 
     return RetStatus;
-    }
+}
 
 
-
-/* ----------------------------------------------------------------------- */
-
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_NextIndex(SuIndex_CurrMsg * psuMsg)
-    {
+EnI106Status I106_CALL_DECL enI106_Decode_NextIndex(SuIndex_CurrMsg * psuMsg){
     EnI106Status    RetStatus;
 
     // Check for no more messages
@@ -125,74 +89,56 @@ EnI106Status I106_CALL_DECL
     if (psuMsg->uMsgNum >= psuMsg->psuChanSpec->uIdxEntCount)
         return I106_NO_MORE_DATA;
 
-    // Make sure offset isn't beyond the end of the data buffer
-//    if (psuMsg->ulCurrOffset >= psuMsg->ulDataLen)
-//        return I106_BUFFER_OVERRUN;
-
     // Get the index data pointers
     RetStatus = vFillInMsgPtrs(psuMsg);
 
     return RetStatus;
-    }
+}
 
-
-
-
-/* ----------------------------------------------------------------------- */
 
 /* Fill in the pointers to the various index packet message data items. There
  * are three different kinds of messages, a node index message, a root index
- * message, and an offset to the next root index packet.
- */
-
-EnI106Status vFillInMsgPtrs(SuIndex_CurrMsg * psuCurrMsg)
-    {
-    EnI106Status    RetStatus;
+ * message, and an offset to the next root index packet. */
+EnI106Status vFillInMsgPtrs(SuIndex_CurrMsg * psuCurrMsg){
+    EnI106Status RetStatus;
 
     // Process node index message
-    if (psuCurrMsg->psuChanSpec->uIndexType == 1)
-        {
+    if (psuCurrMsg->psuChanSpec->uIndexType == 1){
         // With optional secondary header time
-        if (psuCurrMsg->psuChanSpec->bIntraPckHdr == 1)
-            {
+        if (psuCurrMsg->psuChanSpec->bIntraPckHdr == 1){
             psuCurrMsg->psuTime         = &(((SuIndex_NodeMsgOptTime *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].suTime);
             psuCurrMsg->psuOptionalTime = &(((SuIndex_NodeMsgOptTime *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].suSecondaryTime);
             psuCurrMsg->plFileOffset    = &(((SuIndex_NodeMsgOptTime *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].lOffset);
             psuCurrMsg->psuNodeData     = &(((SuIndex_NodeMsgOptTime *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].suData);
-            }
+        }
 
         // Without optional secondary header time
-        else
-            {
+        else {
             psuCurrMsg->psuTime         = &(((SuIndex_NodeMsg *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].suTime);
             psuCurrMsg->psuOptionalTime = NULL;
             psuCurrMsg->plFileOffset    = &(((SuIndex_NodeMsg *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].lOffset);
             psuCurrMsg->psuNodeData     = &(((SuIndex_NodeMsg *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].suData);
-            }
+        }
         RetStatus = I106_INDEX_NODE;
-        } // end if node index message
-
+    }
 
     // Process root index messages
-    else
-        {
+    else {
         // With optional secondary header time
-        if (psuCurrMsg->psuChanSpec->bIntraPckHdr == 1)
-            {
+        if (psuCurrMsg->psuChanSpec->bIntraPckHdr == 1){
             psuCurrMsg->psuTime         = &(((SuIndex_RootMsgOptTime *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].suTime);
             psuCurrMsg->psuOptionalTime = &(((SuIndex_RootMsgOptTime *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].suSecondaryTime);
             psuCurrMsg->plFileOffset    = &(((SuIndex_RootMsgOptTime *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].lOffset);
             psuCurrMsg->psuNodeData     = NULL;
-            } // end if root index messge
+        }
 
         // Without optional secondary header time
-        else
-            {
+        else {
             psuCurrMsg->psuTime         = &(((SuIndex_RootMsg *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].suTime);
             psuCurrMsg->psuOptionalTime = NULL;
             psuCurrMsg->plFileOffset    = &(((SuIndex_RootMsg *)psuCurrMsg->pvIndexArray)[psuCurrMsg->uMsgNum].lOffset);
             psuCurrMsg->psuNodeData     = NULL;
-            } // end if root packe pointer message
+        }
 
         // If not the last message then it's a root index message
         if (psuCurrMsg->uMsgNum < psuCurrMsg->psuChanSpec->uIdxEntCount-1)
@@ -201,15 +147,10 @@ EnI106Status vFillInMsgPtrs(SuIndex_CurrMsg * psuCurrMsg)
         // Since it is the last message it's a pointer to next root packet
         else
             RetStatus = I106_INDEX_ROOT_LINK;
-
-        } // end if root index message
-
-    return RetStatus;
     }
 
-
-
-/* ----------------------------------------------------------------------- */
+    return RetStatus;
+}
 
 
 #ifdef __cplusplus
