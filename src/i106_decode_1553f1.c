@@ -18,42 +18,13 @@ namespace Irig106 {
 #endif
 
 
-
-/*
- * Macros and definitions
- * ----------------------
- */
-
-
-/*
- * Data structures
- * ---------------
- */
-
-
-/*
- * Module data
- * -----------
- */
-
-
-
-/*
- * Function Declaration
- * --------------------
- */
+// Function Declaration
 
 static void vFillInMsgPtrs(Su1553F1_CurrMsg * psuCurrMsg);
-//static int  i1553WordCnt(const SuCmdWordU * psuCmdWord);
 
 
-/* ======================================================================= */
-
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_First1553F1(SuI106Ch10Header * psuHeader,
-                              void             * pvBuff,
-                              Su1553F1_CurrMsg * psuMsg)
-    {
+EnI106Status I106_CALL_DECL enI106_Decode_First1553F1(
+        SuI106Ch10Header * psuHeader, void * pvBuff, Su1553F1_CurrMsg * psuMsg){
 
     // Set pointers to the beginning of the 1553 buffer
     psuMsg->psuChanSpec = (Su1553F1_ChanSpec *)pvBuff;
@@ -78,31 +49,20 @@ EnI106Status I106_CALL_DECL
         return I106_BUFFER_OVERRUN;
 
     // Set the pointer to the first 1553 message
-    //psuMsg->psu1553Hdr = (Su1553F1_Header *)
-    //                         ((char *)(pvBuff) + 
-    //                          sizeof(psuMsg->psuChanSpec));
-    psuMsg->psu1553Hdr = (Su1553F1_Header *)
-                             ((char *)(pvBuff) + psuMsg->ulCurrOffset);
+    psuMsg->psu1553Hdr = (Su1553F1_Header *) ((char *)(pvBuff) + psuMsg->ulCurrOffset);
 
     // Check to make sure the data does run beyond the end of the buffer
-    if ((psuMsg->ulCurrOffset    + 
-         sizeof(Su1553F1_Header) +
-         psuMsg->psu1553Hdr->uMsgLen) > psuMsg->ulDataLen)
+    if ((psuMsg->ulCurrOffset + sizeof(Su1553F1_Header) + psuMsg->psu1553Hdr->uMsgLen) > psuMsg->ulDataLen)
         return I106_BUFFER_OVERRUN;
 
     // Get the other pointers
     vFillInMsgPtrs(psuMsg);
 
     return I106_OK;
-    }
+}
 
 
-
-/* ----------------------------------------------------------------------- */
-
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_Next1553F1(Su1553F1_CurrMsg * psuMsg)
-    {
+EnI106Status I106_CALL_DECL enI106_Decode_Next1553F1(Su1553F1_CurrMsg * psuMsg){
 
     // Check for no more messages
     psuMsg->uMsgNum++;
@@ -118,41 +78,28 @@ EnI106Status I106_CALL_DECL
         return I106_BUFFER_OVERRUN;
 
     // Set pointer to the next 1553 data buffer
-    psuMsg->psu1553Hdr  = (Su1553F1_Header *)
-                               ((char *)(psuMsg->psu1553Hdr) + 
-                                sizeof(Su1553F1_Header)      + 
-                                psuMsg->psu1553Hdr->uMsgLen);
+    psuMsg->psu1553Hdr = (Su1553F1_Header *)
+        ((char *)(psuMsg->psu1553Hdr) + sizeof(Su1553F1_Header) + psuMsg->psu1553Hdr->uMsgLen);
 
     // Check to make sure the data does run beyond the end of the buffer
-    if ((psuMsg->ulCurrOffset    + 
-         sizeof(Su1553F1_Header) +
-         psuMsg->psu1553Hdr->uMsgLen) > psuMsg->ulDataLen)
+    if ((psuMsg->ulCurrOffset + sizeof(Su1553F1_Header) + psuMsg->psu1553Hdr->uMsgLen) > psuMsg->ulDataLen)
         return I106_BUFFER_OVERRUN;
-
-
-//psu1553Hdr = (Su1553F1_Header *)((char *)psu1553Hdr + sizeof(Su1553F1_Header) + psu1553Hdr->uMsgLen);
 
     // Get the other pointers
     vFillInMsgPtrs(psuMsg);
 
     return I106_OK;
-    }
+}
 
 
-
-
-/* ----------------------------------------------------------------------- */
-
-void vFillInMsgPtrs(Su1553F1_CurrMsg * psuCurrMsg)
-    {
+void vFillInMsgPtrs(Su1553F1_CurrMsg * psuCurrMsg){
 
     psuCurrMsg->psuCmdWord1  = (SuCmdWordU *)
         ((char *)(psuCurrMsg->psu1553Hdr) + sizeof(Su1553F1_Header));
 
     // Position of data and status response differ between transmit and receive
     // If not RT to RT
-    if ((psuCurrMsg->psu1553Hdr)->bRT2RT == 0)
-        {
+    if ((psuCurrMsg->psu1553Hdr)->bRT2RT == 0){
         // Second command and status words not available
         psuCurrMsg->psuCmdWord2  = NULL;
         psuCurrMsg->puStatWord2  = NULL;
@@ -161,39 +108,32 @@ void vFillInMsgPtrs(Su1553F1_CurrMsg * psuCurrMsg)
         psuCurrMsg->uWordCnt = i1553WordCnt(psuCurrMsg->psuCmdWord1);
 
         // Receive
-        if (psuCurrMsg->psuCmdWord1->suStruct.bTR == 0)
-            {
+        if (psuCurrMsg->psuCmdWord1->suStruct.bTR == 0){
             psuCurrMsg->pauData     = (uint16_t *)psuCurrMsg->psuCmdWord1 + 1;
             psuCurrMsg->puStatWord1 = psuCurrMsg->pauData + psuCurrMsg->uWordCnt;
-            }
+        }
 
         //Transmit
-        else
-            {
+        else {
             psuCurrMsg->puStatWord1 = (uint16_t *)psuCurrMsg->psuCmdWord1 + 1;
             psuCurrMsg->pauData     = (uint16_t *)psuCurrMsg->psuCmdWord1 + 2;
-            }
-        } // end if not RT to RT
+        }
+    }
 
     // RT to RT
-    else
-        {
+    else {
         psuCurrMsg->psuCmdWord2 = psuCurrMsg->psuCmdWord1 + 1;
         psuCurrMsg->uWordCnt    = i1553WordCnt(psuCurrMsg->psuCmdWord2);
         psuCurrMsg->puStatWord2 = (uint16_t *)psuCurrMsg->psuCmdWord1 + 2;
         psuCurrMsg->pauData     = (uint16_t *)psuCurrMsg->psuCmdWord1 + 3;
         psuCurrMsg->puStatWord1 = (uint16_t *)psuCurrMsg->pauData     + psuCurrMsg->uWordCnt;
-        } // end if RT to RT
-
-    return;
     }
 
+    return;
+}
 
 
-/* ----------------------------------------------------------------------- */
-
-char * szCmdWord(unsigned int iCmdWord)
-    {
+char * szCmdWord(unsigned int iCmdWord){
     static char     szCmdWord[16];
     SuCmdWord     * psuCmdWord = (SuCmdWord *)&iCmdWord;
 
@@ -204,33 +144,24 @@ char * szCmdWord(unsigned int iCmdWord)
          psuCmdWord->uWordCnt==0 ? 32 : psuCmdWord->uWordCnt);
 
     return &szCmdWord[0];
-    }
+}
 
-
-
-/* ------------------------------------------------------------------------ */
 
 /* Return the number of word in a 1553 message taking into account mode codes */
-
-int I106_CALL_DECL 
-    i1553WordCnt(const SuCmdWordU * psuCmdWord)
-    {
+int I106_CALL_DECL i1553WordCnt(const SuCmdWordU * psuCmdWord){
 
     // If the subaddress is a mode code then find out number of data words
-    if ((psuCmdWord->suStruct.uSubAddr == 0x0000) ||
-        (psuCmdWord->suStruct.uSubAddr == 0x001f)) 
-        {
+    if ((psuCmdWord->suStruct.uSubAddr == 0x0000) || (psuCmdWord->suStruct.uSubAddr == 0x001f)){
         if (psuCmdWord->suStruct.uWordCnt & 0x0010) return 1;
         else                                        return 0;
-        } // end if mode code
+    }
 
     // If regular subaddress find out number of data words
-    else
-        {
+    else {
         if (psuCmdWord->suStruct.uWordCnt == 0)     return 32;
         else                                        return psuCmdWord->suStruct.uWordCnt;
-        } // end if regular subaddress
-  }
+    }
+}
 
 #ifdef __cplusplus
 } // end namespace i106
