@@ -4,7 +4,7 @@
 
 SRC_DIR=src
 CFLAGS=-DIRIG_NETWORKING -iquote../src -ggdb -fpack-struct=1
-LIBS=../libirig106.so
+LIBS=../libirig106.a
 
 #all: i106stat i106trim i106vid idmptmat idmp1553 idmpins idmpuart idmpeth idmp429 idmpindex idmptime idmpgps
 all: i106stat i106vid idmptmat idmp1553 idmpins idmpuart idmpeth idmp429 idmpindex idmptime idmpgps idmpcan idmppcm

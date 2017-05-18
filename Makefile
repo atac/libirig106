@@ -8,9 +8,15 @@ SRC_DIR=src
 
 # IRIG 106 Ch 10 Library
 # ----------------------
+#
+
+all: libirig106.so libirig106.a
 
 libirig106.so: irig106ch10.o i106_time.o i106_index.o i106_decode_time.o i106_decode_1553f1.o i106_decode_tmats.o i106_decode_index.o i106_decode_uart.o i106_decode_video.o i106_decode_discrete.o i106_decode_ethernet.o i106_decode_arinc429.o i106_data_stream.o i106_decode_pcmf1.o i106_decode_can.o i106_data_stream.o
 	gcc -shared -fPIC -Wall -o $@ $? -lc
+
+libirig106.a: irig106ch10.o i106_time.o i106_index.o i106_decode_time.o i106_decode_1553f1.o i106_decode_tmats.o i106_decode_index.o i106_decode_uart.o i106_decode_video.o i106_decode_discrete.o i106_decode_ethernet.o i106_decode_arinc429.o i106_data_stream.o i106_decode_pcmf1.o i106_decode_can.o i106_data_stream.o
+	ar rc $@ $?
 
 irig106ch10.o: $(SRC_DIR)/irig106ch10.c $(SRC_DIR)/irig106ch10.h
 	gcc $(CFLAGS) -c $(SRC_DIR)/irig106ch10.c
@@ -64,7 +70,7 @@ i106_data_stream.o: $(SRC_DIR)/i106_data_stream.c $(SRC_DIR)/i106_data_stream.h
 
 clean:
 	$(MAKE) -C test clean
-	rm *.o libirig106.so
+	rm *.o libirig106.so libirig106.a
 
 tests:
 	$(MAKE) -C test
