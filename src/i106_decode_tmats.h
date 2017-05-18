@@ -1,21 +1,20 @@
 /****************************************************************************
 
- i106_decode_tmats.h - 
+ i106_decode_tmats.h
 
  ****************************************************************************/
 
 #ifndef _I106_DECODE_TMATS_H
 #define _I106_DECODE_TMATS_H
 
+#include "config.h"
+
 #ifdef __cplusplus
 namespace Irig106 {
 extern "C" {
 #endif
 
-/*
- * Macros and definitions
- * ----------------------
- */
+// Macros and definitions
 
 /// TMATS signature generating options
 #define TMATS_SIGFLAG_NONE          0x0000
@@ -29,10 +28,8 @@ extern "C" {
 #define TMATS_SIGVER_DEFAULT        TMATS_SIGVER_1
 #define TMATS_SIGVER_MAX            TMATS_SIGVER_1
 
-/*
- * Data structures
- * ---------------
- */
+
+// Data structures
 
 // Channel specific data word
 // --------------------------
@@ -42,17 +39,12 @@ extern "C" {
 #pragma pack(1)
 #endif
 
-typedef PUBLIC struct Tmats_ChanSpec_S
-    {
+typedef PUBLIC struct Tmats_ChanSpec_S {
     uint32_t    iCh10Ver        :  8;      // Recorder Ch 10 Version
     uint32_t    bConfigChange   :  1;      // Recorder configuration changed
     uint32_t    iFormat         :  1;      // TMATS / XML Format
     uint32_t    iReserved       : 22;      // Reserved
-#if !defined(__GNUC__)
-    } SuTmats_ChanSpec;
-#else
-    } __attribute__ ((packed)) SuTmats_ChanSpec;
-#endif
+} PACKED SuTmats_ChanSpec;
 
 #if defined(_MSC_VER)
 #pragma pack(pop)
@@ -66,29 +58,26 @@ typedef PUBLIC struct Tmats_ChanSpec_S
 
 // Asynchronous Embedded Streams definitions
 
-typedef PUBLIC struct SuPAsyncEmbedded_S
-    {
+typedef PUBLIC struct SuPAsyncEmbedded_S {
     int                         iEmbeddedStreamNum;     // P-x\AEF\XXX-n
     char                      * szDataLinkName;         // P-x\AEF\DLN-n
     struct SuPRecord_S        * psuPRecord;             // Corresponding P record
 
     struct SuPAsyncEmbedded_S * psuNextEmbedded;
-    } SuPAsyncEmbedded;
+} SuPAsyncEmbedded;
 
 
 // Subframe ID Counter definitions
 // Note: Subframe definitions go away starting in 106-11
 
-typedef PUBLIC struct SuPSubframeLoc_S
-    {
+typedef PUBLIC struct SuPSubframeLoc_S {
     int                         iSubframeLocNum;        // P-x\SFx-x-x-n
     char                      * szSubframeLocation;     // P-x\SF4-x-x-n
     struct SuPSubframeLoc_S   * psuNextSubframeLoc;
-    } SuPSubframeLoc;
+} SuPSubframeLoc;
     
 
-typedef PUBLIC struct SuPSubframeDef_S
-    {
+typedef PUBLIC struct SuPSubframeDef_S {
     int                         iSubframeDefNum;        // P-x\SFx-x-n
     char                      * szSubframeName;         // P-x\SF1-x-n
     char                      * szSuperComPosition;     // P-x\SF2-x-n
@@ -98,11 +87,10 @@ typedef PUBLIC struct SuPSubframeDef_S
     char                      * szSubframeDepth;        // P-x\SF6-x-n
 
     struct SuPSubframeDef_S   * psuNextSubframeDef;
-    } SuPSubframeDef;
+} SuPSubframeDef;
     
     
-typedef PUBLIC struct SuPSubframeId_S
-    {
+typedef PUBLIC struct SuPSubframeId_S {
     int                         iCounterNum;            // P-x\ISFx-n
     char                      * szCounterName;          // P-x\ISF1-n
     char                      * szCounterType;          // P-x\ISF2-n
@@ -121,12 +109,12 @@ typedef PUBLIC struct SuPSubframeId_S
     SuPSubframeDef            * psuFirstSubframeDef;
     
     struct SuPSubframeId_S    * psuNextSubframeId;
-    } SuPSubframeId;
+} SuPSubframeId;
+
     
 // P Record definition
 
-typedef PUBLIC struct SuPRecord_S
-    {
+typedef PUBLIC struct SuPRecord_S {
     int                         iRecordNum;             // P-x
     char                      * szDataLinkName;         // P-x\DLN
     char                      * szPcmCode;              // P-x\D1
@@ -155,43 +143,36 @@ typedef PUBLIC struct SuPRecord_S
     SuPSubframeId             * psuFirstSubframeId;     // Link to Subframe ID Counter defs
     
     struct SuPRecord_S        * psuNextPRecord;
-    } SuPRecord;
+} SuPRecord;
+
 
 // B Records
-// ---------
 
-typedef PUBLIC struct SuBRecord_S
-    {
+typedef PUBLIC struct SuBRecord_S {
     int                         iRecordNum;             // B-x
     char                      * szDataLinkName;         // B-x\DLN
     char                      * szNumBuses;             // B-x\NBS\N
-//    int                         iNumBuses;              
     struct SuBRecord_S        * psuNextBRecord;
-    } SuBRecord;
+} SuBRecord;
 
 
 // M Records
-// ---------
 
-typedef PUBLIC struct SuMRecord_S
-    {
+typedef PUBLIC struct SuMRecord_S {
     int                         iRecordNum;             // M-x
-//    char                      * szRecordNum;            // M-x
     char                      * szDataSourceID;         // M-x\ID
     char                      * szBBDataLinkName;       // M-x\BB\DLN
     char                      * szBasebandSignalType;   // M-x\BSG1
     struct SuPRecord_S        * psuPRecord;             // Corresponding P record
     struct SuBRecord_S        * psuBRecord;             // Corresponding B record
     struct SuMRecord_S        * psuNextMRecord;         // Used to keep track of M records
-    } SuMRecord;
+} SuMRecord;
 
 
 // R Records
-// ---------
 
 // R record data source
-typedef PUBLIC struct SuRDataSource_S
-    {
+typedef PUBLIC struct SuRDataSource_S {
     int                         iDataSourceNum;         // R-x\XXX-n
     char                      * szDataSourceID;         // R-x\DSI-n
     char                      * szChannelDataType;      // R-x\CDT-n
@@ -202,6 +183,7 @@ typedef PUBLIC struct SuRDataSource_S
     char                      * szPcmDataLinkName;      // R-x\PDLN-n (-04, -05)
     char                      * szBusDataLinkName;      // R-x\BDLN-n (-04, -05)
     char                      * szChanDataLinkName;     // R-x\CDLN-n (-07, -09)
+
     // Video channel attributes
     char                      * szVideoDataType;        // (R-x\VTF-n)
     char                      * szVideoEncodeType;      // (R-x\VXF-n)
@@ -210,6 +192,7 @@ typedef PUBLIC struct SuRDataSource_S
     char                      * szVideoConstBitRate;    // (R-x\CBR-n)
     char                      * szVideoVarPeakBitRate;  // (R-x\VBR-n)
     char                      * szVideoEncodingDelay;   // (R-x\VED-n)
+
     // PCM channel attributes
     char                      * szPcmDataTypeFormat;    // (R-x\PDTF-n)
     char                      * szPcmDataPacking;       // (R-x\PDP-n)
@@ -218,6 +201,7 @@ typedef PUBLIC struct SuRDataSource_S
     char                      * szPcmInputThreshold;    // (R-x\ITH-n)
     char                      * szPcmInputTermination;  // (R-x\ITM-n)
     char                      * szPcmVideoTypeFormat;   // (R-x\PTF-n)
+
     // Analog channel attributes
     char                      * szAnalogChansPerPkt;    // (R-1\ACH\N-n)
     char                      * szAnalogSampleRate;     // (R-1\ASR-n)
@@ -226,11 +210,10 @@ typedef PUBLIC struct SuRDataSource_S
     struct SuMRecord_S        * psuMRecord;             // Corresponding M record
     struct SuPRecord_S        * psuPRecord;             // Corresponding P record
     struct SuRDataSource_S    * psuNextRDataSource;
-    } SuRDataSource;    
+} SuRDataSource;
 
 // R record
-typedef PUBLIC struct SuRRecord_S
-    {
+typedef PUBLIC struct SuRRecord_S {
     int                         iRecordNum;             // R-x
     char                      * szDataSourceID;         // R-x\ID
     char                      * szNumDataSources;       // R-x\N
@@ -240,49 +223,41 @@ typedef PUBLIC struct SuRRecord_S
     int                         bEventsEnabled;         // Only valid if szEventsEnabled != NULL
     SuRDataSource             * psuFirstDataSource;     //
     struct SuRRecord_S        * psuNextRRecord;         // Used to keep track of R records
-    } SuRRecord;
+} SuRRecord;
 
 
 // G Records
-// ---------
 
 // G record, data source
-typedef PUBLIC struct SuGDataSource_S
-    {
+typedef PUBLIC struct SuGDataSource_S {
     int                         iDataSourceNum;         // G\XXX-n
-//  char                      * szDataSourceNum;        // G\XXX-n
     char                      * szDataSourceID;         // G\DSI-n
     char                      * szDataSourceType;       // G\DST-n
     struct SuRRecord_S        * psuRRecord;             // Corresponding R record
     struct SuGDataSource_S    * psuNextGDataSource;
-    } SuGDataSource;
+} SuGDataSource;
 
 // G record
-typedef PUBLIC struct GRecord_S
-    {
+typedef PUBLIC struct GRecord_S {
     char                      * szProgramName;          // G\PN
     char                      * szIrig106Rev;           // G\106
     char                      * szOriginationDate;      // G\OD
-//  int                         iNumDataSources;        // G\DSI\N
     char                      * szNumDataSources;       // G\DSI\N
     SuGDataSource             * psuFirstGDataSource;
-    } SuGRecord;
+} SuGRecord;
+
 
 // Memory linked list
-// ------------------
 
 // Linked list that keeps track of malloc'ed memory
-typedef PUBLIC struct MemBlock_S
-    {
+typedef PUBLIC struct MemBlock_S {
     void                    * pvMemBlock;
     struct MemBlock_S       * psuNextMemBlock;
-    } SuMemBlock;
+} SuMemBlock;
 
 // Decoded TMATS info
-// ------------------
 
-typedef PUBLIC struct SuTmatsInfo_S
-    {
+typedef PUBLIC struct SuTmatsInfo_S {
     int              iCh10Ver;
     int              bConfigChange;
     SuGRecord      * psuFirstGRecord;
@@ -298,12 +273,10 @@ typedef PUBLIC struct SuTmatsInfo_S
     void           * psuFirstHRecord;
     void           * psuFirstVRecord;
     SuMemBlock     * psuFirstMemBlock;
-    } SuTmatsInfo;
+} SuTmatsInfo;
 
-/*
- * Function Declaration
- * --------------------
- */
+
+// Function Declaration
 
 EnI106Status I106_CALL_DECL 
     enI106_Decode_Tmats(SuI106Ch10Header  * psuHeader,

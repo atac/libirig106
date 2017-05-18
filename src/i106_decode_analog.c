@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <ctype.h>
 #include <assert.h>
 
@@ -95,12 +95,12 @@ EnI106Status I106_CALL_DECL
     psuMsg->psuHeader = psuHeader; 
     psuMsg->psuChanSpec = (SuAnalogF1_ChanSpec *)pvBuff; 
 
-    psuMsg->uBytesRead = 0;
+    psuMsg->ulBytesRead = 0;
     psuMsg->ulDataLen = psuHeader->ulDataLen;
-    psuMsg->uBytesRead += sizeof(SuAnalogF1_ChanSpec);
+    psuMsg->ulBytesRead += sizeof(SuAnalogF1_ChanSpec);
 
     // Check for no (more) data
-    if (psuMsg->ulDataLen <= psuMsg->uBytesRead)
+    if (psuMsg->ulDataLen <= psuMsg->ulBytesRead)
         return I106_NO_MORE_DATA;
 
     // Save the time from the packet header
