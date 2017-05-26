@@ -18,6 +18,49 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\config.h" />
+    <ClInclude Include="..\src\i106_decode_1394.h" />
+    <ClInclude Include="..\src\i106_decode_1553f1.h" />
+    <ClInclude Include="..\src\i106_decode_analog.h" />
+    <ClInclude Include="..\src\i106_decode_analogf1.h" />
+    <ClInclude Include="..\src\i106_decode_arinc429.h" />
+    <ClInclude Include="..\src\i106_decode_can.h" />
+    <ClInclude Include="..\src\i106_decode_comp_gen_0.h" />
+    <ClInclude Include="..\src\i106_decode_discrete.h" />
+    <ClInclude Include="..\src\i106_decode_ethernet.h" />
+    <ClInclude Include="..\src\i106_decode_events.h" />
+    <ClInclude Include="..\src\i106_decode_image.h" />
+    <ClInclude Include="..\src\i106_decode_index.h" />
+    <ClInclude Include="..\src\i106_decode_message.h" />
+    <ClInclude Include="..\src\i106_decode_parallel.h" />
+    <ClInclude Include="..\src\i106_decode_pcmf1.h" />
+    <ClInclude Include="..\src\i106_decode_time.h" />
+    <ClInclude Include="..\src\i106_decode_tmats.h" />
+    <ClInclude Include="..\src\i106_decode_uart.h" />
+    <ClInclude Include="..\src\i106_decode_video.h" />
+    <ClInclude Include="..\src\i106_index.h" />
+    <ClInclude Include="..\src\i106_time.h" />
+    <ClInclude Include="..\src\irig106cl.h" />
+    <ClInclude Include="..\src\stdint.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\i106_decode_1553f1.c" />
+    <ClCompile Include="..\src\i106_decode_arinc429.c" />
+    <ClCompile Include="..\src\i106_decode_can.c" />
+    <ClCompile Include="..\src\i106_decode_discrete.c" />
+    <ClCompile Include="..\src\i106_decode_ethernet.c" />
+    <ClCompile Include="..\src\i106_decode_index.c" />
+    <ClCompile Include="..\src\i106_decode_pcmf1.c" />
+    <ClCompile Include="..\src\i106_decode_time.c" />
+    <ClCompile Include="..\src\i106_decode_tmats.c" />
+    <ClCompile Include="..\src\i106_decode_uart.c" />
+    <ClCompile Include="..\src\i106_decode_video.c" />
+    <ClCompile Include="..\src\i106_index.c" />
+    <ClCompile Include="..\src\i106_time.c" />
+    <ClCompile Include="..\src\irig106ch10.c" />
+    <ClCompile Include="..\src\irig106cl.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{01E22346-C580-4DAC-BF7B-41E03399863E}</ProjectGuid>
     <RootNamespace>irig106</RootNamespace>
@@ -109,53 +152,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="src\config.h" />
-    <ClInclude Include="src\i106_data_stream.h" />
-    <ClInclude Include="src\i106_decode_1394.h" />
-    <ClInclude Include="src\i106_decode_1553f1.h" />
-    <ClInclude Include="src\i106_decode_analogf1.h" />
-    <ClInclude Include="src\i106_decode_arinc429.h" />
-    <ClInclude Include="src\i106_decode_can.h" />
-    <ClInclude Include="src\i106_decode_comp_gen_0.h" />
-    <ClInclude Include="src\i106_decode_discrete.h" />
-    <ClInclude Include="src\i106_decode_ethernet.h" />
-    <ClInclude Include="src\i106_decode_events.h" />
-    <ClInclude Include="src\i106_decode_image.h" />
-    <ClInclude Include="src\i106_decode_index.h" />
-    <ClInclude Include="src\i106_decode_message.h" />
-    <ClInclude Include="src\i106_decode_parallel.h" />
-    <ClInclude Include="src\i106_decode_pcmf1.h" />
-    <ClInclude Include="src\i106_decode_time.h" />
-    <ClInclude Include="src\i106_decode_tmats.h" />
-    <ClInclude Include="src\i106_decode_uart.h" />
-    <ClInclude Include="src\i106_decode_video.h" />
-    <ClInclude Include="src\i106_index.h" />
-    <ClInclude Include="src\i106_time.h" />
-    <ClInclude Include="src\irig106ch10.h" />
-    <ClInclude Include="src\irig106cl.h" />
-    <ClInclude Include="src\stdint.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\i106_decode_1553f1.c" />
-    <ClCompile Include="src\i106_decode_arinc429.c" />
-    <ClCompile Include="src\i106_decode_can.c" />
-    <ClCompile Include="src\i106_decode_discrete.c" />
-    <ClCompile Include="src\i106_decode_ethernet.c" />
-    <ClCompile Include="src\i106_decode_index.c" />
-    <ClCompile Include="src\i106_decode_pcmf1.c" />
-    <ClCompile Include="src\i106_decode_time.c" />
-    <ClCompile Include="src\i106_decode_tmats.c" />
-    <ClCompile Include="src\i106_decode_uart.c" />
-    <ClCompile Include="src\i106_decode_video.c" />
-    <ClCompile Include="src\i106_index.c" />
-    <ClCompile Include="src\i106_time.c" />
-    <ClCompile Include="src\irig106ch10.c" />
-    <ClCompile Include="src\irig106cl.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\irig106dll.def" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

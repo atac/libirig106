@@ -55,8 +55,10 @@ extern "C" {
 
 #define I106_CALL_DECL
 
-// Turn on network support
+// Turn on network support - broken on windows
+#if !defined(_MSC_VER)
 #define IRIG_NETWORKING
+#endif
 
 #ifdef __cplusplus
 }

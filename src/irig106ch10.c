@@ -11,7 +11,6 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <assert.h>
-#include <unistd.h>
 
 #ifndef __APPLE__
 #if defined(__GNUC__)
@@ -23,7 +22,7 @@
 
 #if defined(IRIG_NETWORKING) & !defined(_WIN32)
 #include <sys/types.h>
-/* #include <unistd.h> */
+#include <unistd.h>
 #endif
 
 #include "config.h"

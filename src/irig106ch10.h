@@ -345,10 +345,10 @@ uint16_t I106_CALL_DECL
 
 char * szI106ErrorStr(EnI106Status enStatus);
 
-/*
+
 int I106_CALL_DECL
     bCalcDataChecksum(void * pvBuff);
-*/
+
 
 uint32_t I106_CALL_DECL
     uCalcDataBuffReqSize(uint32_t uDataLen, int iChecksumType);
