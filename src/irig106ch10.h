@@ -7,37 +7,23 @@
 #ifndef _irig106ch10_h_
 #define _irig106ch10_h_
 
-#ifdef __cplusplus
-namespace Irig106 {
-extern "C" {
-#endif
-
 #include "config.h"
 
-/*
- * Macros and definitions
- * ----------------------
- */
 
-
-#if !defined(bTRUE)
-#define bTRUE       ((int)(1==1))
-#define bFALSE      ((int)(1==0))
-#endif
+/* Macros and definitions */
 
 #define MAX_HANDLES         100
 
 #define IRIG106_SYNC        0xEB25
+#define HEADER_SIZE         24
+#define SEC_HEADER_SIZE     12
 
 // Define the longest file path string size
 #undef  MAX_PATH
 #define MAX_PATH                       260
 
-// Header and secondary header sizes
-#define HEADER_SIZE         24
-#define SEC_HEADER_SIZE     12
-
 // Header packet flags
+// TODO: reimplement with struct?
 #define I106CH10_PFLAGS_CHKSUM_NONE       (uint8_t)0x00
 #define I106CH10_PFLAGS_CHKSUM_8          (uint8_t)0x01
 #define I106CH10_PFLAGS_CHKSUM_16         (uint8_t)0x02
@@ -55,9 +41,8 @@ extern "C" {
 #define I106CH10_PFLAGS_IPTIMESRC         (uint8_t)0x40
 #define I106CH10_PFLAGS_SEC_HEADER        (uint8_t)0x80
 
-//#define I106CH10_PFLAGS_SECHDR_TIMEFMT_LOC    (uint8_t)0x0C  //Bits 3-2
-
 // Header data types
+// TODO: review for completeness
 #define I106CH10_DTYPE_COMPUTER_0      (uint8_t)0x00
 #define I106CH10_DTYPE_USER_DEFINED    (uint8_t)0x00
 #define I106CH10_DTYPE_COMPUTER_1      (uint8_t)0x01
@@ -72,7 +57,7 @@ extern "C" {
 #define I106CH10_DTYPE_COMPUTER_7      (uint8_t)0x07
 #define I106CH10_DTYPE_PCM_FMT_0       (uint8_t)0x08
 #define I106CH10_DTYPE_PCM_FMT_1       (uint8_t)0x09
-#define I106CH10_DTYPE_PCM             (uint8_t)0x09    // Depricated
+#define I106CH10_DTYPE_PCM             (uint8_t)0x09    // Deprecated
 #define I106CH10_DTYPE_IRIG_TIME       (uint8_t)0x11
 #define I106CH10_DTYPE_1553_FMT_1      (uint8_t)0x19
 #define I106CH10_DTYPE_1553_FMT_2      (uint8_t)0x1A    // 16PP194 Bus
@@ -92,286 +77,171 @@ extern "C" {
 #define I106CH10_DTYPE_ETHERNET_FMT_0  (uint8_t)0x68
 #define I106CH10_DTYPE_CAN             (uint8_t)0X78
 
+// Error return codes
+typedef enum {
+    I106_OK,                 // Everything okey dokey
+    I106_OPEN_ERROR,         // Fatal problem opening for read or write
+    I106_OPEN_WARNING,       // Non-fatal problem opening for read or write
+    I106_EOF,                // End of file encountered
+    I106_BOF,
+    I106_READ_ERROR,         // Error reading data from file
+    I106_WRITE_ERROR,        // Error writing data to file
+    I106_MORE_DATA,          // More read data available
+    I106_SEEK_ERROR,         // Unable to seek to positino
+    I106_WRONG_FILE_MODE,    // Operation compatible with file open mode
+    I106_NOT_OPEN,           // File not open for reading or writing
+    I106_ALREADY_OPEN,       // File already open
+    I106_BUFFER_TOO_SMALL,   // User buffer too small to hold data
+    I106_NO_MORE_DATA,       // No more data to read
+    I106_NO_FREE_HANDLES,    // Too many files open
+    I106_INVALID_HANDLE,     // Passed file handle doesn't point to an open file
+    I106_TIME_NOT_FOUND,     // No valid time packet found
+    I106_HEADER_CHKSUM_BAD,  // Invalid header checksum
+    I106_NO_INDEX,           // No index found
+    I106_UNSUPPORTED,        // Unsupported operation
+    I106_BUFFER_OVERRUN,     // Data exceeds buffer size
+    I106_INDEX_NODE,         // Returned decoded node message
+    I106_INDEX_ROOT,         // Returned decoded root message
+    I106_INDEX_ROOT_LINK,    // Returned decoded link to next root (i.e. last root)
+    I106_INVALID_DATA,       // Packet data is invalid for some reason
+    I106_INVALID_PARAMETER   // Passed parameter is invalid
+} I106Status;
 
-/// Error return codes
-typedef enum EnStatus
-    {
-    I106_OK                 =  0,   ///< Everything okey dokey
-    I106_OPEN_ERROR         =  1,   ///< Fatal problem opening for read or write
-    I106_OPEN_WARNING       =  2,   ///< Non-fatal problem opening for read or write
-    I106_EOF                =  3,   ///< End of file encountered
-    I106_BOF                =  4,   //
-    I106_READ_ERROR         =  5,   ///< Error reading data from file
-    I106_WRITE_ERROR        =  6,   ///< Error writing data to file
-    I106_MORE_DATA          =  7,   ///< More read data available
-    I106_SEEK_ERROR         =  8,   ///< Unable to seek to positino
-    I106_WRONG_FILE_MODE    =  9,   ///< Operation compatible with file open mode
-    I106_NOT_OPEN           = 10,   ///< File not open for reading or writing
-    I106_ALREADY_OPEN       = 11,   ///< File already open
-    I106_BUFFER_TOO_SMALL   = 12,   ///< User buffer too small to hold data
-    I106_NO_MORE_DATA       = 13,   ///< No more data to read
-    I106_NO_FREE_HANDLES    = 14,   ///< Too many files open
-    I106_INVALID_HANDLE     = 15,   ///< Passed file handle doesn't point to an open file
-    I106_TIME_NOT_FOUND     = 16,   ///< No valid time packet found
-    I106_HEADER_CHKSUM_BAD  = 17,   ///< Invalid header checksum
-    I106_NO_INDEX           = 18,   ///< No index found
-    I106_UNSUPPORTED        = 19,   ///< Unsupported operation
-    I106_BUFFER_OVERRUN     = 20,   ///< Data exceeds buffer size
-    I106_INDEX_NODE         = 21,   ///< Returned decoded node message
-    I106_INDEX_ROOT         = 22,   ///< Returned decoded root message
-    I106_INDEX_ROOT_LINK    = 23,   ///< Returned decoded link to next root (i.e. last root)
-    I106_INVALID_DATA       = 24,   ///< Packet data is invalid for some reason
-    I106_INVALID_PARAMETER  = 25    ///< Passed parameter is invalid
-    } EnI106Status;
+// Data file open mode
+typedef enum {
+    CLOSED,
+    READ,              // Open an existing file for reading
+    OVERWRITE,         // Create a new file or overwrite an exising file
+    APPEND,            // Append data to the end of an existing file
+    READ_IN_ORDER,     // Open an existing file for reading in time order
+    READ_NET_STREAM,   // Open network data stream for reading
+    WRITE_NET_STREAM,  // Open network data stream for writing
+} I106C10Mode;
 
-/// Data file open mode
-typedef enum I106ChMode
-    {
-    I106_CLOSED             = 0,
-    I106_READ               = 1,    ///< Open an existing file for reading
-    I106_OVERWRITE          = 2,    ///< Create a new file or overwrite an exising file
-    I106_APPEND             = 3,    ///< Append data to the end of an existing file
-    I106_READ_IN_ORDER      = 4,    ///< Open an existing file for reading in time order
-    I106_READ_NET_STREAM    = 5,    ///< Open network data stream for reading
-    I106_WRITE_NET_STREAM   = 6,    ///< Open network data stream for writing
-    } EnI106Ch10Mode;
+// Used to keep track of the next expected data file structure
+typedef enum {
+    FILE_CLOSED,
+    FILE_WRITE,
+    FILE_READ_UNSYNCED,
+    FILE_READ_HEADER,
+    FILE_READ_DATA,
+    FILE_READ_NET_STREAM,
+} FileState;
 
-/// Read state is used to keep track of the next expected data file structure
-typedef enum FileState
-    {
-    enClosed        = 0,
-    enWrite         = 1,
-    enReadUnsynced  = 2,
-    enReadHeader    = 3,
-    enReadData      = 4,
-    enReadNetStream = 5,
-    } EnFileState;
-
-/// Index sort state
-typedef enum SortStatus
-    {
-    enUnsorted   = 0,
-    enSorted     = 1,
-    enSortError  = 2,
-    } EnSortStatus;
+// Index sort state
+typedef enum {
+    UNSORTED,
+    SORTED,
+    SORT_ERROR,
+} SortStatus;
 
 
-/*
- * Data structures
- * ---------------
- */
+/* Data structures */
 
 #if defined(_MSC_VER)
 #pragma pack(push)
 #pragma pack(1)
 #endif
 
-/// IRIG 106 header and optional secondary header data structure
-typedef PUBLIC struct SuI106Ch10Header_S
-    {
-    uint16_t      uSync;                ///< Packet Sync Pattern
-    uint16_t      uChID;                ///< Channel ID
-    uint32_t      ulPacketLen;          ///< Total packet length
-    uint32_t      ulDataLen;            ///< Data length
-    uint8_t       ubyHdrVer;            ///< Header Version
-    uint8_t       ubySeqNum;            ///< Sequence Number
-    uint8_t       ubyPacketFlags;       ///< PacketFlags
-    uint8_t       ubyDataType;          ///< Data type
-    uint8_t       aubyRefTime[6];       ///< Reference time
-    uint16_t      uChecksum;            ///< Header Checksum
-    uint32_t      aulTime[2];           ///< Time (start secondary header)
-    uint16_t      uReserved;            //
-    uint16_t      uSecChecksum;         ///< Secondary Header Checksum
-#if !defined(__GNUC__)
-    } SuI106Ch10Header;
-#else
-    } __attribute__ ((packed)) SuI106Ch10Header;
-#endif
+// IRIG 106 header and optional secondary header data structure
+typedef struct {
+    uint16_t  SyncPattern;
+    uint16_t  ChannelID;
+    uint32_t  PacketLength;
+    uint32_t  DataLength;
+    uint8_t   HeaderVersion;
+    uint8_t   SequenceNumber;
+    uint8_t   PacketFlags;
+    uint8_t   DataType;
+    uint8_t   RTC[6];
+    uint16_t  Checksum;
 
+    // Secondary header (optional)
+    uint32_t  Time[2];
+    uint16_t  Reserved;
+    uint16_t  SecondaryChecksum;
+} PACKED I106C10Header;
 
-// TODO : Move this functionality to i106_index.*
-
-/// Structure for holding file index
-typedef struct
-    {
-    int64_t     llOffset;               ///< File position byte offset
-    int64_t     llTime;                 ///< Packet RTC at this offset
-    } SuInOrderPacketInfo;
-
+// Structure for holding file index
+// TODO: Move to i106_index
+typedef struct {
+    int64_t  Offset;  // File position byte offset
+    int64_t  Time;    // Packet RTC at this offset
+} InOrderPacketInfo;
 
 // Various file index array indexes
-typedef struct
-    {
-    EnSortStatus            enSortStatus;
-    SuInOrderPacketInfo   * asuIndex;
-    int                     iArraySize;
-    int                     iArrayUsed;
-    int                     iArrayCurr;  // Current position in index array
-    int64_t                 llNextReadOffset;
-    int                     iNumSearchSteps;
-    } SuInOrderIndex;
+typedef struct {
+    SortStatus           SortStatus;
+    InOrderPacketInfo  * Index;
+    int                  ArraySize;
+    int                  ArrayUsed;
+    int                  ArrayPos;
+    int64_t              NextReadOffset;
+    int                  NumSearchSteps;
+} InOrderIndex;
 
-/// Data structure for IRIG 106 read/write handle
-typedef struct
-    {
-    int                 bInUse;
-    int                 iFile;
-    char                szFileName[MAX_PATH];
-    EnI106Ch10Mode      enFileMode;
-    EnFileState         enFileState;
-    SuInOrderIndex      suInOrderIndex;
-    unsigned long       ulCurrPacketLen;
-    unsigned long       ulCurrHeaderBuffLen;
-    unsigned long       ulCurrDataBuffLen;
-    unsigned long       ulCurrDataBuffReadPos;
-    unsigned long       ulTotalBytesWritten;
-    char                achReserve[128];
-    } SuI106Ch10Handle;
+// Data structure for IRIG 106 read/write handle
+typedef struct {
+    int            InUse;
+    int            File;
+    char           FileName[MAX_PATH];
+    I106C10Mode    FileMode;
+    FileState      FileState;
+    InOrderIndex   InOrderIndex;
+    unsigned long  PacketLength;
+    unsigned long  HeaderBufferLength;
+    unsigned long  DataBufferLength;
+    unsigned long  DataBufferPos;
+    unsigned long  BytesWritten;
+    char           Reserve[128];
+} I106C10Handle;
 
 #if defined(_MSC_VER)
 #pragma pack(pop)
 #endif
 
 
-/*
- * Global data
- * -----------
- */
+/* Global data */
 
-extern SuI106Ch10Handle  g_suI106Handle[MAX_HANDLES];
+extern I106C10Handle  handles[MAX_HANDLES];
 
 
-/*
- * Function Declaration
- * --------------------
- */
+/* Function Declaration */
 
 // Open / Close
-
-/// Open a Chapter 10 file for reading or writing
-EnI106Status I106_CALL_DECL
-    enI106Ch10Open(
-            int               * piI106Ch10Handle,
-            const char          szOpenFileName[],
-            EnI106Ch10Mode      enMode);
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10OpenStreamRead(
-            int               * piI106Ch10Handle,
-            uint16_t            uPort);
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10OpenStreamWrite(
-            int               * piI106Ch10Handle,
-            uint32_t            uIpAddress,
-            uint16_t            uPort);
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10Close(
-            int                 iI106Handle);
-
+I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode);
+I106Status I106C10Close(int handle);
 
 // Read / Write
-// ------------
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10ReadNextHeader(int                 iI106Ch10Handle,
-                             SuI106Ch10Header  * psuI106Hdr);
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10ReadNextHeaderFile(int                iHandle,
-                                 SuI106Ch10Header * psuHeader);
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10ReadNextHeaderInOrder(int                iHandle,
-                                    SuI106Ch10Header * psuHeader);
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10ReadPrevHeader(int                 iI106Ch10Handle,
-                             SuI106Ch10Header  * psuI106Hdr);
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10ReadData(int                 iI106Ch10Handle,
-                       unsigned long       ulBuffSize,
-                       void              * pvBuff);
-
-EnI106Status I106_CALL_DECL 
-    enI106Ch10ReadDataFile(int                iHandle,
-                           unsigned long      ulBuffSize,
-                           void             * pvBuff);
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10WriteMsg(int                   iI106Ch10Handle,
-                       SuI106Ch10Header    * psuI106Hdr,
-                       void                * pvBuff);
-
+I106Status I106C10ReadNextHeader(int handle, I106C10Header *header);
+I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header *header);
+I106Status I106C10ReadNextHeaderInOrder(int handle, I106C10Header *header);
+I106Status I106C10ReadPrevHeader(int handle, I106C10Header *header);
+I106Status I106C10ReadData(int handle, unsigned long buffer_size, void * buffer);
+I106Status I106C10ReadDataFile(int handle, unsigned long buffer_size, void * buffer);
+I106Status I106C10WriteMsg(int handle, I106C10Header *header, void *buffer);
 
 // Move file pointer
-// -----------------
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10FirstMsg(int iI106Ch10Handle);
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10LastMsg(int iI106Ch10Handle);
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10SetPos(int iI106Ch10Handle, int64_t llOffset);
-
-EnI106Status I106_CALL_DECL
-    enI106Ch10GetPos(int iI106Ch10Handle, int64_t * pllOffset);
+I106Status I106C10FirstMsg(int handle);
+I106Status I106C10LastMsg(int handle);
+I106Status I106C10SetPos(int handle, int64_t offset);
+I106Status I106C10GetPos(int handle, int64_t * offset);
 
 // Utilities
-// ---------
-
-int I106_CALL_DECL
-    iHeaderInit(SuI106Ch10Header * psuHeader,
-                unsigned int       uChanID,
-                unsigned int       uDataType,
-                unsigned int       uFlags,
-                unsigned int       uSeqNum);
-
-int I106_CALL_DECL
-    iGetHeaderLen(SuI106Ch10Header * psuHeader);
-
-uint32_t I106_CALL_DECL
-    uGetDataLen(SuI106Ch10Header * psuHeader);
-
-uint16_t I106_CALL_DECL
-    uCalcHeaderChecksum(SuI106Ch10Header * psuHeader);
-
-uint16_t I106_CALL_DECL
-    uCalcSecHeaderChecksum(SuI106Ch10Header * psuHeader);
-
-char * szI106ErrorStr(EnI106Status enStatus);
-
-
-int I106_CALL_DECL
-    bCalcDataChecksum(void * pvBuff);
-
-
-uint32_t I106_CALL_DECL
-    uCalcDataBuffReqSize(uint32_t uDataLen, int iChecksumType);
-
-EnI106Status I106_CALL_DECL
-    uAddDataFillerChecksum(SuI106Ch10Header * psuI106Hdr, unsigned char achData[]);
+int HeaderInit(I106C10Header *header, unsigned int channel_id,
+    unsigned int data_type, unsigned int flags, unsigned int sequence_number);
+int GetHeaderLength(I106C10Header *header);
+uint32_t GetDataLength(I106C10Header *header);
+uint16_t HeaderChecksum(I106C10Header *header);
+uint16_t SecondaryHeaderChecksum(I106C10Header *header);
+char * I106ErrorString(I106Status status);
+int DataChecksum(void *buffer);
+uint32_t BufferSize(uint32_t data_length, int checksum_type);
+I106Status AddFillerAndChecksum(I106C10Header *header, unsigned char data[]);
 
 // In-order indexing
-// -----------------
-
-void I106_CALL_DECL
-    vMakeInOrderIndex(int iHandle);
-
-int I106_CALL_DECL
-    bReadInOrderIndex(int iHandle, char * szIdxFileName);
-
-int I106_CALL_DECL
-    bWriteInOrderIndex(int iHandle, char * szIdxFileName);
-EnI106Status I106_CALL_DECL ReadLookAheadRelTime(int iHandle, int64_t *llLookaheadRelTime, EnI106Ch10Mode enMode);
-
-#ifdef __cplusplus
-} // end namespace
-} // end extern "C"
-#endif
+void MakeInOrderIndex(int handle);
+int ReadInOrderIndex(int handle, char *filename);
+int WriteInOrderIndex(int handle, char *filename);
 
 #endif
