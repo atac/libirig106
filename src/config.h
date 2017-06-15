@@ -57,7 +57,7 @@ extern "C" {
 
 // Turn on network support - broken on windows
 #if !defined(_MSC_VER)
-#define IRIG_NETWORKING
+/* #define IRIG_NETWORKING */
 #endif
 
 #ifdef __cplusplus
