@@ -69,7 +69,7 @@ i106_decode_can.o: $(SRC_DIR)/i106_decode_can.c
 i106_data_stream.o: $(SRC_DIR)/i106_data_stream.c $(SRC_DIR)/i106_data_stream.h
 
 clean:
-	$(MAKE) -C test clean
+	$(MAKE) -C test clean && \
 	rm *.o libirig106.so libirig106.a
 
 tests:
