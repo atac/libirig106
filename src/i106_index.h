@@ -7,33 +7,23 @@
 #ifndef _I106_INDEX_H
 #define _I106_INDEX_H
 
-#ifdef __cplusplus
-namespace Irig106 {
-    extern "C" {
-#endif
-
 
 /* Data structures */
 
 typedef struct{
-    uint16_t        uChID;              ///< Channel ID
-    uint8_t         ubyDataType;        ///< Data type
-    int64_t         lRelTime;           ///< 48 bit relative time
-    SuIrig106Time   suIrigTime;         ///< Absolute time
-    int64_t         lFileOffset;        ///< File offset to packet
-} SuPacketIndexInfo;
+    uint16_t  ChannelID;
+    uint8_t   DataType;
+    int64_t   RTC;
+    I106Time  IrigTime;
+    int64_t   Offset;
+} PacketIndexInfo;
 
 
 /* Function Declarations */
 
-void InitIndex(int iHandle);
-EnI106Status I106_CALL_DECL enIndexPresent(const int iHandle, int * bFoundIndex);
-EnI106Status I106_CALL_DECL enReadIndexes(const int iHandle);
-EnI106Status I106_CALL_DECL enMakeIndex(const int iHandle, uint16_t uChID);
-
-#ifdef __cplusplus
-    }
-}
-#endif
+void InitIndex(int handle);
+I106Status IndexPresent(const int handle, int * found_index);
+I106Status ReadIndexes(const int handle);
+I106Status MakeIndex(const int handle, uint16_t channel_id);
 
 #endif

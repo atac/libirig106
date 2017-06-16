@@ -1,569 +1,20 @@
 /****************************************************************************
 
- i106_time.c - 
+ i106_time.c
 
  ****************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <time.h>
 
 #include "stdint.h"
 #include "irig106ch10.h"
 #include "i106_time.h"
 #include "i106_decode_time.h"
 
-#ifdef __cplusplus
-namespace Irig106 {
-#endif
 
-/*
- * Macros and definitions
- * ----------------------
- */
-
-
-/*
- * Data structures
- * ---------------
- */
-
-
-/*
- * Module data
- * -----------
- */
-
-static SuTimeRef    m_asuTimeRef[MAX_HANDLES]; // Relative / absolute time reference
-
-/*
- * Function Declaration
- * --------------------
- */
-
-
-/* ----------------------------------------------------------------------- */
-
-// Update the current reference time value
-EnI106Status I106_CALL_DECL 
-    enI106_SetRelTime(int              iI106Ch10Handle,
-                      SuIrig106Time  * psuTime,
-                      uint8_t          abyRelTime[])
-    {
-
-    // Save the absolute time value
-    m_asuTimeRef[iI106Ch10Handle].suIrigTime.ulSecs = psuTime->ulSecs;
-    m_asuTimeRef[iI106Ch10Handle].suIrigTime.ulFrac = psuTime->ulFrac;
-    m_asuTimeRef[iI106Ch10Handle].suIrigTime.enFmt  = psuTime->enFmt;
-
-    // Save the relative (i.e. the 10MHz counter) value
-    m_asuTimeRef[iI106Ch10Handle].uRelTime          = 0;
-    memcpy((char *)&(m_asuTimeRef[iI106Ch10Handle].uRelTime), 
-           (char *)&abyRelTime[0], 6);
-
-    return I106_OK;
-    }
-
-
-
-/* ----------------------------------------------------------------------- */
-
-// Take a 6 byte relative time value (like the one in the IRIG header) and
-// turn it into a real time based on the current reference IRIG time.
-
-EnI106Status I106_CALL_DECL 
-    enI106_Rel2IrigTime(int              iI106Ch10Handle,
-                        uint8_t          abyRelTime[],
-                        SuIrig106Time  * psuTime)
-    {
-    int64_t         llRelTime;
-    EnI106Status    enStatus;
-
-    // Convert 6 byte time array to 16 bit int.  This only works for 
-    // positive time, but that shouldn't be a problem
-    llRelTime = 0L;
-    memcpy(&llRelTime, &abyRelTime[0], 6);
-
-    enStatus = enI106_RelInt2IrigTime(iI106Ch10Handle, llRelTime, psuTime);
-
-    return enStatus;
-    }
-
-
-
-
-/* ----------------------------------------------------------------------- */
-
-// Take a 64 bit relative time value and turn it into a real time based on 
-// the current reference IRIG time.
-
-EnI106Status I106_CALL_DECL 
-    enI106_RelInt2IrigTime(int               iI106Ch10Handle,
-                           int64_t           llRelTime,
-                           SuIrig106Time   * psuTime)
-    {
-    int64_t         uTimeDiff;
-    int64_t         lFracDiff;
-    int64_t         lSecDiff;
-
-    int64_t         lSec;
-    int64_t         lFrac;
-
-
-    // Figure out the relative time difference
-    uTimeDiff = llRelTime - m_asuTimeRef[iI106Ch10Handle].uRelTime;
-    lSecDiff  = uTimeDiff / 10000000;
-    lFracDiff = uTimeDiff % 10000000;
-
-    lSec      = m_asuTimeRef[iI106Ch10Handle].suIrigTime.ulSecs + lSecDiff;
-    lFrac     = m_asuTimeRef[iI106Ch10Handle].suIrigTime.ulFrac + lFracDiff;
-
-    // This seems a bit extreme but it's defensive programming
-    while (lFrac < 0)
-        {
-        lFrac += 10000000;
-        lSec  -= 1;
-        }
-        
-    while (lFrac >= 10000000)
-        {
-        lFrac -= 10000000;
-        lSec  += 1;
-        }
-
-    // Now add the time difference to the last IRIG time reference
-    psuTime->ulFrac = (unsigned long)lFrac;
-    psuTime->ulSecs = (unsigned long)lSec;
-    psuTime->enFmt  = m_asuTimeRef[iI106Ch10Handle].suIrigTime.enFmt;
-
-    return I106_OK;
-    }
-
-
-
-/* ----------------------------------------------------------------------- */
-
-// Take a real clock time and turn it into a 6 byte relative time.
-
-EnI106Status I106_CALL_DECL 
-    enI106_Irig2RelTime(int              iI106Ch10Handle,
-                        SuIrig106Time  * psuTime,
-                        uint8_t          abyRelTime[])
-    {
-    int64_t         llDiff;
-    int64_t         llNewRel;
-
-    // Calculate time difference (LSB = 100 nSec) between the passed time 
-    // and the time reference
-    llDiff = 
-         (int64_t)(+ psuTime->ulSecs - m_asuTimeRef[iI106Ch10Handle].suIrigTime.ulSecs) * 10000000 +
-         (int64_t)(+ psuTime->ulFrac - m_asuTimeRef[iI106Ch10Handle].suIrigTime.ulFrac);
-
-    // Add this amount to the reference 
-    llNewRel = m_asuTimeRef[iI106Ch10Handle].uRelTime + llDiff;
-
-    // Now convert this to a 6 byte relative time
-    memcpy((char *)&abyRelTime[0],
-           (char *)&(llNewRel), 6);
-
-    return I106_OK;
-    }
-
-/* ----------------------------------------------------------------------- */
-
-// Take a Irig Ch4 time value (like the one in a secondary IRIG header) and
-// turn it into an Irig106 time
-
-EnI106Status I106_CALL_DECL 
-    enI106_Ch4Binary2IrigTime(SuI106Ch4_Binary_Time * psuCh4BinaryTime,
-                              SuIrig106Time         * psuIrig106Time)
-{
-    psuIrig106Time->ulSecs = (unsigned long)
-        ( (double)psuCh4BinaryTime->uHighBinTime * CH4BINARYTIME_HIGH_LSB_SEC
-        + (unsigned long)psuCh4BinaryTime->uLowBinTime * CH4BINARYTIME_LOW_LSB_SEC );
-    psuIrig106Time->ulFrac = (unsigned long)psuCh4BinaryTime->uUSecs * _100_NANO_SEC_IN_MICRO_SEC;
-
-    return I106_OK;
-}
-
-/* ----------------------------------------------------------------------- */
-
-// Take a IEEE-1588 time value (like the one in a secondary IRIG header) and
-// turn it into an Irig106 time
-EnI106Status I106_CALL_DECL 
-    enI106_IEEE15882IrigTime(SuIEEE1588_Time * psuIEEE1588Time,
-                              SuIrig106Time  * psuIrig106Time)
-{
-    psuIrig106Time->ulSecs = (unsigned long)psuIEEE1588Time->uSeconds;
-    //Convert 'nanoseconds' to '100 nanoseconds'
-    psuIrig106Time->ulFrac = (unsigned long)psuIEEE1588Time->uNanoSeconds/100;     
-
-    return I106_OK;
-}
-
-
-/* ------------------------------------------------------------------------ */
-
-// Warning - array to int / int to array functions are little endian only!
-
-// Create a 6 byte array value from a 64 bit int relative time
-
-void I106_CALL_DECL 
-    vLLInt2TimeArray(int64_t * pllRelTime,
-                     uint8_t   abyRelTime[])
-    {
-    memcpy((char *)abyRelTime, (char *)pllRelTime, 6);
-    return;
-    }
-
-
-/* ------------------------------------------------------------------------ */
-
-// Create a 64 bit int relative time from 6 byte array value
-
-void I106_CALL_DECL 
-    vTimeArray2LLInt(uint8_t   abyRelTime[],
-                     int64_t * pllRelTime)
-    {
-    *pllRelTime = 0L;
-    memcpy((char *)pllRelTime, (char *)abyRelTime, 6);
-    return;
-    }
-
-
-
-/* ------------------------------------------------------------------------ */
-
-// Read the data file from the current position to try to determine a valid 
-// relative time to clock time from a time packet.
-
-EnI106Status I106_CALL_DECL 
-    enI106_SyncTime(int     iI106Ch10Handle,
-                    int     bRequireSync,   // Require external time source sync
-                    int     iTimeLimit)     // Max time to look in seconds
-    {
-    int64_t             llCurrOffset;
-    int64_t             llTimeLimit;
-    int64_t             llCurrTime;
-    EnI106Status        enStatus;
-    EnI106Status        enRetStatus;
-    SuI106Ch10Header    suI106Hdr;
-    SuIrig106Time       suTime;
-    unsigned long       ulBuffSize = 0;
-    void              * pvBuff = NULL;
-    SuTimeF1_ChanSpec * psuChanSpecTime = NULL;
-
-    // Get and save the current file position
-    enStatus = enI106Ch10GetPos(iI106Ch10Handle, &llCurrOffset);
-    if (enStatus != I106_OK)
-        return enStatus;
-
-    // Set the file to the start
-    //enStatus = enI106Ch10SetPos(iI106Ch10Handle, 0);
-    //if (enStatus != I106_OK)
-    //    return enStatus;
-
-    // Read the next header
-    enStatus = enI106Ch10ReadNextHeaderFile(iI106Ch10Handle, &suI106Hdr);
-    if (enStatus == I106_EOF)
-        return I106_TIME_NOT_FOUND;
-
-    if (enStatus != I106_OK)
-        return enStatus;
-
-    // Calculate the time limit if there is one
-    if (iTimeLimit > 0)
-        {
-        vTimeArray2LLInt(suI106Hdr.aubyRefTime, &llTimeLimit);
-        llTimeLimit = llTimeLimit + (int64_t)iTimeLimit * (int64_t)10000000;
-        }
-    else
-        llTimeLimit = 0;
-
-    // Loop, looking for appropriate time message
-    while (bTRUE)
-        {
-
-        // See if we've passed our time limit
-        if (llTimeLimit > 0)
-            {
-            vTimeArray2LLInt(suI106Hdr.aubyRefTime, &llCurrTime);
-            if (llTimeLimit < llCurrTime)
-                {
-                enRetStatus = I106_TIME_NOT_FOUND;
-                break;
-                }
-            } // end if there is a time limit
-
-        // If IRIG time type then process it
-        if (suI106Hdr.ubyDataType == I106CH10_DTYPE_IRIG_TIME)
-            {
-
-            // Read header OK, make buffer for time message
-            if (ulBuffSize < suI106Hdr.ulPacketLen)
-                {
-                pvBuff          = realloc(pvBuff, suI106Hdr.ulPacketLen);
-                psuChanSpecTime = (SuTimeF1_ChanSpec *)pvBuff;
-                ulBuffSize      = suI106Hdr.ulPacketLen;
-                }
-
-            // Read the data buffer
-            enStatus = enI106Ch10ReadData(iI106Ch10Handle, ulBuffSize, pvBuff);
-            if (enStatus != I106_OK)
-                {
-                enRetStatus = I106_TIME_NOT_FOUND;
-                break;
-                }
-
-            // If external sync OK then decode it and set relative time
-            if ((bRequireSync == bFALSE) || (psuChanSpecTime->uTimeSrc == 1))
-                {
-                enI106_Decode_TimeF1(&suI106Hdr, pvBuff, &suTime);
-                enI106_SetRelTime(iI106Ch10Handle, &suTime, suI106Hdr.aubyRefTime);
-                enRetStatus = I106_OK;
-                break;
-                }
-            } // end if IRIG time message
-
-        // Read the next header and try again
-        enStatus = enI106Ch10ReadNextHeaderFile(iI106Ch10Handle, &suI106Hdr);
-        if (enStatus == I106_EOF)
-            {
-            enRetStatus = I106_TIME_NOT_FOUND;
-            break;
-            }
-
-        if (enStatus != I106_OK)
-            {
-            enRetStatus = enStatus;
-            break;
-            }
-
-        } // end while looping looking for time message
-
-    // Restore file position
-    enStatus = enI106Ch10SetPos(iI106Ch10Handle, llCurrOffset);
-    if (enStatus != I106_OK)
-        {
-        enRetStatus = enStatus;
-        }
-
-    // Return the malloc'ed memory
-    free(pvBuff);
-
-    return enRetStatus;
-    }
-
-
-/* ----------------------------------------------------------------------- */
-
-EnI106Status I106_CALL_DECL 
-    enI106Ch10SetPosToIrigTime(int iHandle, SuIrig106Time * psuSeekTime)
-    {
-    uint8_t             abySeekTime[6];
-    int64_t             llSeekTime;
-    SuInOrderIndex    * psuIndex = &g_suI106Handle[iHandle].suInOrderIndex;
-    int                 iUpperLimit;
-    int                 iLowerLimit;
-    int                 iSearchLoopIdx;
-
-    // If there is no index in memory then barf
-    if (psuIndex->enSortStatus != enSorted)
-        return I106_NO_INDEX;
-
-    // We have an index so do a binary search for time
-
-    // Convert clock time to 10 MHz count
-    enI106_Irig2RelTime(iHandle, psuSeekTime, abySeekTime);
-    vTimeArray2LLInt(abySeekTime, &llSeekTime);
-
-    // Check time bounds
-    if (llSeekTime < psuIndex->asuIndex[0].llTime)
-        {
-        enI106Ch10FirstMsg(iHandle);
-        return I106_TIME_NOT_FOUND;
-        };
-
-    if (llSeekTime > psuIndex->asuIndex[psuIndex->iArrayUsed].llTime)
-        {
-        enI106Ch10LastMsg(iHandle);
-        return I106_TIME_NOT_FOUND;
-        };
-
-    // If we don't already have it, figure out how many search steps
-    if (psuIndex->iNumSearchSteps == 0)
-        {
-        iUpperLimit = 1;
-        while (iUpperLimit < psuIndex->iArrayUsed)
-            {
-            iUpperLimit *= 2;
-            psuIndex->iNumSearchSteps++;
-            }
-        } // end if no search steps
-
-    // Loop prescribed number of times
-    iLowerLimit = 0;
-    iUpperLimit = psuIndex->iArrayUsed-1;
-    psuIndex->iArrayCurr = (iUpperLimit - iLowerLimit) / 2;
-    for (iSearchLoopIdx = 0; 
-         iSearchLoopIdx < psuIndex->iNumSearchSteps; 
-         iSearchLoopIdx++)
-        {
-        if      (psuIndex->asuIndex[psuIndex->iArrayCurr].llTime > llSeekTime)
-            iUpperLimit = (iUpperLimit - iLowerLimit) / 2;
-        else if (psuIndex->asuIndex[psuIndex->iArrayCurr].llTime < llSeekTime)
-            iLowerLimit = (iUpperLimit - iLowerLimit) / 2;
-        else
-            break;
-        }
-
-    return I106_OK;
-    }
-
-
-/* ------------------------------------------------------------------------ */
-
-// General purpose time utilities
-// ------------------------------
-
-// Convert IRIG time into an appropriate string
-
-char * IrigTime2String(SuIrig106Time * psuTime)
-    {
-    static char     szTime[30];
-    struct tm     * psuTmTime;
-
-    // Convert IRIG time into it's components
-    psuTmTime = gmtime((time_t *)&(psuTime->ulSecs));
-
-    // Make the appropriate string
-    switch (psuTime->enFmt)
-        {
-        // Year / Month / Day format ("2008/02/29 12:34:56.789")
-        case I106_DATEFMT_DMY :
-            sprintf(szTime, "%4.4i/%2.2i/%2.2i %2.2i:%2.2i:%2.2i.%3.3i",
-                psuTmTime->tm_year + 1900,
-                psuTmTime->tm_mon + 1,
-                psuTmTime->tm_mday,
-                psuTmTime->tm_hour,
-                psuTmTime->tm_min,
-                psuTmTime->tm_sec,
-                psuTime->ulFrac / 10000);
-            break;
-
-        // Day of the Year format ("001:12:34:56.789")
-        case I106_DATEFMT_DAY :
-        default :
-            sprintf(szTime, "%3.3i:%2.2i:%2.2i:%2.2i.%3.3i",
-                psuTmTime->tm_yday+1,
-                psuTmTime->tm_hour,
-                psuTmTime->tm_min,
-                psuTmTime->tm_sec,
-                psuTime->ulFrac / 10000);
-            break;
-        } // end switch on format
-
-    return szTime;
-    }
-
-
-
-/* ------------------------------------------------------------------------ */
-
-// This function fills in the SuTimeRef structure with the "best" relative 
-// and/or absolute time stamp available from the packet header and intra-packet 
-// header (if available).
-
-EnI106Status I106_CALL_DECL
-    vFillInTimeStruct(SuI106Ch10Header * psuHeader,
-                      SuIntraPacketTS  * psuIntraPacketTS, 
-                      SuTimeRef        * psuTimeRef)
-    {
-    int iSecHdrTimeFmt;
-
-    // Get the secondary header time format
-    iSecHdrTimeFmt = psuHeader->ubyPacketFlags & I106CH10_PFLAGS_TIMEFMT_MASK;
-    psuTimeRef->bRelTimeValid = bFALSE;
-    psuTimeRef->bAbsTimeValid = bFALSE;
-    
-    // Set the relative time from the packet header
-    vTimeArray2LLInt(psuHeader->aubyRefTime, &(psuTimeRef->uRelTime));
-    psuTimeRef->bRelTimeValid = bTRUE;
-
-    // If secondary header is available, use that time for absolute
-    if ((psuHeader->ubyPacketFlags & I106CH10_PFLAGS_SEC_HEADER) != 0)
-        {
-        switch(iSecHdrTimeFmt)
-            {
-            case I106CH10_PFLAGS_TIMEFMT_IRIG106:
-                enI106_Ch4Binary2IrigTime((SuI106Ch4_Binary_Time *)psuHeader->aulTime, &(psuTimeRef->suIrigTime));              
-                psuTimeRef->bAbsTimeValid = bTRUE;
-                break;
-            case I106CH10_PFLAGS_TIMEFMT_IEEE1588:
-                enI106_IEEE15882IrigTime((SuIEEE1588_Time *)psuHeader->aulTime, &(psuTimeRef->suIrigTime));
-                psuTimeRef->bAbsTimeValid = bTRUE;
-                break;
-            default:
-                //Currently reserved, should we have a default way to decode?
-                break;
-            } // end switch on secondary header time format
-        } // end if 
-
-    // Now process values from the intra-packet headers if available
-    if (psuIntraPacketTS != NULL)
-        {
-        // If relative time
-        if ((psuHeader->ubyPacketFlags & I106CH10_PFLAGS_IPTIMESRC) == 0)
-            {
-            vTimeArray2LLInt(psuIntraPacketTS->aubyIntPktTime, &(psuTimeRef->uRelTime));
-            psuTimeRef->bRelTimeValid = bTRUE;
-            }
-
-        // else is absolute time
-        else
-            {
-            switch(iSecHdrTimeFmt)
-                {
-                case I106CH10_PFLAGS_TIMEFMT_IRIG106:
-                    enI106_Ch4Binary2IrigTime((SuI106Ch4_Binary_Time *)psuIntraPacketTS, &(psuTimeRef->suIrigTime));
-                    psuTimeRef->bAbsTimeValid = bTRUE;
-                    break;
-                case I106CH10_PFLAGS_TIMEFMT_IEEE1588:                  
-                    enI106_IEEE15882IrigTime((SuIEEE1588_Time *)psuIntraPacketTS, &(psuTimeRef->suIrigTime));
-                    psuTimeRef->bAbsTimeValid = bTRUE;
-                    break;
-                default:
-                    //Current reserved, should we have a default way to decode
-                    break;
-                } // end switch on intra-packet time format
-            } // end else absolute time
-        } // end if intra-packet time stamp exists
-    
-    return I106_OK;
-    }
-
-
-
-/* ------------------------------------------------------------------------ */
-
-/* Return the equivalent in seconds past 12:00:00 a.m. Jan 1, 1970 GMT
-   of the Greenwich Mean time and date in the exploded time structure `tm'.
-
-   The standard mktime() has the annoying "feature" of assuming that the 
-   time in the tm structure is local time, and that it has to be corrected 
-   for local time zone.  In this library time is assumed to be UTC and UTC
-   only.  To make sure no timezone correction is applied this time conversion
-   routine was lifted from the standard C run time library source.  Interestingly
-   enough, this routine was found in the source for mktime().
-
-   This function does always put back normalized values into the `tm' struct,
-   parameter, including the calculated numbers for `tm->tm_yday',
-   `tm->tm_wday', and `tm->tm_isdst'.
-
-   Returns -1 if the time in the `tm' parameter cannot be represented
-   as valid `time_t' number. 
- */
+/* Macros and definitions */
 
 // Number of leap years from 1970 to `y' (not including `y' itself).
 #define nleap(y) (((y) - 1969) / 4 - ((y) - 1901) / 100 + ((y) - 1601) / 400)
@@ -584,83 +35,476 @@ EnI106Status I106_CALL_DECL
   }
 
 // Length of month `m' (0 .. 11)
-#define monthlen(m, y) (ydays[(m)+1] - ydays[m] + leapday (m, y))
+#define monthlen(m, y) (julian_day[(m)+1] - julian_day[m] + leapday (m, y))
 
 
-uint32_t I106_CALL_DECL mkgmtime(struct tm * psuTmTime)
-    {
+/* Module data */
+
+static TimeRef  time_ref[MAX_HANDLES];  // Relative / absolute time reference
+
+
+/* Function Declaration */
+
+// Update the current reference time value
+I106Status I106_SetRelTime(int handle, I106Time *time, uint8_t rtc[]){
+
+    // Save the absolute time value
+    time_ref[handle].IrigTime.Seconds = time->Seconds;
+    time_ref[handle].IrigTime.Fraction = time->Fraction;
+    time_ref[handle].IrigTime.Format  = time->Format;
+
+    // Save the relative (i.e. the 10MHz counter) value
+    time_ref[handle].RTC = 0;
+    memcpy((char *)&(time_ref[handle].RTC), (char *)&rtc[0], 6);
+
+    return I106_OK;
+}
+
+
+// Take a 6 byte relative time value (like the one in the IRIG header) and
+// turn it into a real time based on the current reference IRIG time.
+I106Status I106_Rel2IrigTime(int handle, uint8_t rtc[], I106Time *time){
+    int64_t         rel_time;
+    I106Status    status;
+
+    // Convert 6 byte time array to 16 bit int.  This only works for 
+    // positive time, but that shouldn't be a problem
+    rel_time = 0L;
+    memcpy(&rel_time, &rtc[0], 6);
+
+    return I106_RelInt2IrigTime(handle, rel_time, time);
+}
+
+
+// Take a 64 bit relative time value and turn it into a real time based on 
+// the current reference IRIG time.
+I106Status I106_RelInt2IrigTime(int handle, int64_t rel_time, I106Time *time){
+    int64_t         time_diff;
+    int64_t         frac_diff;
+    int64_t         sec_diff;
+
+    int64_t         seconds;
+    int64_t         fraction;
+
+
+    // Figure out the relative time difference
+    time_diff = rel_time - time_ref[handle].RTC;
+    sec_diff  = time_diff / 10000000;
+    frac_diff = time_diff % 10000000;
+
+    seconds   = time_ref[handle].IrigTime.Seconds + sec_diff;
+    fraction  = time_ref[handle].IrigTime.Fraction + frac_diff;
+
+    // This seems a bit extreme but it's defensive programming
+    while (fraction < 0){
+        fraction += 10000000;
+        seconds -= 1;
+    }
+        
+    while (fraction >= 10000000){
+        fraction -= 10000000;
+        seconds += 1;
+    }
+
+    // Now add the time difference to the last IRIG time reference
+    time->Fraction = (unsigned long)fraction;
+    time->Seconds = (unsigned long)seconds;
+    time->Format  = time_ref[handle].IrigTime.Format;
+
+    return I106_OK;
+}
+
+
+// Take a real clock time and turn it into a 6 byte relative time.
+I106Status I106_Irig2RelTime(int handle, I106Time *time, uint8_t rtc[]){
+    int64_t  diff;
+    int64_t  new_rtc;
+
+    // Calculate time difference (LSB = 100 nSec) between the passed time 
+    // and the time reference
+    diff = (int64_t)(+ time->Seconds - time_ref[handle].IrigTime.Seconds) * 10000000 +
+        (int64_t)(+ time->Fraction - time_ref[handle].IrigTime.Fraction);
+
+    // Add this amount to the reference 
+    new_rtc = time_ref[handle].RTC + diff;
+
+    // Now convert this to a 6 byte relative time
+    memcpy((char *)&rtc[0], (char *)&(new_rtc), 6);
+
+    return I106_OK;
+}
+
+
+// Take a Irig Ch4 time value (like the one in a secondary IRIG header) and
+// turn it into an Irig106 time
+I106Status I106_Ch4Binary2IrigTime(I106Ch4_Binary_Time *ch4_time, I106Time *irig_time){
+    irig_time->Seconds = (unsigned long)
+        ( (double)ch4_time->HighBinTime * CH4BINARYTIME_HIGH_LSB_SEC
+        + (unsigned long)ch4_time->LowBinTime * CH4BINARYTIME_LOW_LSB_SEC );
+    irig_time->Fraction = (unsigned long)ch4_time->Micro * _100_NANO_SEC_IN_MICRO_SEC;
+
+    return I106_OK;
+}
+
+
+// Take a IEEE-1588 time value (like the one in a secondary IRIG header) and
+// turn it into an Irig106 time
+I106Status I106_IEEE15882IrigTime(IEEE1588_Time *i1588_time, I106Time  *irig_time){
+    irig_time->Seconds = (unsigned long)i1588_time->Seconds;
+
+    //Convert 'nanoseconds' to '100 nanoseconds'
+    irig_time->Fraction = (unsigned long)i1588_time->NanoSeconds / 100;     
+
+    return I106_OK;
+}
+
+
+// Warning - array to int / int to array functions are little endian only!
+
+// Create a 6 byte array value from a 64 bit int relative time
+void LLInt2TimeArray(int64_t *rel_time, uint8_t rtc[]){
+    memcpy((char *)rtc, (char *)rel_time, 6);
+}
+
+
+// Create a 64 bit int relative time from 6 byte array value
+void TimeArray2LLInt(uint8_t rtc[], int64_t *rel_time){
+    *rel_time = 0L;
+    memcpy((char *)rel_time, (char *)rtc, 6);
+}
+
+
+// Read the data file from the current position to try to determine a valid 
+// relative time to clock time from a time packet.
+I106Status I106_SyncTime(int handle, int sync, int max_seconds){
+    int64_t             offset;
+    int64_t             time_limit;
+    int64_t             current_time;
+    I106Status          status;
+    I106Status          return_status;
+    I106C10Header      header;
+    I106Time            time;
+    unsigned long       buffer_size = 0;
+    void              * buffer = NULL;
+    SuTimeF1_ChanSpec * csdw = NULL;
+
+    // Get and save the current file position
+    status = I106C10GetPos(handle, &offset);
+    if (status != I106_OK)
+        return status;
+
+    // Read the next header
+    status = I106C10ReadNextHeaderFile(handle, &header);
+    if (status == I106_EOF)
+        return I106_TIME_NOT_FOUND;
+
+    if (status != I106_OK)
+        return status;
+
+    // Calculate the time limit if there is one
+    if (max_seconds > 0){
+        TimeArray2LLInt(header.RTC, &time_limit);
+        time_limit = time_limit + (int64_t)max_seconds * (int64_t)10000000;
+    }
+    else
+        time_limit = 0;
+
+    // Loop, looking for appropriate time message
+    while (1){
+
+        // See if we've passed our time limit
+        if (time_limit > 0){
+            TimeArray2LLInt(header.RTC, &current_time);
+            if (time_limit < current_time){
+                return_status = I106_TIME_NOT_FOUND;
+                break;
+            }
+        }
+
+        // If IRIG time type then process it
+        if (header.DataType == I106CH10_DTYPE_IRIG_TIME){
+
+            // Read header OK, make buffer for time message
+            if (buffer_size < header.PacketLength){
+                buffer       = realloc(buffer, header.PacketLength);
+                csdw         = (SuTimeF1_ChanSpec *)buffer;
+                buffer_size  = header.PacketLength;
+            }
+
+            // Read the data buffer
+            status = I106C10ReadData(handle, buffer_size, buffer);
+            if (status != I106_OK){
+                return_status = I106_TIME_NOT_FOUND;
+                break;
+            }
+
+            // If external sync OK then decode it and set relative time
+            if ((sync == 0) || (csdw->uTimeSrc == 1)){
+                enI106_Decode_TimeF1(&header, buffer, &time);
+                I106_SetRelTime(handle, &time, header.RTC);
+                return_status = I106_OK;
+                break;
+            }
+        }
+
+        // Read the next header and try again
+        status = I106C10ReadNextHeaderFile(handle, &header);
+        if (status == I106_EOF){
+            return_status = I106_TIME_NOT_FOUND;
+            break;
+        }
+
+        if (status != I106_OK){
+            return_status = status;
+            break;
+        }
+
+    }
+
+    // Restore file position
+    status = I106C10SetPos(handle, offset);
+    if (status != I106_OK)
+        return_status = status;
+
+    // Return the malloc'ed memory
+    free(buffer);
+
+    return return_status;
+}
+
+
+I106Status I106C10SetPosToIrigTime(int handle, I106Time *irig_seek_time){
+    uint8_t           rtc_seek_time[6];
+    int64_t           seek_time;
+    InOrderIndex    * index = &handles[handle].InOrderIndex;
+    int               upper_limit;
+    int               lower_limit;
+
+    // If there is no index in memory then barf
+    if (index->SortStatus != SORTED)
+        return I106_NO_INDEX;
+
+    // We have an index so do a binary search for time
+
+    // Convert clock time to 10 MHz count
+    I106_Irig2RelTime(handle, irig_seek_time, rtc_seek_time);
+    TimeArray2LLInt(rtc_seek_time, &seek_time);
+
+    // Check time bounds
+    if (seek_time < index->Index[0].Time){
+        I106C10FirstMsg(handle);
+        return I106_TIME_NOT_FOUND;
+    };
+
+    if (seek_time > index->Index[index->ArrayUsed].Time){
+        I106C10LastMsg(handle);
+        return I106_TIME_NOT_FOUND;
+    };
+
+    // If we don't already have it, figure out how many search steps
+    if (index->NumSearchSteps == 0){
+        upper_limit = 1;
+        while (upper_limit < index->ArrayUsed){
+            upper_limit *= 2;
+            index->NumSearchSteps++;
+        }
+    }
+
+    // Loop prescribed number of times
+    lower_limit = 0;
+    upper_limit = index->ArrayUsed - 1;
+    index->ArrayPos = (upper_limit - lower_limit) / 2;
+    for (int i = 0; i < index->NumSearchSteps; i++){
+        if (index->Index[index->ArrayPos].Time > seek_time)
+            upper_limit = (upper_limit - lower_limit) / 2;
+        else if (index->Index[index->ArrayPos].Time < seek_time)
+            lower_limit = (upper_limit - lower_limit) / 2;
+        else
+            break;
+    }
+
+    return I106_OK;
+}
+
+
+/* General purpose time utilities */
+
+// Convert IRIG time into an appropriate string
+char * IrigTime2String(I106Time *time){
+    static char    time_str[30];
+    struct tm     *tm;
+
+    // Convert IRIG time into it's components
+    tm = gmtime((time_t *)&(time->Seconds));
+
+    // Make the appropriate string
+    switch (time->Format){
+
+        // Year / Month / Day format ("2008/02/29 12:34:56.789")
+        case I106_DATEFMT_DMY:
+            sprintf(time_str, "%4.4i/%2.2i/%2.2i %2.2i:%2.2i:%2.2i.%3.3i",
+                tm->tm_year + 1900,
+                tm->tm_mon + 1,
+                tm->tm_mday,
+                tm->tm_hour,
+                tm->tm_min,
+                tm->tm_sec,
+                time->Fraction / 10000);
+            break;
+
+        // Day of the Year format ("001:12:34:56.789")
+        case I106_DATEFMT_DAY:
+        default:
+            sprintf(time_str, "%3.3i:%2.2i:%2.2i:%2.2i.%3.3i",
+                tm->tm_yday+1,
+                tm->tm_hour,
+                tm->tm_min,
+                tm->tm_sec,
+                time->Fraction / 10000);
+            break;
+    }
+
+    return time_str;
+}
+
+
+// This function fills in the SuTimeRef structure with the "best" relative 
+// and/or absolute time stamp available from the packet header and intra-packet 
+// header (if available).
+I106Status FillInTimeStruct(I106C10Header *header, IntraPacketTS * ipts, TimeRef * timeref){
+    int secondary_time_format;
+
+    // Get the secondary header time format
+    secondary_time_format = header->PacketFlags & I106CH10_PFLAGS_TIMEFMT_MASK;
+    timeref->RTCValid = 0;
+    timeref->TimeValid = 0;
+    
+    // Set the relative time from the packet header
+    TimeArray2LLInt(header->RTC, &(timeref->RTC));
+    timeref->RTCValid = 1;
+
+    // If secondary header is available, use that time for absolute
+    if ((header->PacketFlags & I106CH10_PFLAGS_SEC_HEADER) != 0){
+        switch(secondary_time_format){
+            case I106CH10_PFLAGS_TIMEFMT_IRIG106:
+                I106_Ch4Binary2IrigTime((I106Ch4_Binary_Time *)header->RTC, &(timeref->IrigTime));
+                timeref->TimeValid = 1;
+                break;
+            case I106CH10_PFLAGS_TIMEFMT_IEEE1588:
+                I106_IEEE15882IrigTime((IEEE1588_Time *)header->RTC, &(timeref->IrigTime));
+                timeref->TimeValid = 1;
+                break;
+            default:
+                //Currently reserved, should we have a default way to decode?
+                break;
+        }
+    }
+
+    // Now process values from the intra-packet headers if available
+    if (ipts != NULL){
+        
+        // If relative time
+        if ((header->PacketFlags & I106CH10_PFLAGS_IPTIMESRC) == 0){
+            TimeArray2LLInt(ipts->IPTS, &(timeref->RTC));
+            timeref->RTCValid = 1;
+        }
+
+        // else is absolute time
+        else {
+            switch(secondary_time_format){
+                case I106CH10_PFLAGS_TIMEFMT_IRIG106:
+                    I106_Ch4Binary2IrigTime((I106Ch4_Binary_Time *)ipts, &(timeref->IrigTime));
+                    timeref->TimeValid = 1;
+                    break;
+                case I106CH10_PFLAGS_TIMEFMT_IEEE1588:                  
+                    I106_IEEE15882IrigTime((IEEE1588_Time *)ipts, &(timeref->IrigTime));
+                    timeref->TimeValid = 1;
+                    break;
+                default:
+                    //Current reserved, should we have a default way to decode
+                    break;
+            }
+        }
+    }
+    
+    return I106_OK;
+}
+
+
+/* Return the equivalent in seconds past 12:00:00 a.m. Jan 1, 1970 GMT
+   of the Greenwich Mean time and date in the exploded time structure `tm'.
+
+   The standard mktime() has the annoying "feature" of assuming that the 
+   time in the tm structure is local time, and that it has to be corrected 
+   for local time zone.  In this library time is assumed to be UTC and UTC
+   only.  To make sure no timezone correction is applied this time conversion
+   routine was lifted from the standard C run time library source.  Interestingly
+   enough, this routine was found in the source for mktime().
+
+   This function does always put back normalized values into the `tm' struct,
+   parameter, including the calculated numbers for `tm->tm_yday',
+   `tm->tm_wday', and `tm->tm_isdst'.
+
+   Returns -1 if the time in the `tm' parameter cannot be represented
+   as valid `time_t' number. 
+ */
+uint32_t mkgmtime(struct tm *time){
 
     // Accumulated number of days from 01-Jan up to start of current month.
-    static short ydays[] =
-    {
+    static short julian_day[] = {
       0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365
     };
 
     int years, months, days, hours, minutes, seconds;
 
-    years   = psuTmTime->tm_year + 1900;  // year - 1900 -> year
-    months  = psuTmTime->tm_mon;          // 0..11
-    days    = psuTmTime->tm_mday - 1;     // 1..31 -> 0..30
-    hours   = psuTmTime->tm_hour;         // 0..23
-    minutes = psuTmTime->tm_min;          // 0..59
-    seconds = psuTmTime->tm_sec;          // 0..61 in ANSI C.
+    years   = time->tm_year + 1900;  // year - 1900 -> year
+    months  = time->tm_mon;          // 0..11
+    days    = time->tm_mday - 1;     // 1..31 -> 0..30
+    hours   = time->tm_hour;         // 0..23
+    minutes = time->tm_min;          // 0..59
+    seconds = time->tm_sec;          // 0..61 in ANSI C.
 
     ADJUST_TM(seconds, minutes, 60)
     ADJUST_TM(minutes, hours,   60)
     ADJUST_TM(hours,   days,    24)
     ADJUST_TM(months,  years,   12)
 
-    if (days < 0)
-        do 
-            {
-            if (--months < 0) 
-                {
-                --years;
-                months = 11;
-                }
-            days += monthlen(months, years);
-            } while (days < 0);
+    while (days < 0) {
+        if (--months < 0) {
+            --years;
+            months = 11;
+        }
+        days += monthlen(months, years);
+    } ;
 
-    else
-        while (days >= monthlen(months, years)) 
-            {
-            days -= monthlen(months, years);
-            if (++months >= 12) 
-                {
-                ++years;
-                months = 0;
-                }
-            } // end while
+    while (days >= monthlen(months, years)){
+        days -= monthlen(months, years);
+        if (++months >= 12) {
+            ++years;
+            months = 0;
+        }
+    }
 
     // Restore adjusted values in tm structure
-    psuTmTime->tm_year = years - 1900;
-    psuTmTime->tm_mon  = months;
-    psuTmTime->tm_mday = days + 1;
-    psuTmTime->tm_hour = hours;
-    psuTmTime->tm_min  = minutes;
-    psuTmTime->tm_sec  = seconds;
+    time->tm_year = years - 1900;
+    time->tm_mon  = months;
+    time->tm_mday = days + 1;
+    time->tm_hour = hours;
+    time->tm_min  = minutes;
+    time->tm_sec  = seconds;
 
     // Set `days' to the number of days into the year.
-    days += ydays[months] + (months > 1 && leap (years));
-    psuTmTime->tm_yday = days;
+    days += julian_day[months] + (months > 1 && leap (years));
+    time->tm_yday = days;
 
     // Now calculate `days' to the number of days since Jan 1, 1970.
     days = (unsigned)days + 365 * (unsigned)(years - 1970) +
            (unsigned)(nleap (years));
-    psuTmTime->tm_wday = ((unsigned)days + 4) % 7; /* Jan 1, 1970 was Thursday. */
-    psuTmTime->tm_isdst = 0;
+    time->tm_wday = ((unsigned)days + 4) % 7; /* Jan 1, 1970 was Thursday. */
+    time->tm_isdst = 0;
 
     if (years < 1970)
         return (uint32_t)-1;
 
     return (uint32_t)(86400L * days  + 3600L * hours + 60L * minutes + seconds);
-    }
-
-
-
-
-
-#ifdef __cplusplus
-} // end namespace i106
-#endif
-
+}

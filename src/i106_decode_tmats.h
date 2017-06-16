@@ -278,12 +278,12 @@ typedef PUBLIC struct SuTmatsInfo_S {
 
 // Function Declaration
 
-EnI106Status I106_CALL_DECL 
+I106Status I106_CALL_DECL 
     enI106_Decode_Tmats(SuI106Ch10Header  * psuHeader,
                         void              * pvBuff,
                         SuTmatsInfo       * psuTmatsInfo);
 
-EnI106Status I106_CALL_DECL 
+I106Status I106_CALL_DECL 
     enI106_Decode_Tmats_Text(void         * pvBuff,
                              uint32_t       ulDataLen,
                              SuTmatsInfo  * psuTmatsInfo);

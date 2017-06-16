@@ -145,23 +145,23 @@ typedef struct
  * --------------------
  */
 
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_TimeF1(SuI106Ch10Header  * psuHeader,
+I106Status I106_CALL_DECL 
+    enI106_Decode_TimeF1(I106C10Header  * psuHeader,
                          void              * pvBuff,
-                         SuIrig106Time     * psuTime);
+                         I106Time     * psuTime);
 
 void I106_CALL_DECL 
     enI106_Decode_TimeF1_Buff(int                 iDateFmt,
                               int                 bLeapYear,
                               void              * pvTimeBuff,
-                              SuIrig106Time     * psuTime);
+                              I106Time     * psuTime);
 
-EnI106Status I106_CALL_DECL 
-    enI106_Encode_TimeF1(SuI106Ch10Header  * psuHeader,
+I106Status I106_CALL_DECL 
+    enI106_Encode_TimeF1(I106C10Header  * psuHeader,
                          unsigned int        uTimeSrc,
                          unsigned int        uFmtTime,
                          unsigned int        uFmtDate,
-                         SuIrig106Time     * psuTime,
+                         I106Time     * psuTime,
                          void              * pvBuffTimeF1);
 
 #ifdef __cplusplus
