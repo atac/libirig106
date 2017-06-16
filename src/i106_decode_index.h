@@ -10,12 +10,6 @@
 
 #include "config.h"
 
-#ifdef __cplusplus
-namespace Irig106 {
-extern "C" {
-#endif
-
-
 // Macros and definitions
 
 #if defined(_MSC_VER)
@@ -25,88 +19,86 @@ extern "C" {
 
 
 // Index time
-typedef union Index_Time_S {
-    SuIntraPacketRtc        suRtcTime;  // RTC format time stamp
-    SuI106Ch4_Binary_Time   suCh4Time;  // Ch 4 format time stamp
-    SuIEEE1588_Time         su1588Time; // IEEE-1588 format time stamp
-    uint64_t                llTime;     // Generic 8 byte time
-} PACKED SuIndex_Time;
+typedef union {
+    IntraPacketRTC       rtc_time;
+    I106Ch4_Binary_Time  ch4_time;
+    IEEE1588_Time        i1588_time;
+    uint64_t             time;
+} PACKED IndexTime;
 
 
 // Channel specific data word
-typedef struct Index_ChanSpec_S{
-    uint32_t    uIdxEntCount    : 16;   // Total number of indexes
-    uint32_t    uReserved       : 13;
-    uint32_t    bIntraPckHdr    :  1;   // Intra-packet header present
-    uint32_t    bFileSize       :  1;   // File size present
-    uint32_t    uIndexType      :  1;   // Index type
-} PACKED SuIndex_ChanSpec;
+typedef struct {
+    uint32_t  Count      : 16;   // Total number of indexes
+    uint32_t  Reserved   : 13;
+    uint32_t  IPH        :  1;   // Intra-packet header present
+    uint32_t  FileSize   :  1;   // File size present
+    uint32_t  IndexType  :  1;   // Index type
+} PACKED IndexCSDW;
 
 
-// Node Index
+/* Node Index */
 
 // Node index data
-typedef struct Index_NodeData_S{
-    uint32_t    uChannelID      : 16;
-    uint32_t    uDataType       :  8;
-    uint32_t    uReserved       :  8;
-} PACKED SuIndex_NodeData;
+typedef struct {
+    uint32_t    ChannelID      : 16;
+    uint32_t    DataType       :  8;
+    uint32_t    Reserved       :  8;
+} PACKED IndexNodeData;
 
 // Node index message without optional secondary data header
-typedef struct Index_NodeMsg_S {
-    SuIndex_Time                suTime;
-    SuIndex_NodeData            suData;     // Node index data
-    int64_t                     lOffset;
-} PACKED SuIndex_NodeMsg;
+typedef struct {
+    IndexTime      Time;
+    IndexNodeData  Data;
+    int64_t        Offset;
+} PACKED IndexNodeMsg;
 
 // Node index message with optional secondary data header
-typedef struct Index_NodeMsgOptTime_S {
-    SuIndex_Time                suTime;
-    SuIndex_Time                suSecondaryTime;
-    SuIndex_NodeData            suData;     // Node index data
-    int64_t                     lOffset;
-} PACKED SuIndex_NodeMsgOptTime;
+typedef struct {
+    IndexTime                Time;
+    IndexTime                SecondaryTime;
+    IndexNodeData            Data;
+    int64_t                  Offset;
+} PACKED IndexNodeMsgTime;
 
 
-// Root Index
+/* Root Index */
 
 // Root index message without optional secondary data header
-typedef struct Index_RootMsg_S {
-    SuIndex_Time                suTime;
-    int64_t                     lOffset;   // Offset to node packet
-} PACKED SuIndex_RootMsg;
-
+typedef struct {
+    IndexTime                Time;
+    int64_t                  Offset;
+} PACKED IndexRootMsg;
 
 // Root index message with optional secondary data header
-typedef struct Index_RootMsgOptTime_S{
-    SuIndex_Time                suTime;
-    SuIndex_Time                suSecondaryTime;
-    int64_t                     lOffset;   // Offset to node packet
-} PACKED SuIndex_RootMsgOptTime;
+typedef struct {
+    IndexTime                Time;
+    IndexTime                SecondaryTime;
+    int64_t                  Offset;
+} PACKED IndexRootMsgTime;
 
 
 // Data structure to hold state for First / Next
-typedef struct SuIndex_CurrMsg_S{
-    unsigned int            uMsgNum;
-    uint32_t                ulDataLen;
-    SuIndex_ChanSpec      * psuChanSpec;
-    int64_t               * piFileSize;
-    void                  * pvIndexArray;       // Pointer to the beginning of the index array
+typedef struct {
+    unsigned int    MessageNumber;
+    uint32_t        DataLength;
+    IndexCSDW     * CSDW;
+    int64_t       * FileSize;
+    void          * IndexArray;  // Pointer to the beginning of the index array
 
-    // The following pointer point to data within the packet buffer
+    // The following pointers point to data within the packet buffer
     // Pointers are NULL for fields that don't exist within the
     // current index message.
 
     // Common index message fields
-    SuIndex_Time          * psuTime;
-    SuIndex_Time          * psuOptionalTime;    // Also known as the optional intra-packet data header
-    int64_t               * plFileOffset;
+    IndexTime      * Time;
+    IndexTime      * IPTS;
+    int64_t        * FileOffset;
 
     // Node index message specific fields
-    SuIndex_NodeData      * psuNodeData;         // Node index data. Duh!
+    IndexNodeData  * NodeData;
 
-} SuIndex_CurrMsg;
-
+} IndexMsg;
 
 #if defined(_MSC_VER)
 #pragma pack(pop)
@@ -114,13 +106,7 @@ typedef struct SuIndex_CurrMsg_S{
 
 
 // Function Declaration
-EnI106Status I106_CALL_DECL enI106_Decode_FirstIndex(SuI106Ch10Header * psuHeader, void * pvBuff, SuIndex_CurrMsg * psuMsg);
-EnI106Status I106_CALL_DECL enI106_Decode_NextIndex(SuIndex_CurrMsg * psuMsg);
-
-
-#ifdef __cplusplus
-}
-}
-#endif
+I106Status I106_Decode_FirstIndex(I106C10Header *header, void * buffer, IndexMsg *msg);
+I106Status I106_Decode_NextIndex(IndexMsg *msg);
 
 #endif
