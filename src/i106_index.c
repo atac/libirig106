@@ -55,7 +55,7 @@ static C10Index indices[MAX_HANDLES];
 void InitIndexes(void);
 I106Status ProcessNodeIndexPacket(int handle, int64_t offset);
 I106Status ProcessRootIndexPacket(int handle, int64_t root_offset, int64_t *next_offset);
-void AddIndexNodeToIndex(int handle, SuIndex_CurrMsg *node_msg, uint16_t channel_id, uint8_t data_type);
+void AddIndexNodeToIndex(int handle, IndexMsg *node_msg, uint16_t channel_id, uint8_t data_type);
 void AddNodeToIndex(int handle, PacketIndexInfo *index_info);
 I106Status FindTimePacket(int handle);
 void RelInt2IrigTime(int handle, int64_t rtc, I106Time *time);
@@ -216,7 +216,7 @@ I106Status ProcessRootIndexPacket(int handle, int64_t offset, int64_t *next){
     I106Status         status = I106_OK;
     I106C10Header      header;
     void             * buffer = NULL;
-    SuIndex_CurrMsg    msg;
+    IndexMsg    msg;
 
     // Go to what should be a root index packet
     status = I106C10SetPos(handle, offset);
@@ -243,21 +243,21 @@ I106Status ProcessRootIndexPacket(int handle, int64_t offset, int64_t *next){
         return status;
 
     // Decode the first root index message
-    status = enI106_Decode_FirstIndex(&header, buffer, &msg);
+    status = I106_Decode_FirstIndex(&header, buffer, &msg);
 
     // Loop on all root index messages
     while (1){
         // Root message, go to node packet and decode
         if (status == I106_INDEX_ROOT){
             // Go process the node packet
-            status = ProcessNodeIndexPacket(handle, *(msg.plFileOffset));
+            status = ProcessNodeIndexPacket(handle, *(msg.FileOffset));
             if (status != I106_OK)
                 break;                
         }
 
         // Last root message links to the next root packet
         else if (status == I106_INDEX_ROOT_LINK)
-            *next = *(msg.plFileOffset);
+            *next = *(msg.FileOffset);
 
         // If it comes back as a node message then there was a problem
         else if (status == I106_INDEX_NODE){
@@ -276,7 +276,7 @@ I106Status ProcessRootIndexPacket(int handle, int64_t offset, int64_t *next){
             break;
 
         // Get the next root index message
-        status = enI106_Decode_NextIndex(&msg);
+        status = I106_Decode_NextIndex(&msg);
 
     }
 
@@ -292,7 +292,7 @@ I106Status ProcessNodeIndexPacket(int handle, int64_t offset){
     I106Status         status = I106_OK;
     I106C10Header      header;
     void             * buffer = NULL;
-    SuIndex_CurrMsg    msg;
+    IndexMsg           msg;
 
     // Go to what should be a node index packet
     status = I106C10SetPos(handle, offset);
@@ -319,7 +319,7 @@ I106Status ProcessNodeIndexPacket(int handle, int64_t offset){
         return status;
 
     // Decode the first node index message
-    status = enI106_Decode_FirstIndex(&header, buffer, &msg);
+    status = I106_Decode_FirstIndex(&header, buffer, &msg);
 
     // Loop on all node index messages
     while (1){
@@ -344,7 +344,7 @@ I106Status ProcessNodeIndexPacket(int handle, int64_t offset){
             break;
 
         // Get the next node index message
-        status = enI106_Decode_NextIndex(&msg);
+        status = I106_Decode_NextIndex(&msg);
 
     }
 
@@ -355,7 +355,7 @@ I106Status ProcessNodeIndexPacket(int handle, int64_t offset){
 
 
 /* Add an index packet node to the in memory index array */
-void AddIndexNodeToIndex(int handle, SuIndex_CurrMsg *msg, uint16_t channel_id, uint8_t data_type){
+void AddIndexNodeToIndex(int handle, IndexMsg *msg, uint16_t channel_id, uint8_t data_type){
     PacketIndexInfo      index_info;
     I106Status           status;
     I106C10Header        header;
@@ -365,20 +365,20 @@ void AddIndexNodeToIndex(int handle, SuIndex_CurrMsg *msg, uint16_t channel_id, 
     // Store the info
     index_info.ChannelID  = channel_id;
     index_info.DataType   = data_type;
-    index_info.Offset     = *(msg->plFileOffset);
-    index_info.RTC        = msg->psuTime->llTime;
+    index_info.Offset     = *(msg->FileOffset);
+    index_info.RTC        = msg->Time->time;
 
     // If the optional intrapacket data header exists then get absolute time from it
-    if (msg->psuChanSpec->bIntraPckHdr == 1){
+    if (msg->CSDW->IPH == 1){
         csdw = (SuTimeF1_ChanSpec *)indices[handle].TimePacket;
         enI106_Decode_TimeF1_Buff(csdw->uDateFmt, csdw->bLeapYear,
-            msg->psuOptionalTime, &index_info.IrigTime);
+            msg->Time, &index_info.IrigTime);
     }
 
     // Else if the indexed packet is a time packet then get the time from it
-    else if (msg->psuNodeData->uDataType == I106CH10_DTYPE_IRIG_TIME){
+    else if (msg->NodeData->DataType == I106CH10_DTYPE_IRIG_TIME){
         // Go to what should be a time packet
-        status = I106C10SetPos(handle, *(msg->plFileOffset));
+        status = I106C10SetPos(handle, *(msg->FileOffset));
 
         // Read the packet header
         status = I106C10ReadNextHeader(handle, &header);
@@ -398,7 +398,7 @@ void AddIndexNodeToIndex(int handle, SuIndex_CurrMsg *msg, uint16_t channel_id, 
 
     // Else no absolute time available, so make it from relative time
     else
-        RelInt2IrigTime(handle, msg->psuTime->llTime, &index_info.IrigTime);
+        RelInt2IrigTime(handle, msg->Time->time, &index_info.IrigTime);
 
     AddNodeToIndex(handle, &index_info);
 
