@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_uart.c - 
+ i106_decode_uart.c
 
  ****************************************************************************/
 
@@ -15,124 +15,69 @@
 
 #include "i106_decode_uart.h"
 
-#ifdef __cplusplus
-namespace Irig106 {
-#endif
+
+/* Function Declaration */
+
+static void FillInMessagePointers(UARTF0_Message *msg);
 
 
-/*
- * Macros and definitions
- * ----------------------
- */
-
-
-/*
- * Data structures
- * ---------------
- */
-
-
-/*
- * Module data
- * -----------
- */
-
-
-
-/*
- * Function Declaration
- * --------------------
- */
-
-static void vFillInMsgPtrs(SuUartF0_CurrMsg * psuCurrMsg);
-
-/* ======================================================================= */
-
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_FirstUartF0(SuI106Ch10Header         * psuHeader,
-                              void                     * pvBuff,
-                              SuUartF0_CurrMsg         * psuCurrMsg)
-
-    {
+I106Status I106_Decode_FirstUARTF0(I106C10Header *header, void *buffer, UARTF0_Message *msg){
 
     // Keep a pointer to the current header    
-    psuCurrMsg->psuHeader = psuHeader;
+    msg->Header = header;
 
-    psuCurrMsg->uBytesRead = 0;
+    msg->BytesRead = 0;
 
     // Set pointers to the beginning of the UART buffer
-    psuCurrMsg->psuChanSpec = (SuUartF0_ChanSpec *)pvBuff;
+    msg->CSDW = (UARTF0_CSDW *)buffer;
 
-    psuCurrMsg->uBytesRead += sizeof(SuUartF0_ChanSpec);
+    msg->BytesRead += sizeof(UARTF0_CSDW);
 
     // Check for no data
-    if (psuHeader->ulDataLen <= psuCurrMsg->uBytesRead)
+    if (header->DataLength <= msg->BytesRead)
         return I106_NO_MORE_DATA;
 
     // Get the other pointers
-    vFillInMsgPtrs(psuCurrMsg);
+    FillInMessagePointers(msg);
 
-    vFillInTimeStruct(psuHeader, psuCurrMsg->psuIPTimeStamp, &psuCurrMsg->suTimeRef);
+    FillInTimeStruct(header, msg->IPTS, &msg->Time);
 
     return I106_OK;
-    
-    }
+}
 
 
-
-/* ----------------------------------------------------------------------- */
-
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_NextUartF0(SuUartF0_CurrMsg         * psuCurrMsg)
-    {
+I106Status I106_Decode_NextUARTF0(UARTF0_Message *msg){
     
     // Check for no more data
-    if (psuCurrMsg->psuHeader->ulDataLen <= psuCurrMsg->uBytesRead)
+    if (msg->Header->DataLength <= msg->BytesRead)
         return I106_NO_MORE_DATA;
 
     // Get the other pointers
-    vFillInMsgPtrs(psuCurrMsg);
+    FillInMessagePointers(msg);
 
-    vFillInTimeStruct(psuCurrMsg->psuHeader, psuCurrMsg->psuIPTimeStamp, &psuCurrMsg->suTimeRef);
+    FillInTimeStruct(msg->Header, msg->IPTS, &msg->Time);
 
     return I106_OK;
+}
 
-    }
 
-/* ----------------------------------------------------------------------- */
+void FillInMessagePointers(UARTF0_Message *msg){
 
-void vFillInMsgPtrs(SuUartF0_CurrMsg * psuCurrMsg)
-{
      // Set the pointer to the intra-packet time stamp if available
-    if(psuCurrMsg->psuChanSpec->bIPH == 1)
-    {
-        psuCurrMsg->psuIPTimeStamp = (SuIntraPacketTS *)
-                              ((char *)(psuCurrMsg->psuChanSpec) +
-                               psuCurrMsg->uBytesRead);
-        psuCurrMsg->uBytesRead += sizeof(psuCurrMsg->psuIPTimeStamp->aubyIntPktTime);
-
+    if(msg->CSDW->IPH){
+        msg->IPTS = (IntraPacketTS *)((char *)(msg->CSDW) + msg->BytesRead);
+        msg->BytesRead += sizeof(msg->IPTS->IPTS);
     }
     else
-        psuCurrMsg->psuIPTimeStamp = NULL;
+        msg->IPTS = NULL;
 
     // Set the pointer to the intra-packet header
-    psuCurrMsg->psuUartHdr = (SuUartF0_Header *)
-                             ((char *)(psuCurrMsg->psuChanSpec) + 
-                              psuCurrMsg->uBytesRead); 
-    psuCurrMsg->uBytesRead += sizeof(SuUartF0_Header);
+    msg->IPH = (UARTF0_IPH *)((char *)(msg->CSDW) + msg->BytesRead); 
+    msg->BytesRead += sizeof(UARTF0_IPH);
     
     // Set the pointer to the data
-    psuCurrMsg->pauData = (uint8_t *)((char *)(psuCurrMsg->psuChanSpec) + psuCurrMsg->uBytesRead);
+    msg->Data = (uint8_t *)((char *)(msg->CSDW) + msg->BytesRead);
 
     // Add the data length, if it is odd, account for the filler byte we will skip   
-    psuCurrMsg->uBytesRead+=
-        psuCurrMsg->psuUartHdr->uDataLength + (psuCurrMsg->psuUartHdr->uDataLength % 2);    
-
+    msg->BytesRead += msg->IPH->Length + (msg->IPH->Length % 2);    
 }
-
-
-
-#ifdef __cplusplus
-}
-#endif
-

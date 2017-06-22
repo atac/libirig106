@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_1553f1.c - 
+ i106_decode_1553f1.c
 
  ****************************************************************************/
 
@@ -13,113 +13,50 @@
 #include "irig106ch10.h"
 #include "i106_decode_video.h"
 
-#ifdef __cplusplus
-namespace Irig106 {
-#endif
+/* Function Declaration */
 
-
-
-/*
- * Macros and definitions
- * ----------------------
- */
-
-
-/*
- * Data structures
- * ---------------
- */
-
-
-/*
- * Module data
- * -----------
- */
-
-
-
-/*
- * Function Declaration
- * --------------------
- */
-
-
-
-/* ======================================================================= */
-
-/// Setup reading multiple Video Format 0 messages
-
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_FirstVideoF0(SuI106Ch10Header  * psuHeader,
-                               void              * pvBuff,
-                               SuVideoF0_CurrMsg * psuCurrMsg)
-    {
+// Setup reading multiple Video Format 0 messages
+I106Status I106_Decode_FirstVideoF0(I106C10Header *header, void *buffer, VideoF0_Message *msg){
 
     // Save pointer to channel specific data
-    psuCurrMsg->psuChanSpec = (SuVideoF0_ChanSpec *)pvBuff;
+    msg->CSDW = (VideoF0_CSDW *)buffer;
 
     // Set pointers if embedded time used
-    if (psuCurrMsg->psuChanSpec->bET == 1)
-        {
-        psuCurrMsg->psuIPHeader = (SuVideoF0_Header *)
-                                  ((char *)pvBuff + sizeof(SuVideoF0_ChanSpec));
-        psuCurrMsg->pachTSData  = (uint8_t         *)
-                                  ((char *)pvBuff             + 
-                                   sizeof(SuVideoF0_ChanSpec) +
-                                   sizeof(SuVideoF0_Header));
-        }
-
-    // No embedded time
-    else
-        {
-        psuCurrMsg->psuIPHeader = NULL;
-        psuCurrMsg->pachTSData  = (uint8_t *)pvBuff + sizeof(SuVideoF0_ChanSpec);
-        }
-
-// TAKE CARE OF BYTE SWAPPING BASED ON CH 10 RELEASE AND BA CSDW (NEW IN -09)
-
-    return I106_OK;
+    if (msg->CSDW->ET == 1){
+        msg->IPH = (VideoF0_IPH *)((char *)buffer + sizeof(VideoF0_CSDW));
+        msg->Data = (uint8_t *)((char *)buffer + sizeof(VideoF0_CSDW) + sizeof(VideoF0_IPH));
     }
 
+    // No embedded time
+    else {
+        msg->IPH = NULL;
+        msg->Data  = (uint8_t *)buffer + sizeof(VideoF0_CSDW);
+    }
+
+    // TAKE CARE OF BYTE SWAPPING BASED ON CH 10 RELEASE AND BA CSDW (NEW IN -09)
+
+    return I106_OK;
+}
 
 
-/* ----------------------------------------------------------------------- */
-
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_NextVideoF0 (SuI106Ch10Header  * psuHeader,
-                               SuVideoF0_CurrMsg * psuCurrMsg)
-    {
-    int     iNextOffset;
+I106Status I106_Decode_NextVideoF0 (I106C10Header *header, VideoF0_Message *msg){
+    int next;
 
     // Calculate the offset to the next video packet
-    if (psuCurrMsg->psuChanSpec->bET == 1)
-        {
-        iNextOffset = 188 + sizeof(SuVideoF0_Header);
-        psuCurrMsg->psuIPHeader = (SuVideoF0_Header *)
-                                  ((char *)psuCurrMsg->psuIPHeader + iNextOffset);
-        psuCurrMsg->pachTSData  = (uint8_t         *)
-                                  ((char *)psuCurrMsg->pachTSData  + iNextOffset);
-        }
-    else
-        {
-        iNextOffset = 188;
-        psuCurrMsg->psuIPHeader = (SuVideoF0_Header *)NULL;
-        psuCurrMsg->pachTSData  = (uint8_t         *)
-                                  ((char *)psuCurrMsg->pachTSData + iNextOffset);
-        }
+    if (msg->CSDW->ET == 1){
+        next = 188 + sizeof(VideoF0_IPH);
+        msg->IPH = (VideoF0_IPH *)((char *)msg->IPH + next);
+        msg->Data  = (uint8_t *)((char *)msg->Data + next);
+    }
+    else {
+        next = 188;
+        msg->IPH = (VideoF0_IPH *)NULL;
+        msg->Data = (uint8_t *)((char *)msg->Data + next);
+    }
 
     // If new data pointer is beyond end of buffer then we're done
-    if ((unsigned long)((char *)psuCurrMsg->pachTSData - (char *)psuCurrMsg->psuChanSpec) >= psuHeader->ulDataLen)
+    if ((unsigned long)((char *)msg->Data - (char *)msg->CSDW) >= header->DataLength)
         return I106_NO_MORE_DATA;
 
     return I106_OK;
-    }
-
-
-
-
-/* ----------------------------------------------------------------------- */
-
-#ifdef __cplusplus
-} // end namespace Irig106
-#endif
+}
