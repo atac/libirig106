@@ -6,9 +6,7 @@ CFLAGS=\
 	   -ggdb\
 	   -fpack-struct=1\
 	   -fPIC\
-	   -Wno-address-of-packed-member\
-	   -Wno-format\
-	   -Wno-switch
+	   -Wno-address-of-packed-member
 
 SRC_DIR=src
 OBJ_DIR=obj
