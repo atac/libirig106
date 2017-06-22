@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_discrete.c -
+ i106_decode_discrete.c
 
  ****************************************************************************/
 
@@ -15,104 +15,57 @@
 #include "i106_time.h"
 #include "i106_decode_discrete.h"
 
-#ifdef __cplusplus
-namespace Irig106 {
-#endif
+
+/* Function Declaration */
+
+static void FillInMessagePointers(DiscreteF1_Message *msg);
 
 
-/*
- * Macros and definitions
- * ----------------------
- */
+I106Status I106_Decode_FirstDiscreteF1(I106C10Header * header, void * buffer,
+        DiscreteF1_Message *msg, TimeRef * time){
 
-
-/*
- * Data structures
- * ---------------
- */
-
-
-/*
- * Module data
- * -----------
- */
-
-
-
-/*
- * Function Declaration
- * --------------------
- */
-
-static void vFillInMsgPtrs(SuDiscreteF1_CurrMsg * psuCurrMsg);
-
-/* ======================================================================= */
-
-EnI106Status I106_CALL_DECL
-    enI106_Decode_FirstDiscreteF1(SuI106Ch10Header     * psuHeader,
-                                  void                 * pvBuff,
-                                  SuDiscreteF1_CurrMsg * psuCurrMsg,
-                                  SuTimeRef            * psuTimeRef)
-    {
-
-    psuCurrMsg->uBytesRead = 0;
+    msg->BytesRead = 0;
 
     // Set pointers to the beginning of the Discrete buffer
-    psuCurrMsg->psuChanSpec = (SuDiscreteF1_ChanSpec *)pvBuff;
+    msg->CSDW = (DiscreteF1_CSDW *)buffer;
 
-    psuCurrMsg->uBytesRead+=sizeof(SuDiscreteF1_ChanSpec);
+    msg->BytesRead+=sizeof(DiscreteF1_CSDW);
 
     // Check for no data
-    if (psuHeader->ulDataLen <= psuCurrMsg->uBytesRead)
+    if (header->DataLength <= msg->BytesRead)
         return I106_NO_MORE_DATA;
 
 
     // Get the other pointers
-    vFillInMsgPtrs(psuCurrMsg);
+    FillInMessagePointers(msg);
 
-    vFillInTimeStruct(psuHeader, psuCurrMsg->psuIPTimeStamp, psuTimeRef);
-
-    return I106_OK;
-    }
-
-
-
-/* ----------------------------------------------------------------------- */
-
-EnI106Status I106_CALL_DECL
-    enI106_Decode_NextDiscreteF1(SuI106Ch10Header     * psuHeader,
-                                 SuDiscreteF1_CurrMsg * psuCurrMsg,
-                                 SuTimeRef            * psuTimeRef)
-    {
-
-   // Check for no more data
-    if (psuHeader->ulDataLen <= psuCurrMsg->uBytesRead)
-        return I106_NO_MORE_DATA;
-
-    // Get the other pointers
-    vFillInMsgPtrs(psuCurrMsg);
-
-    vFillInTimeStruct(psuHeader, psuCurrMsg->psuIPTimeStamp, psuTimeRef);
+    FillInTimeStruct(header, msg->IPTS, time);
 
     return I106_OK;
-    }
-
-/* ----------------------------------------------------------------------- */
-
-void vFillInMsgPtrs(SuDiscreteF1_CurrMsg * psuCurrMsg)
-{
-
-    psuCurrMsg->psuIPTimeStamp = (SuIntraPacketTS *)
-                              ((char *)(psuCurrMsg->psuChanSpec) +
-                               psuCurrMsg->uBytesRead);
-    psuCurrMsg->uBytesRead+=sizeof(psuCurrMsg->psuIPTimeStamp->aubyIntPktTime);
-
-    psuCurrMsg->uDiscreteData = *( (uint32_t *) ((char *)(psuCurrMsg->psuChanSpec) +
-                              psuCurrMsg->uBytesRead));
-    psuCurrMsg->uBytesRead+=sizeof(psuCurrMsg->uDiscreteData);
-
 }
 
-#ifdef __cplusplus
-} // end namespace Irig106
-#endif
+
+I106Status I106_Decode_NextDiscreteF1(I106C10Header *header, DiscreteF1_Message *msg, TimeRef *time){
+
+   // Check for no more data
+    if (header->DataLength <= msg->BytesRead)
+        return I106_NO_MORE_DATA;
+
+    // Get the other pointers
+    FillInMessagePointers(msg);
+
+    FillInTimeStruct(header, msg->IPTS, time);
+
+    return I106_OK;
+}
+
+
+void FillInMessagePointers(DiscreteF1_Message *msg){
+
+    msg->IPTS = (IntraPacketTS *)((char *)(msg->CSDW) + msg->BytesRead);
+    msg->BytesRead+=sizeof(msg->IPTS->IPTS);
+
+    msg->Data = *( (uint32_t *) ((char *)(msg->CSDW) + msg->BytesRead));
+    msg->BytesRead+=sizeof(msg->Data);
+
+}

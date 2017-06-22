@@ -1,28 +1,17 @@
 /****************************************************************************
 
- i106_decode_discrete.h -
+ i106_decode_discrete.h
 
  ****************************************************************************/
 
 #ifndef _I106_DECODE_DISCRETE_H
 #define _I106_DECODE_DISCRETE_H
 
-#ifdef __cplusplus
-namespace Irig106 {
-extern "C" {
-#endif
-
-/*
- * Macros and definitions
- * ----------------------
- */
-#define I106CH10_NUM_DISCRETE_INPUTS_PER_STATE    (uint16_t)32
+/* Macros and definitions */
+#define I106CH10_NUM_DISCRETE_INPUTS_PER_STATE  (uint16_t)32
 
 
-/*
- * Data structures
- * ---------------
- */
+/* Data structures */
 
 /* Discrete Format 1 */
 
@@ -32,56 +21,29 @@ extern "C" {
 #endif
 
 // Channel specific header
-typedef struct
-   {
-    uint32_t    uReserved1  :  24;
-    uint32_t    uLength     :  5;      // Number of bits in the event
-    uint32_t    uReserved2  :  1;
-    uint32_t    uAlignment  :  1;      // 0 = lsb, 1 = msb
-    uint32_t    uRecState   :  1;      // 0 = date recorded on change, 1 = recorded at time interval
-#if !defined(__GNUC__)
-    } SuDiscreteF1_ChanSpec;
-#else
-    } __attribute__ ((packed)) SuDiscreteF1_ChanSpec;
-#endif
+typedef struct {
+    uint32_t    Reserved1  :  24;
+    uint32_t    Length     :  5;      // Number of bits in the event
+    uint32_t    Reserved2  :  1;
+    uint32_t    Alignment  :  1;      // 0 = lsb, 1 = msb
+    uint32_t    State      :  1;      // 0 = date recorded on change, 1 = recorded at time interval
+} PACKED DiscreteF1_CSDW;
 
 // Current discrete message
-typedef struct
-    {
-    unsigned int            uBytesRead;
-    SuDiscreteF1_ChanSpec * psuChanSpec;
-    SuIntraPacketTS       * psuIPTimeStamp;
-    uint32_t                uDiscreteData;
-#if !defined(__GNUC__)
-    } SuDiscreteF1_CurrMsg;
-#else
-    } __attribute__ ((packed)) SuDiscreteF1_CurrMsg;
-#endif
+typedef struct {
+    unsigned int       BytesRead;
+    DiscreteF1_CSDW  * CSDW;
+    IntraPacketTS    * IPTS;
+    uint32_t           Data;
+} PACKED DiscreteF1_Message;
 
 #if defined(_MSC_VER)
 #pragma pack(pop)
 #endif
 
 
-/*
- * Function Declaration
- * --------------------
- */
-
-EnI106Status I106_CALL_DECL
-    enI106_Decode_FirstDiscreteF1(SuI106Ch10Header     * psuHeader,
-                                  void                 * pvBuff,
-                                  SuDiscreteF1_CurrMsg * psuCurrMsg,
-                                  SuTimeRef            * psuTimeRef);
-
-EnI106Status I106_CALL_DECL
-    enI106_Decode_NextDiscreteF1(SuI106Ch10Header     * psuHeader,
-                                 SuDiscreteF1_CurrMsg * psuCurrMsg,
-                                 SuTimeRef            * psuTimeRef);
-
-#ifdef __cplusplus
-} // end extern "C"
-} // end namespace Irig106
-#endif
+/* Function Declaration */
+I106Status I106_Decode_FirstDiscreteF1(I106C10Header *header, void *buffer, DiscreteF1_Message *msg, TimeRef *time);
+I106Status I106_Decode_NextDiscreteF1(I106C10Header *header, DiscreteF1_Message *msg, TimeRef *time);
 
 #endif
