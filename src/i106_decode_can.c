@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_can.c -
+ i106_decode_can.c
  Created by: Tommaso Falchi Delitala <volalto86@gmail.com>
 
  ****************************************************************************/
@@ -16,127 +16,74 @@
 
 #include "i106_decode_can.h"
 
-#ifdef __cplusplus
-namespace Irig106 {
-#endif
+
+/* Function Declaration */
+
+static void FillInMessagePointers(CAN_Message *msg);
 
 
-/*
- * Macros and definitions
- * ----------------------
- */
+I106Status I106_Decode_FirstCAN(I106C10Header *header, void * buffer, CAN_Message *msg){
 
-
-/*
- * Data structures
- * ---------------
- */
-
-
-/*
- * Module data
- * -----------
- */
-
-
-
-/*
- * Function Declaration
- * --------------------
- */
-
-static void vFillInMsgPtrs(SuCan_CurrMsg * psuCurrMsg);
-
-/* ======================================================================= */
-
-EnI106Status I106_CALL_DECL
-    enI106_Decode_FirstCan(SuI106Ch10Header         * psuHeader,
-                           void                     * pvBuff,
-                           SuCan_CurrMsg            * psuCurrMsg)
-
-    {
-
-    psuCurrMsg->uBytesRead = 0;
+    msg->BytesRead = 0;
 
     // Keep a pointer to the current header
-    psuCurrMsg->psuHeader = psuHeader;
+    msg->Header = header;
 
     // Set pointers to the beginning of the Message buffer
-    psuCurrMsg->psuChanSpec = (SuCan_ChanSpec *)pvBuff;
-    psuCurrMsg->uBytesRead += sizeof(SuCan_ChanSpec);
+    msg->CSDW = (CAN_CSDW *)buffer;
+    msg->BytesRead += sizeof(CAN_CSDW);
 
     // Check for no messages
-    psuCurrMsg->uMsgNum = 0;
-    if (psuCurrMsg->psuChanSpec->uCounter == 0)
+    msg->MessageNumber = 0;
+    if (msg->CSDW->Counter == 0)
         return I106_NO_MORE_DATA;
 
     // Get the other pointers
-    vFillInMsgPtrs(psuCurrMsg);
+    FillInMessagePointers(msg);
 
-    vFillInTimeStruct(psuHeader, psuCurrMsg->psuIPTimeStamp, &psuCurrMsg->suTimeRef);
+    FillInTimeStruct(header, msg->IPTS, &msg->Time);
 
     return I106_OK;
-
-    }
-
+}
 
 
-/* ----------------------------------------------------------------------- */
-
-EnI106Status I106_CALL_DECL
-    enI106_Decode_NextCan(SuCan_CurrMsg *psuCurrMsg)
-    {
+I106Status I106_Decode_NextCAN(CAN_Message *msg){
 
     // Check for no more messages
-       psuCurrMsg->uMsgNum++;
-       if (psuCurrMsg->uMsgNum >= psuCurrMsg->psuChanSpec->uCounter)
-           return I106_NO_MORE_DATA;
+    msg->MessageNumber++;
+    if (msg->MessageNumber >= msg->CSDW->Counter)
+        return I106_NO_MORE_DATA;
 
     // Check for packet overrun
-        if (psuCurrMsg->psuHeader->ulDataLen <= psuCurrMsg->uBytesRead)
-            return I106_NO_MORE_DATA;
+    if (msg->Header->DataLength <= msg->BytesRead)
+        return I106_NO_MORE_DATA;
 
     // Get the other pointers
-    vFillInMsgPtrs(psuCurrMsg);
+    FillInMessagePointers(msg);
 
-    vFillInTimeStruct(psuCurrMsg->psuHeader, psuCurrMsg->psuIPTimeStamp, &psuCurrMsg->suTimeRef);
+    FillInTimeStruct(msg->Header, msg->IPTS, &msg->Time);
 
     return I106_OK;
+}
 
-    }
 
-/* ----------------------------------------------------------------------- */
-
-void vFillInMsgPtrs(SuCan_CurrMsg * psuCurrMsg)
-{
-     // Set the pointer to the intra-packet time stamp
-    psuCurrMsg->psuIPTimeStamp = (SuIntraPacketTS *)
-                              ((char *)(psuCurrMsg->psuChanSpec) +
-                               psuCurrMsg->uBytesRead);
+void FillInMessagePointers(CAN_Message *msg){
+    // Set the pointer to the intra-packet time stamp
+    msg->IPTS = (IntraPacketTS *)((char *)(msg->CSDW) + msg->BytesRead);
 
     // Set the pointer to the intra-packet header
-    psuCurrMsg->psuCanHdr = (SuCan_Header *)
-                             ((char *)(psuCurrMsg->psuChanSpec) +
-                              psuCurrMsg->uBytesRead);
-    psuCurrMsg->uBytesRead += sizeof(SuCan_Header);
+    msg->IPH = (CAN_IPH *)((char *)(msg->CSDW) + msg->BytesRead);
+    msg->BytesRead += sizeof(CAN_IPH);
 
     // Set pointer to the CAN ID word
-    psuCurrMsg->psuCanIdWord = (SuCan_IdWord*)
-                             ((char *)(psuCurrMsg->psuChanSpec) +
-                              psuCurrMsg->uBytesRead);
+    msg->ID = (CAN_ID*)((char *)(msg->CSDW) + msg->BytesRead);
 
-    //Do not increment uBytesRead as MsgLength already include IdWord size
+    // Do not increment uBytesRead as MsgLength already include IdWord size
 
     // Set the pointer to the data
     // MsgLength = IdWord (4 bytes) + CAN Payload (0-4 bytes)
-    psuCurrMsg->pauData = (uint8_t *)((char *)(psuCurrMsg->psuChanSpec) + psuCurrMsg->uBytesRead);
+    msg->Data = (uint8_t *)((char *)(msg->CSDW) + msg->BytesRead);
 
     // Add the data length, if it is odd, account for the filler byte we will skip
-    psuCurrMsg->uBytesRead+=  psuCurrMsg->psuCanHdr->uMsgLength
-                            + ( psuCurrMsg->psuCanHdr->uMsgLength % 2);
+    msg->BytesRead+=  msg->IPH->Length + (msg->IPH->Length % 2);
 }
-
-#ifdef __cplusplus
-}
-#endif
-

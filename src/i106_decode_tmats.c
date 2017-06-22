@@ -1425,7 +1425,7 @@ void ConnectP(TMATS_Info * tmats_info){
 
 // The I106_Decode_Tmats() procedure malloc()'s a lot of memory.  This
 // procedure walks the SuMemBlock list, freeing memory as it goes.
-void I106_Free_TMATSInfo(TMATS_Info *tmats_info){
+void I106_Free_TMATS_Info(TMATS_Info *tmats_info){
     MemoryBlock     * block;
     MemoryBlock     * next;
 
