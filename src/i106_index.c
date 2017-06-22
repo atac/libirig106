@@ -69,7 +69,7 @@ I106Status IndexPresent(const int handle, int *found_index){
     I106C10Header    header;
     unsigned long    buffer_size = 0L;
     void           * buffer = NULL;
-    SuTmatsInfo      tmats;
+    TMATS_Info       tmats;
 
     *found_index = 0;
 
@@ -110,12 +110,12 @@ I106Status IndexPresent(const int handle, int *found_index){
 
         // Process the TMATS info
         memset(&tmats, 0, sizeof(tmats));
-        status = enI106_Decode_Tmats(&header, buffer, &tmats);
+        status = I106_Decode_TMATS(&header, buffer, &tmats);
         if (status != I106_OK)
             break;
             
         // Check if index enabled
-        if (tmats.psuFirstGRecord->psuFirstGDataSource->psuRRecord->bIndexEnabled == 0){
+        if (tmats.FirstG_Record->FirstG_DataSource->R_Record->IndexEnabled == 0){
             status = I106_OK;
             break;
         }
