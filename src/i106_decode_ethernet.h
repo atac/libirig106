@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_ethernet.h - 
+ i106_decode_ethernet.h
  Created by Bob Baggerman
 
  ****************************************************************************/
@@ -8,76 +8,51 @@
 #ifndef _I106_DECODE_ETHERNET_H
 #define _I106_DECODE_ETHERNET_H
 
-#ifdef __cplusplus
-namespace Irig106 {
-extern "C" {
-#endif
 
+/* Macros and definitions */
 
-/*
- * Macros and definitions
- * ----------------------
- */
-
-typedef enum
-    {
+typedef enum{
     I106_ENET_FMT_PHYSICAL    =  0x00,
-    } EnI106EthernetFmt;
+} I106EthernetFormat;
 
-typedef enum
-    {
+typedef enum {
     I106_ENET_CONTENT_FULLMAC =  0x00,
-    } EnI106EthernetContent;
+} I106EthernetContent;
 
-typedef enum
-    {
+typedef enum {
     I106_ENET_SPEED_AUTO      =  0x00,
     I106_ENET_SPEED_10MBPS    =  0x01,
     I106_ENET_SPEED_100MBPS   =  0x02,
     I106_ENET_SPEED_1GBPS     =  0x03,
     I106_ENET_SPEED_10GBPS    =  0x04,
-    } EnI106EthernetSpeed;
+} I106EthernetSpeed;
 
 
-/*
- * Data structures
- * ---------------
- */
+/* Data structures */
 
 #if defined(_MSC_VER)
 #pragma pack(push,1)
 #endif
 
 // Channel specific data word
-// --------------------------
-
-typedef struct EthernetF0_ChanSpec_S
-    {
-    uint32_t    uNumFrames      : 16;      // Number of frames
-    uint32_t    Reserved1       : 12;
-    uint32_t    uFormat         :  4;      // Format of frames
-#if !defined(__GNUC__)
-    } SuEthernetF0_ChanSpec;
-#else
-    } __attribute__ ((packed)) SuEthernetF0_ChanSpec;
-#endif
+typedef struct EthernetF0_CSDW EthernetF0_CSDW;
+struct EthernetF0_CSDW {
+    uint32_t    Frames     : 16;      // Number of frames
+    uint32_t    Reserved1  : 12;
+    uint32_t    Format     :  4;      // Format of frames
+} PACKED;
 
 // Intra-message header
-typedef struct EthernetF0_Header_S
-    {
-    uint8_t     aubyIntPktTime[8];         // Reference time
-    uint32_t    uDataLen        : 14;      // Data length
-    uint32_t    Reserved1       :  2;      // 
-    uint32_t    uNetID          :  8;      // Network identifier
-    uint32_t    uSpeed          :  4;      // Ethernet speed
-    uint32_t    uContent        :  2;      // Captured data content
-    uint32_t    bFrameError     :  1;      // Frame error
-    uint32_t    Reserved2       :  1;      // 
-#if !defined(__GNUC__)
-    } SuEthernetF0_Header;
-#else
-    } __attribute__ ((packed)) SuEthernetF0_Header;
-#endif
+typedef struct {
+    uint8_t     IPTS[8];           // Reference time
+    uint32_t    Length      : 14;  // Data length
+    uint32_t    Reserved1   :  2;
+    uint32_t    NetID       :  8;
+    uint32_t    Speed       :  4;
+    uint32_t    Content     :  2;
+    uint32_t    FrameError  :  1;
+    uint32_t    Reserved2   :  1; 
+} PACKED EthernetF0_IPH;
 
 #if defined(_MSC_VER)
 #pragma pack(pop)
@@ -85,54 +60,26 @@ typedef struct EthernetF0_Header_S
 
 
 // Ethernet physical frame
-typedef struct
-    {
-    uint8_t                 abyDestAddr[6]; // Destination address
-    uint8_t                 abySrcAddr[6];  // Source address
-    uint16_t                uTypeLen;       // Ethernet type / 802.3 length, byte swapped!
-    uint8_t                 abyData[1];     // Start of the data
-#if !defined(__GNUC__)
-    } SuEthernetF0_Physical_FullMAC;
-#else
-    } __attribute__ ((packed)) SuEthernetF0_Physical_FullMAC;
-#endif
-
+typedef struct {
+    uint8_t   Destination[6];  // Destination address
+    uint8_t   Source[6];       // Source address
+    uint16_t  TypeLen;         // Ethernet type / 802.3 length, byte swapped!
+    uint8_t   Data[1];         // Start of the data
+} PACKED EthernetF0_Physical_FullMAC;
 
 
 // Current Ethernet message
-typedef struct
-    {
-    unsigned int            uFrameNum;
-    uint32_t                ulDataLen;      // Overall data packet length
-    SuEthernetF0_ChanSpec * psuChanSpec;
-    SuEthernetF0_Header   * psuEthernetF0Hdr;
-    uint8_t               * pauData;
-#if !defined(__GNUC__)
-    } SuEthernetF0_CurrMsg;
-#else
-    } __attribute__ ((packed)) SuEthernetF0_CurrMsg;
-#endif
+typedef struct {
+    unsigned int       FrameNumber;
+    uint32_t           Length;      // Overall data packet length
+    EthernetF0_CSDW  * CSDW;
+    EthernetF0_IPH   * IPH;
+    uint8_t          * Data;
+} PACKED EthernetF0_Message;
 
 
-
-
-
-/*
- * Function Declaration
- * --------------------
- */
-
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_FirstEthernetF0(SuI106Ch10Header     * psuHeader,
-                                  void                 * pvBuff,
-                                  SuEthernetF0_CurrMsg * psuMsg);
-
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_NextEthernetF0(SuEthernetF0_CurrMsg * psuMsg);
-
-#ifdef __cplusplus
-}
-}
-#endif
+/* Function Declaration */
+I106Status I106_Decode_FirstEthernetF0(I106C10Header *header, void *buffer, EthernetF0_Message *msg);
+I106Status I106_Decode_NextEthernetF0(EthernetF0_Message *msg);
 
 #endif

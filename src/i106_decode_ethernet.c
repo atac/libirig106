@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_ethernet.c - 
+ i106_decode_ethernet.c
 
  ****************************************************************************/
 
@@ -13,100 +13,48 @@
 #include "irig106ch10.h"
 #include "i106_decode_ethernet.h"
 
-#ifdef __cplusplus
-namespace Irig106 {
-#endif
+
+/* Function Declaration */
+
+void FillInMessagePointers(EthernetF0_Message *msg);
 
 
-
-/*
- * Macros and definitions
- * ----------------------
- */
-
-
-/*
- * Data structures
- * ---------------
- */
-
-
-/*
- * Module data
- * -----------
- */
-
-
-
-/*
- * Function Declaration
- * --------------------
- */
-
-void vFillInMsgPtrs(SuEthernetF0_CurrMsg * psuCurrMsg);
-
-/* ======================================================================= */
-
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_FirstEthernetF0(SuI106Ch10Header     * psuHeader,
-                                  void                 * pvBuff,
-                                  SuEthernetF0_CurrMsg * psuMsg)
-    {
-
+I106Status I106_Decode_FirstEthernetF0(I106C10Header *header, void *buffer, EthernetF0_Message *msg){
 
     // Set pointers to the beginning of the Ethernet buffer
-    psuMsg->psuChanSpec = (SuEthernetF0_ChanSpec *)pvBuff;
+    msg->CSDW = (EthernetF0_CSDW *)buffer;
 
     // Check for no messages
-    psuMsg->uFrameNum = 0;
-    if (psuMsg->psuChanSpec->uNumFrames == 0)
+    msg->FrameNumber = 0;
+    if (msg->CSDW->Frames == 0)
         return I106_NO_MORE_DATA;
 
-    psuMsg->ulDataLen = psuHeader->ulDataLen;
+    msg->Length = header->DataLength;
  
     // Set the pointer to the first Ethernet message
-    psuMsg->psuEthernetF0Hdr = (SuEthernetF0_Header *)
-                              ((char *)(pvBuff)        + 
-                                sizeof(SuEthernetF0_ChanSpec));
+    msg->IPH = (EthernetF0_IPH *)((char *)(buffer) + sizeof(EthernetF0_CSDW));
 
     // Set the pointer to the ethernet message data
-    psuMsg->pauData          = (uint8_t *)psuMsg->psuEthernetF0Hdr +
-                                sizeof(SuEthernetF0_Header);
+    msg->Data = (uint8_t *)msg->IPH + sizeof(EthernetF0_IPH);
 
     return I106_OK;
-    }
+}
 
 
-
-/* ----------------------------------------------------------------------- */
-
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_NextEthernetF0(SuEthernetF0_CurrMsg * psuMsg)
-    {
+I106Status I106_Decode_NextEthernetF0(EthernetF0_Message *msg){
 
     // Check for no more messages
-    psuMsg->uFrameNum++;
-    if (psuMsg->uFrameNum >= psuMsg->psuChanSpec->uNumFrames)
+    msg->FrameNumber++;
+    if (msg->FrameNumber >= msg->CSDW->Frames)
         return I106_NO_MORE_DATA;
 
     // Set pointer to the next ethernet message intrapacket header
     // Note that the next packet header must fall on an even byte boundary
-    psuMsg->psuEthernetF0Hdr = (SuEthernetF0_Header *)
-                              ((char *)(psuMsg->psuEthernetF0Hdr)  + 
-                                sizeof(SuEthernetF0_Header)        + 
-                                psuMsg->psuEthernetF0Hdr->uDataLen +
-                               (psuMsg->psuEthernetF0Hdr->uDataLen % 2));
+    msg->IPH = (EthernetF0_IPH *)((char *)(msg->IPH) + sizeof(EthernetF0_IPH)
+            + msg->IPH->Length + (msg->IPH->Length % 2));
 
     // Set the pointer to the ethernet message data
-    psuMsg->pauData          = (uint8_t *)psuMsg->psuEthernetF0Hdr +
-                                sizeof(SuEthernetF0_Header);
-
+    msg->Data = (uint8_t *)msg->IPH + sizeof(EthernetF0_IPH);
 
     return I106_OK;
-    }
-
-
-
-#ifdef __cplusplus
-} // end namespace i106
-#endif
+}
