@@ -27,36 +27,31 @@ example, 1553 decoding is contained in "i106_decode_1553f1".  Below is a
 simplified example of packet processing:
 
 ``` .c
-enI106Ch10Open(&iI106Ch10Handle, szInFile, I106_READ);
+I106C10Open(&handle, file, I106_READ);
 
-while (1==1) 
-    {
+while (1){
+    I106Status status = I106C10ReadNextHeader(handle, &header);
 
-    enStatus = enI106Ch10ReadNextHeader(iI106Ch10Handle, &suI106Hdr);
+    if (status == I106_EOF) return;
 
-    if (enStatus == I106_EOF) return;
+    status = I106C10ReadData(handle, &buffer_size, buffer);
 
-    enStatus = enI106Ch10ReadData(iI106Ch10Handle, &ulBuffSize, pvBuff);
-
-    switch (suI106Hdr.ubyDataType)
-        {
+    switch (header.DataType){
 
         case I106CH10_DTYPE_1553_FMT_1 :    // 0x19
 
-            enStatus = enI106_Decode_First1553F1(&suI106Hdr, pvBuff, &su1553Msg);
-            while (enStatus == I106_OK)
-                {
-                Do some processing...
-                enStatus = enI106_Decode_Next1553F1(&su1553Msg);
-                }
+            status = I106_Decode_First1553F1(&header, buffer, &msg);
+            while (status == I106_OK){
+                // Do some processing...
+                status = I106_Decode_Next1553F1(&msg);
+            }
             break;
         default:
             break;
-        } // end switch on packet type
+    }
+}
 
-    }  // End while
-
-enI106Ch10Close(iI106Ch10Handle);
+I106C10Close(handle);
 ```
 
 
@@ -76,6 +71,7 @@ formats.
 * i106_time - Routines to convert between clock time and IRIG 106 time counts
 * i106_index - A higher level interface to the indexing system
 * i106_data_stream - Support for receiving Chapter 10 standard UDP data packets
+  (currently disabled)
 
 
 ### Decode Modules
@@ -110,9 +106,18 @@ These header files are necessary for every application that uses the IRIG 106 li
 
 ## To Do
 
+### First Pass (current)
+
+* Update naming conventions (need to codify somewhere)
+* Disable networking, C++, and lookahead code (for now)
+* Move util functions from top-level to new util "module"
+    * Create valid_handle utility function to reduce duplication
+* Explore difference between rel_time and RTC (verbage is inconsistent esp. in
+  i106_time)
 * Automated tests
-* /docs directory?
-* Coding standards (eliminate hungarian notation please?!!!)
+
+### Other
+
 * Update and spinoff python wrapper
 * Update and spinoff utils?
 * Implement support for index records.
@@ -120,3 +125,4 @@ These header files are necessary for every application that uses the IRIG 106 li
 * Implement video decoder
 * Parse more TMATS fields
 * Provide better, more automatic ways to keep time in sync
+* Review "header version" to see what needs to be accounted for in code
