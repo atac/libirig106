@@ -360,7 +360,7 @@ void AddIndexNodeToIndex(int handle, IndexMsg *msg, uint16_t channel_id, uint8_t
     I106Status           status;
     I106C10Header        header;
     void               * buffer;
-    SuTimeF1_ChanSpec  * csdw;
+    TimeF1_CSDW        * csdw;
 
     // Store the info
     index_info.ChannelID  = channel_id;
@@ -370,8 +370,8 @@ void AddIndexNodeToIndex(int handle, IndexMsg *msg, uint16_t channel_id, uint8_t
 
     // If the optional intrapacket data header exists then get absolute time from it
     if (msg->CSDW->IPH == 1){
-        csdw = (SuTimeF1_ChanSpec *)indices[handle].TimePacket;
-        enI106_Decode_TimeF1_Buff(csdw->uDateFmt, csdw->bLeapYear,
+        csdw = (TimeF1_CSDW *)indices[handle].TimePacket;
+        I106_Decode_TimeF1_Buffer(csdw->DateFormat, csdw->LeapYear,
             msg->Time, &index_info.IrigTime);
     }
 
@@ -390,7 +390,7 @@ void AddIndexNodeToIndex(int handle, IndexMsg *msg, uint16_t channel_id, uint8_t
         status = I106C10ReadData(handle, header.PacketLength, buffer);
 
         // Decode the time packet
-        enI106_Decode_TimeF1(&header, buffer, &index_info.IrigTime);
+        I106_Decode_TimeF1(&header, buffer, &index_info.IrigTime);
 
         free(buffer);
 
@@ -506,7 +506,7 @@ I106Status FindTimePacket(int handle){
     I106C10Header        header;
     unsigned long        buffer_size = 0;
     void               * buffer = NULL;
-    SuTimeF1_ChanSpec  * time = NULL;
+    TimeF1_CSDW        * time = NULL;
 
     // Get and save the current file position
     status = I106C10GetPos(handle, &offset);
@@ -552,7 +552,7 @@ I106Status FindTimePacket(int handle){
             // Read header OK, make buffer for time message
             if (buffer_size < header.PacketLength){
                 buffer       = realloc(buffer, header.PacketLength);
-                time         = (SuTimeF1_ChanSpec *)buffer;
+                time         = (TimeF1_CSDW *)buffer;
                 buffer_size  = header.PacketLength;
             }
 
@@ -564,10 +564,10 @@ I106Status FindTimePacket(int handle){
             }
 
             // If external sync OK then decode it and set relative time
-            if ((require_sync == 0) || (time->uTimeSrc == 1)){
+            if ((require_sync == 0) || (time->TimeSource == 1)){
                 memcpy(&indices[handle].Header, &header, sizeof(I106C10Header));
                 indices[handle].TimePacket = buffer;
-                enI106_Decode_TimeF1(&header, buffer, &indices[handle].Time);
+                I106_Decode_TimeF1(&header, buffer, &indices[handle].Time);
                 return_status = I106_OK;
                 break;
             }

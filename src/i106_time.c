@@ -186,7 +186,7 @@ I106Status I106_SyncTime(int handle, int sync, int max_seconds){
     I106Time            time;
     unsigned long       buffer_size = 0;
     void              * buffer = NULL;
-    SuTimeF1_ChanSpec * csdw = NULL;
+    TimeF1_CSDW       * csdw = NULL;
 
     // Get and save the current file position
     status = I106C10GetPos(handle, &offset);
@@ -227,7 +227,7 @@ I106Status I106_SyncTime(int handle, int sync, int max_seconds){
             // Read header OK, make buffer for time message
             if (buffer_size < header.PacketLength){
                 buffer       = realloc(buffer, header.PacketLength);
-                csdw         = (SuTimeF1_ChanSpec *)buffer;
+                csdw         = (TimeF1_CSDW *)buffer;
                 buffer_size  = header.PacketLength;
             }
 
@@ -239,8 +239,8 @@ I106Status I106_SyncTime(int handle, int sync, int max_seconds){
             }
 
             // If external sync OK then decode it and set relative time
-            if ((sync == 0) || (csdw->uTimeSrc == 1)){
-                enI106_Decode_TimeF1(&header, buffer, &time);
+            if ((sync == 0) || (csdw->TimeSource == 1)){
+                I106_Decode_TimeF1(&header, buffer, &time);
                 I106_SetRelTime(handle, &time, header.RTC);
                 return_status = I106_OK;
                 break;

@@ -11,9 +11,9 @@
 
 /* Macros and definitions */
 
-#define CH4BINARYTIME_HIGH_LSB_SEC   655.36
-#define CH4BINARYTIME_LOW_LSB_SEC      0.01
-#define _100_NANO_SEC_IN_MICRO_SEC    10
+#define CH4BINARYTIME_HIGH_LSB_SEC  655.36
+#define CH4BINARYTIME_LOW_LSB_SEC     0.01
+#define _100_NANO_SEC_IN_MICRO_SEC   10
 
 typedef enum {
     I106_DATEFMT_DAY  = 0,

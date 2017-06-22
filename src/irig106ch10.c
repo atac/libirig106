@@ -1333,7 +1333,7 @@ void MakeInOrderIndex(int handle){
         // Get the time and position
         status = I106C10GetPos(handle, &pos);
         pos -= GetHeaderLength(&header);
-        vTimeArray2LLInt(header.RTC, &time);
+        TimeArray2LLInt(header.RTC, &time);
 
         // Check the array size, make it bigger if necessary
         if (index->ArrayUsed >= index->ArraySize){

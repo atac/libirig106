@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_time.c - 
+ i106_decode_time.c
 
  ****************************************************************************/
 
@@ -21,32 +21,17 @@
 #include "i106_time.h"
 #include "i106_decode_time.h"
 
-#ifdef __cplusplus
-namespace Irig106 {
-#endif
 
-/*
- * Macros and definitions
- * ----------------------
- */
-
-
-/*
- * Data structures
- * ---------------
- */
+/* Data structures */
 
 // Day of Year to Day and Month
-typedef struct
-    {
-    int  iMonth;     // Month 0 - 11
-    int  iDay;       // Day of month 1-31
-    } SuDOY2DM;      
+typedef struct {
+    int  Month;     // Month 0 - 11
+    int  Day;       // Day of month 1-31
+} DOY2DM;      
 
-/*
- * Module data
- * -----------
- */
+
+/* Module data */
 
 // THIS IS KIND OF A PROBLEM BECAUSE THIS SHOULD BE DONE ON A PER FILE BASIS.
 // THAT MEANS THIS REALLY SHOULD BE STORED IN THE HEADER.
@@ -60,7 +45,7 @@ typedef struct
 // IRIG time, Jan 1st = 1.  The month value is months since January, i.e. 
 // Jan = 0.  Don't get confused!
 
-SuDOY2DM suDoy2DmNormal[] = {
+DOY2DM day_to_day_and_month[] = {
 { 0,  0}, // This is to handle the special case where IRIG DoY is incorrectly set to 000
 { 0,  1}, { 0,  2}, { 0,  3}, { 0,  4}, { 0,  5}, { 0,  6}, { 0,  7}, { 0,  8},
 { 0,  9}, { 0, 10}, { 0, 11}, { 0, 12}, { 0, 13}, { 0, 14}, { 0, 15}, { 0, 16},
@@ -109,7 +94,7 @@ SuDOY2DM suDoy2DmNormal[] = {
 {11, 19}, {11, 20}, {11, 21}, {11, 22}, {11, 23}, {11, 24}, {11, 25}, {11, 26},
 {11, 27}, {11, 28}, {11, 29}, {11, 30}, {11, 31} };
 
-SuDOY2DM suDoy2DmLeap[] = {
+DOY2DM day_to_day_and_month_leapyear[] = {
 { 0,  0}, // This is to handle the special case where IRIG DoY is incorrectly set to 000
 { 0,  1}, { 0,  2}, { 0,  3}, { 0,  4}, { 0,  5}, { 0,  6}, { 0,  7}, { 0,  8},
 { 0,  9}, { 0, 10}, { 0, 11}, { 0, 12}, { 0, 13}, { 0, 14}, { 0, 15}, { 0, 16},
@@ -159,326 +144,201 @@ SuDOY2DM suDoy2DmLeap[] = {
 {11, 26}, {11, 27}, {11, 28}, {11, 29}, {11, 30}, {11, 31} };
 
 
-
-/*
- * Function Declaration
- * --------------------
- */
-
-
-/* ======================================================================= */
+/* Function Declaration */
 
 // Take an IRIG F1 time packet and decode it into something we can use
+I106Status I106_Decode_TimeF1(I106C10Header  *header, void *raw_buffer, I106Time *time){
+    TimeF1_CSDW   * csdw;
+    void          * buffer;
 
-EnI106Status I106_CALL_DECL 
-    enI106_Decode_TimeF1(SuI106Ch10Header  * psuHeader,
-                         void              * pvBuff,
-                         SuIrig106Time     * psuTime)
-    {
-    SuTimeF1_ChanSpec   * psuChanSpecTime;
-    void                * pvTimeBuff;
+    csdw = (TimeF1_CSDW *)raw_buffer;
+    buffer = (char *)raw_buffer + sizeof(TimeF1_CSDW);
 
-    psuChanSpecTime = (SuTimeF1_ChanSpec *)pvBuff;
-    pvTimeBuff      = (char *)pvBuff + sizeof(SuTimeF1_ChanSpec);
-
-    enI106_Decode_TimeF1_Buff(psuChanSpecTime->uDateFmt, psuChanSpecTime->bLeapYear, pvTimeBuff, psuTime);
+    I106_Decode_TimeF1_Buffer(csdw->DateFormat, csdw->LeapYear, buffer, time);
 
     return I106_OK;
-    }
-
-
-/* ---------------------------------------------------------------------- */
-
-void I106_CALL_DECL 
-    enI106_Decode_TimeF1_Buff(int                 iDateFmt,
-                              int                 bLeapYear,
-                              void              * pvTimeBuff,
-                              SuIrig106Time     * psuTime)
-    {
-    struct tm             suTmTime;
-    SuTime_MsgDmyFmt    * psuTimeDmy;
-    SuTime_MsgDayFmt    * psuTimeDay;
-
-    if (iDateFmt == 0)
-        {
-        // Make time
-        psuTimeDay = (SuTime_MsgDayFmt *)pvTimeBuff;
-        suTmTime.tm_sec   = psuTimeDay->uTSn *  10 + psuTimeDay->uSn;
-        suTmTime.tm_min   = psuTimeDay->uTMn *  10 + psuTimeDay->uMn;
-        suTmTime.tm_hour  = psuTimeDay->uTHn *  10 + psuTimeDay->uHn;
-
-        // Legal IRIG DoY numbers are from 1 to 365 (366 for leap year). Some vendors however
-        // will use 000 for DoY.  Not legal but there it is.
-        suTmTime.tm_yday  = psuTimeDay->uHDn * 100 + psuTimeDay->uTDn * 10 + psuTimeDay->uDn;
-
-        // Make day
-        if (bLeapYear)
-            {
-            suTmTime.tm_mday  = suDoy2DmLeap[suTmTime.tm_yday].iDay;
-            suTmTime.tm_mon   = suDoy2DmLeap[suTmTime.tm_yday].iMonth;
-            suTmTime.tm_year  = 72;  // i.e. 1972, a leap year
-            }
-        else
-            {
-            suTmTime.tm_mday  = suDoy2DmNormal[suTmTime.tm_yday].iDay;
-            suTmTime.tm_mon   = suDoy2DmNormal[suTmTime.tm_yday].iMonth;
-            suTmTime.tm_year  = 71;  // i.e. 1971, not a leap year
-            }
-        suTmTime.tm_isdst = 0;
-        psuTime->ulSecs   = mkgmtime(&suTmTime);
-        psuTime->ulFrac   = psuTimeDay->uHmn * 1000000L + psuTimeDay->uTmn * 100000L;
-        psuTime->enFmt    = I106_DATEFMT_DAY;
-        }
-
-    // Time in DMY format
-    else
-        {
-        psuTimeDmy = (SuTime_MsgDmyFmt *)pvTimeBuff;
-        suTmTime.tm_sec   = psuTimeDmy->uTSn *   10 + psuTimeDmy->uSn;
-        suTmTime.tm_min   = psuTimeDmy->uTMn *   10 + psuTimeDmy->uMn;
-        suTmTime.tm_hour  = psuTimeDmy->uTHn *   10 + psuTimeDmy->uHn;
-        suTmTime.tm_yday  = 0;
-        suTmTime.tm_mday  = psuTimeDmy->uTDn *   10 + psuTimeDmy->uDn;
-        suTmTime.tm_mon   = psuTimeDmy->uTOn *   10 + psuTimeDmy->uOn - 1;
-        suTmTime.tm_year  = psuTimeDmy->uOYn * 1000 + psuTimeDmy->uHYn * 100 + 
-                            psuTimeDmy->uTYn *   10 + psuTimeDmy->uYn - 1900;
-        suTmTime.tm_isdst = 0;
-        psuTime->ulSecs   = mkgmtime(&suTmTime);
-        psuTime->ulFrac   = psuTimeDmy->uHmn * 1000000L + psuTimeDmy->uTmn * 100000L;
-        psuTime->enFmt    = I106_DATEFMT_DMY;
-        }
-
-    return;
-    }
-
-
-/* ---------------------------------------------------------------------- */
-#if 0
-// Decode an IRIG F1 time packet with a user supplied year. This is handy
-// for DoY packets that don't include year.
-
-void I106_CALL_DECL 
-    enI106_Decode_TimeF1_Buff_wYear
-        (int                 iDateFmt,
-         int                 iYear,
-         void              * pvTimeBuff,
-         SuIrig106Time     * psuTime)
-    {
-    struct tm             suTmTime;
-    SuTime_MsgDmyFmt    * psuTimeDmy;
-    SuTime_MsgDayFmt    * psuTimeDay;
-
-    if (iDateFmt == 0)
-        {
-        // Make time
-        psuTimeDay = (SuTime_MsgDayFmt *)pvTimeBuff;
-        suTmTime.tm_sec   = psuTimeDay->uTSn *  10 + psuTimeDay->uSn;
-        suTmTime.tm_min   = psuTimeDay->uTMn *  10 + psuTimeDay->uMn;
-        suTmTime.tm_hour  = psuTimeDay->uTHn *  10 + psuTimeDay->uHn;
-
-        // Legal IRIG DoY numbers are from 1 to 365 (366 for leap year). Some vendors however
-        // will use 000 for DoY.  Not legal but there it is.
-        suTmTime.tm_yday  = psuTimeDay->uHDn * 100 + psuTimeDay->uTDn * 10 + psuTimeDay->uDn;
-
-        // Make day
-        if (bLeapYear)
-            {
-            suTmTime.tm_mday  = suDoy2DmLeap[suTmTime.tm_yday].iDay;
-            suTmTime.tm_mon   = suDoy2DmLeap[suTmTime.tm_yday].iMonth;
-            suTmTime.tm_year  = 72;  // i.e. 1972, a leap year
-            }
-        else
-            {
-            suTmTime.tm_mday  = suDoy2DmNormal[suTmTime.tm_yday].iDay;
-            suTmTime.tm_mon   = suDoy2DmNormal[suTmTime.tm_yday].iMonth;
-            suTmTime.tm_year  = 71;  // i.e. 1971, not a leap year
-            }
-        suTmTime.tm_isdst = 0;
-        psuTime->ulSecs   = mkgmtime(&suTmTime);
-        psuTime->ulFrac   = psuTimeDay->uHmn * 1000000L + psuTimeDay->uTmn * 100000L;
-        psuTime->enFmt    = I106_DATEFMT_DAY;
-        }
-
-    // Time in DMY format
-    else
-        {
-        psuTimeDmy = (SuTime_MsgDmyFmt *)pvTimeBuff;
-        suTmTime.tm_sec   = psuTimeDmy->uTSn *   10 + psuTimeDmy->uSn;
-        suTmTime.tm_min   = psuTimeDmy->uTMn *   10 + psuTimeDmy->uMn;
-        suTmTime.tm_hour  = psuTimeDmy->uTHn *   10 + psuTimeDmy->uHn;
-        suTmTime.tm_yday  = 0;
-        suTmTime.tm_mday  = psuTimeDmy->uTDn *   10 + psuTimeDmy->uDn;
-        suTmTime.tm_mon   = psuTimeDmy->uTOn *   10 + psuTimeDmy->uOn - 1;
-        suTmTime.tm_year  = psuTimeDmy->uOYn * 1000 + psuTimeDmy->uHYn * 100 + 
-                            psuTimeDmy->uTYn *   10 + psuTimeDmy->uYn - 1900;
-        suTmTime.tm_isdst = 0;
-        psuTime->ulSecs   = mkgmtime(&suTmTime);
-        psuTime->ulFrac   = psuTimeDmy->uHmn * 1000000L + psuTimeDmy->uTmn * 100000L;
-        psuTime->enFmt    = I106_DATEFMT_DMY;
-        }
-
-    return;
-    }
-#endif
-
-/* --------------------------------------------------------------------------
-
-  This function returns the day of the year that corresponds to the date in
-  the input parameter dt.
-
- ------------------------------------------------------------------------ */
-/*
-static int iDay_Of_Year(struct date *ptDate)
-{
-  int        *paiLastDayOfMonth;
-
-  // Figure out leap year
-  if ((ptDate->da_year % 4) != 0) paiLastDayOfMonth = aiLastDayOfMonthNormal;
-  else                            paiLastDayOfMonth = aiLastDayOfMonthLeapYear;
-
-  return paiLastDayOfMonth[ptDate->da_mon-1] + ptDate->da_day;
-
 }
-*/
 
 
-EnI106Status I106_CALL_DECL 
-    enI106_Encode_TimeF1(SuI106Ch10Header  * psuHeader,
-                         unsigned int        uTimeSrc,
-                         unsigned int        uFmtTime,
-                         unsigned int        uFmtDate,
-                         SuIrig106Time     * psuTime,
-                         void              * pvBuffTimeF1)
-    {
+void I106_Decode_TimeF1_Buffer(int date_format, int leap_year, void *buffer, I106Time *time){
+    struct tm                tm_time;
+    Time_MessageDMYFormat  * time_dmy;
+    Time_MessageDayFormat  * time_day;
+
+    if (date_format == 0){
+        // Make time
+        time_day = (Time_MessageDayFormat *)buffer;
+        tm_time.tm_sec   = time_day->TSn * 10 + time_day->Sn;
+        tm_time.tm_min   = time_day->TMn * 10 + time_day->Mn;
+        tm_time.tm_hour  = time_day->THn * 10 + time_day->Hn;
+
+        // Legal IRIG DoY numbers are from 1 to 365 (366 for leap year). Some vendors however
+        // will use 000 for DoY.  Not legal but there it is.
+        tm_time.tm_yday  = time_day->HDn * 100 + time_day->TDn * 10 + time_day->Dn;
+
+        // Make day
+        if (leap_year){
+            tm_time.tm_mday  = day_to_day_and_month_leapyear[tm_time.tm_yday].Day;
+            tm_time.tm_mon   = day_to_day_and_month_leapyear[tm_time.tm_yday].Month;
+            tm_time.tm_year  = 72;  // i.e. 1972, a leap year
+        }
+        else {
+            tm_time.tm_mday  = day_to_day_and_month[tm_time.tm_yday].Day;
+            tm_time.tm_mon   = day_to_day_and_month[tm_time.tm_yday].Month;
+            tm_time.tm_year  = 71;  // i.e. 1971, not a leap year
+        }
+        tm_time.tm_isdst = 0;
+        time->Seconds   = mkgmtime(&tm_time);
+        time->Fraction  = time_day->Hmn * 1000000L + time_day->Tmn * 100000L;
+        time->Format    = I106_DATEFMT_DAY;
+    }
+
+    // Time in DMY format
+    else {
+        time_dmy = (Time_MessageDMYFormat *)buffer;
+        tm_time.tm_sec   = time_dmy->TSn *   10 + time_dmy->Sn;
+        tm_time.tm_min   = time_dmy->TMn *   10 + time_dmy->Mn;
+        tm_time.tm_hour  = time_dmy->THn *   10 + time_dmy->Hn;
+        tm_time.tm_yday  = 0;
+        tm_time.tm_mday  = time_dmy->TDn *   10 + time_dmy->Dn;
+        tm_time.tm_mon   = time_dmy->TOn *   10 + time_dmy->On - 1;
+        tm_time.tm_year  = time_dmy->OYn * 1000 + time_dmy->HYn * 100 + 
+                           time_dmy->TYn *   10 + time_dmy->Yn - 1900;
+        tm_time.tm_isdst = 0;
+        time->Seconds   = mkgmtime(&tm_time);
+        time->Fraction  = time_dmy->Hmn * 1000000L + time_dmy->Tmn * 100000L;
+        time->Format    = I106_DATEFMT_DMY;
+    }
+}
+
+
+I106Status I106_Encode_TimeF1(I106C10Header *header,
+                         unsigned int  time_source,
+                         unsigned int  time_format,
+                         unsigned int  date_format,
+                         I106Time     *time,
+                         void         *buffer){
+
     // A temporary integer to decimate to get BCD factors
-    uint32_t          uIntDec;
-    struct tm       * psuTmTime;
-
-    SuMsgTimeF1 * psuTimeF1;
-
-    SuTime_MsgDayFmt   * psuDayFmt;
-    SuTime_MsgDmyFmt   * psuDmyFmt;
+    uint32_t                 int_time;
+    struct tm              * tm_time;
+    MessageTimeF1          * message;
+    Time_MessageDayFormat  * day_format;
+    Time_MessageDMYFormat  * dmy_format;
 
     // Now, after creating this ubertime-structure above, create a 
     // couple of pointers to make the code below simpler to read.
-    psuTimeF1 = (SuMsgTimeF1 *)pvBuffTimeF1;
-    psuDayFmt = &(psuTimeF1->suMsg.suDayFmt);
-    psuDmyFmt = &(psuTimeF1->suMsg.suDmyFmt);
+    message = (MessageTimeF1 *)buffer;
+    day_format = &(message->Message.DayFormat);
+    dmy_format = &(message->Message.DMYFormat);
 
     // Zero out all the time fields
-    memset(psuTimeF1, 0, sizeof(SuTimeF1_ChanSpec));
+    memset(message, 0, sizeof(TimeF1_CSDW));
 
     // Break time down to DMY HMS
-    psuTmTime = gmtime((time_t *)&(psuTime->ulSecs));
+    tm_time = gmtime((time_t *)&(time->Seconds));
 
     // Make channel specific data word
-    psuTimeF1->suChanSpec.uTimeSrc    = uTimeSrc;
-    psuTimeF1->suChanSpec.uTimeFmt    = uFmtTime;
-    psuTimeF1->suChanSpec.uDateFmt    = uFmtDate;
-    if (psuTmTime->tm_year % 4 == 0)
-        psuTimeF1->suChanSpec.bLeapYear = 1;
+    message->CSDW.TimeSource    = time_source;
+    message->CSDW.TimeFormat    = time_format;
+    message->CSDW.DateFormat    = date_format;
+    if (tm_time->tm_year % 4 == 0)
+        message->CSDW.LeapYear = 1;
     else
-        psuTimeF1->suChanSpec.bLeapYear = 0;
+        message->CSDW.LeapYear = 0;
 
-#pragma message("WARNING - Don't zero out the whole packet")
+/* #pragma message("WARNING - Don't zero out the whole packet") */
 
     // Fill in day of year format
-    if (uFmtDate == 0)
-        {
+    if (date_format == 0){
         // Zero out all the time fields
-        memset(psuDayFmt, 0, sizeof(SuTime_MsgDayFmt));
+        memset(day_format, 0, sizeof(Time_MessageDayFormat));
 
         // Set the various time fields
-        uIntDec = psuTime->ulFrac / 100000L;
-        psuDayFmt->uTmn = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDayFmt->uHmn) / 10;
-        psuDayFmt->uHmn = (uint16_t)(uIntDec  % 10);
+        int_time = time->Fraction / 100000L;
+        day_format->Tmn = (uint16_t)(int_time  % 10);
+        int_time = (int_time - day_format->Hmn) / 10;
+        day_format->Hmn = (uint16_t)(int_time  % 10);
 
-        uIntDec = psuTmTime->tm_sec;
-        psuDayFmt->uSn  = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDayFmt->uSn)  / 10;
-        psuDayFmt->uTSn = (uint16_t)(uIntDec  % 10);
+        int_time = tm_time->tm_sec;
+        day_format->Sn  = (uint16_t)(int_time  % 10);
+        int_time = (int_time - day_format->Sn)  / 10;
+        day_format->TSn = (uint16_t)(int_time  % 10);
 
-        uIntDec = psuTmTime->tm_min;
-        psuDayFmt->uMn  = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDayFmt->uMn)  / 10;
-        psuDayFmt->uTMn = (uint16_t)(uIntDec  % 10);
+        int_time = tm_time->tm_min;
+        day_format->Mn  = (uint16_t)(int_time  % 10);
+        int_time = (int_time - day_format->Mn)  / 10;
+        day_format->TMn = (uint16_t)(int_time  % 10);
 
-        uIntDec = psuTmTime->tm_hour;
-        psuDayFmt->uHn  = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDayFmt->uHn)  / 10;
-        psuDayFmt->uTHn = (uint16_t)(uIntDec  % 10);
+        int_time = tm_time->tm_hour;
+        day_format->Hn  = (uint16_t)(int_time  % 10);
+        int_time = (int_time - day_format->Hn)  / 10;
+        day_format->THn = (uint16_t)(int_time  % 10);
 
-        uIntDec = psuTmTime->tm_yday + 1;
-        psuDayFmt->uDn = (uint16_t)(uIntDec   % 10);
-        uIntDec = (uIntDec - psuDayFmt->uDn)  / 10;
-        psuDayFmt->uTDn = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDayFmt->uTDn) / 10;
-        psuDayFmt->uHDn  = (uint16_t)(uIntDec  % 10);
+        int_time = tm_time->tm_yday + 1;
+        day_format->Dn = (uint16_t)(int_time   % 10);
+        int_time = (int_time - day_format->Dn)  / 10;
+        day_format->TDn = (uint16_t)(int_time  % 10);
+        int_time = (int_time - day_format->TDn) / 10;
+        day_format->HDn  = (uint16_t)(int_time  % 10);
 
         // Set the data length in the header
-        psuHeader->ulDataLen = 
-            sizeof(SuTimeF1_ChanSpec) + sizeof(SuTime_MsgDayFmt);
-        }
+        header->DataLength = sizeof(TimeF1_CSDW) + sizeof(Time_MessageDayFormat);
+    }
 
     // Fill in day, month, year format
-    else
-        {
+    else {
         // Zero out all the time fields
-        memset(psuDmyFmt, 0, sizeof(SuTime_MsgDmyFmt));
+        memset(dmy_format, 0, sizeof(Time_MessageDMYFormat));
 
         // Set the various time fields
-        uIntDec = psuTime->ulFrac / 100000L;
-        psuDmyFmt->uTmn = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDmyFmt->uHmn) / 10;
-        psuDmyFmt->uHmn = (uint16_t)(uIntDec  % 10);
+        int_time = time->Fraction / 100000L;
+        dmy_format->Tmn = (uint16_t)(int_time  % 10);
+        int_time = (int_time - dmy_format->Hmn) / 10;
+        dmy_format->Hmn = (uint16_t)(int_time  % 10);
 
-        uIntDec = psuTmTime->tm_sec;
-        psuDmyFmt->uSn  = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDmyFmt->uSn)  / 10;
-        psuDmyFmt->uTSn = (uint16_t)(uIntDec  % 10);
+        int_time = tm_time->tm_sec;
+        dmy_format->Sn  = (uint16_t)(int_time  % 10);
+        int_time = (int_time - dmy_format->Sn)  / 10;
+        dmy_format->TSn = (uint16_t)(int_time  % 10);
 
-        uIntDec = psuTmTime->tm_min;
-        psuDmyFmt->uMn  = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDmyFmt->uMn)  / 10;
-        psuDmyFmt->uTMn = (uint16_t)(uIntDec  % 10);
+        int_time = tm_time->tm_min;
+        dmy_format->Mn  = (uint16_t)(int_time  % 10);
+        int_time = (int_time - dmy_format->Mn)  / 10;
+        dmy_format->TMn = (uint16_t)(int_time  % 10);
 
-        uIntDec = psuTmTime->tm_hour;
-        psuDmyFmt->uHn  = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDmyFmt->uHn)  / 10;
-        psuDmyFmt->uTHn = (uint16_t)(uIntDec  % 10);
+        int_time = tm_time->tm_hour;
+        dmy_format->Hn  = (uint16_t)(int_time  % 10);
+        int_time = (int_time - dmy_format->Hn)  / 10;
+        dmy_format->THn = (uint16_t)(int_time  % 10);
 
-        uIntDec = psuTmTime->tm_mday;
-        psuDmyFmt->uDn  = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDmyFmt->uDn)  / 10;
-        psuDmyFmt->uTDn = (uint16_t)(uIntDec  % 10);
+        int_time = tm_time->tm_mday;
+        dmy_format->Dn  = (uint16_t)(int_time  % 10);
+        int_time = (int_time - dmy_format->Dn)  / 10;
+        dmy_format->TDn = (uint16_t)(int_time  % 10);
 
-        uIntDec = psuTmTime->tm_mon + 1;
-        psuDmyFmt->uOn  = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDmyFmt->uOn)  / 10;
-        psuDmyFmt->uTOn = (uint16_t)(uIntDec  % 10);
+        int_time = tm_time->tm_mon + 1;
+        dmy_format->On  = (uint16_t)(int_time  % 10);
+        int_time = (int_time - dmy_format->On)  / 10;
+        dmy_format->TOn = (uint16_t)(int_time  % 10);
 
-        uIntDec = psuTmTime->tm_year + 1900;
-        psuDmyFmt->uYn  = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDmyFmt->uYn)  / 10;
-        psuDmyFmt->uTYn = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDmyFmt->uTYn) / 10;
-        psuDmyFmt->uHYn = (uint16_t)(uIntDec  % 10);
-        uIntDec = (uIntDec - psuDmyFmt->uHYn) / 10;
-        psuDmyFmt->uOYn = (uint16_t)(uIntDec  % 10);
+        int_time = tm_time->tm_year + 1900;
+        dmy_format->Yn  = (uint16_t)(int_time  % 10);
+        int_time = (int_time - dmy_format->Yn)  / 10;
+        dmy_format->TYn = (uint16_t)(int_time  % 10);
+        int_time = (int_time - dmy_format->TYn) / 10;
+        dmy_format->HYn = (uint16_t)(int_time  % 10);
+        int_time = (int_time - dmy_format->HYn) / 10;
+        dmy_format->OYn = (uint16_t)(int_time  % 10);
 
         // Set the data length in the header
-        psuHeader->ulDataLen = 
-            sizeof(SuTimeF1_ChanSpec) + sizeof(SuTime_MsgDmyFmt);
-        }
+        header->DataLength = 
+            sizeof(TimeF1_CSDW) + sizeof(Time_MessageDMYFormat);
+    }
 
     // Make the data buffer checksum and update the header
     // This is the job of the caller
-//    uAddDataFillerChecksum(psuHeader, (unsigned char *)pvBuffTimeF1);
+    //AddDataFillerChecksum(header, (unsigned char *)buffer);
 
     return I106_OK;
-    }
-
-#ifdef __cplusplus
 }
-#endif
