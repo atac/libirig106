@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_1553f1.c - 
+ i106_decode_1553f1.c
 
  ****************************************************************************/
 
@@ -13,156 +13,146 @@
 #include "irig106ch10.h"
 #include "i106_decode_1553f1.h"
 
-#ifdef __cplusplus
-namespace Irig106 {
-#endif
+
+/* Function Declaration */
+
+static void FillInMessagePointers(MS1553F1_Message *msg);
 
 
-// Function Declaration
-
-static void vFillInMsgPtrs(Su1553F1_CurrMsg * psuCurrMsg);
-
-
-EnI106Status I106_CALL_DECL enI106_Decode_First1553F1(
-        SuI106Ch10Header * psuHeader, void * pvBuff, Su1553F1_CurrMsg * psuMsg){
+I106Status I106_Decode_First1553F1(I106C10Header *header, void *buffer, MS1553F1_Message *msg){
 
     // Set pointers to the beginning of the 1553 buffer
-    psuMsg->psuChanSpec = (Su1553F1_ChanSpec *)pvBuff;
+    msg->CSDW = (MS1553F1_CSDW *)buffer;
 
     // Check for no messages
-    psuMsg->uMsgNum = 0;
-    if (psuMsg->psuChanSpec->uMsgCnt == 0)
+    msg->MessageNumber = 0;
+    if (msg->CSDW->MessageCount == 0)
         return I106_NO_MORE_DATA;
 
     // Check for too many messages. There was a problem with a recorder
     // that produced bad 1553 packets.  These bad packets showed *huge*
     // message counts, and all the data was garbage.  This test catches
     // this case.  Sorry.  8-(
-    if (psuMsg->psuChanSpec->uMsgCnt > 100000)
+    if (msg->CSDW->MessageCount > 100000)
         return I106_BUFFER_OVERRUN;
 
     // Figure out the offset to the first 1553 message and
     // make sure it isn't beyond the end of the data buffer
-    psuMsg->ulDataLen    = psuHeader->ulDataLen;
-    psuMsg->ulCurrOffset = sizeof(Su1553F1_ChanSpec);
-    if (psuMsg->ulCurrOffset >= psuMsg->ulDataLen)
+    msg->DataLength = header->DataLength;
+    msg->Offset = sizeof(MS1553F1_CSDW);
+    if (msg->Offset >= msg->DataLength)
         return I106_BUFFER_OVERRUN;
 
     // Set the pointer to the first 1553 message
-    psuMsg->psu1553Hdr = (Su1553F1_Header *) ((char *)(pvBuff) + psuMsg->ulCurrOffset);
+    msg->IPH = (MS1553F1_IPH *) ((char *)(buffer) + msg->Offset);
 
     // Check to make sure the data does run beyond the end of the buffer
-    if ((psuMsg->ulCurrOffset + sizeof(Su1553F1_Header) + psuMsg->psu1553Hdr->uMsgLen) > psuMsg->ulDataLen)
+    if ((msg->Offset + sizeof(MS1553F1_IPH) + msg->IPH->Length) > msg->DataLength)
         return I106_BUFFER_OVERRUN;
 
     // Get the other pointers
-    vFillInMsgPtrs(psuMsg);
+    FillInMessagePointers(msg);
 
     return I106_OK;
 }
 
 
-EnI106Status I106_CALL_DECL enI106_Decode_Next1553F1(Su1553F1_CurrMsg * psuMsg){
+I106Status I106_Decode_Next1553F1(MS1553F1_Message *msg){
 
     // Check for no more messages
-    psuMsg->uMsgNum++;
-    if (psuMsg->uMsgNum >= psuMsg->psuChanSpec->uMsgCnt)
+    msg->MessageNumber++;
+    if (msg->MessageNumber >= msg->CSDW->MessageCount)
         return I106_NO_MORE_DATA;
 
     // Figure out the offset to the next 1553 message and
     // make sure it isn't beyond the end of the data buffer
-    psuMsg->ulCurrOffset += sizeof(Su1553F1_Header)      + 
-                            psuMsg->psu1553Hdr->uMsgLen;
+    msg->Offset += sizeof(MS1553F1_IPH) + msg->IPH->Length;
 
-    if (psuMsg->ulCurrOffset >= psuMsg->ulDataLen)
+    if (msg->Offset >= msg->DataLength)
         return I106_BUFFER_OVERRUN;
 
     // Set pointer to the next 1553 data buffer
-    psuMsg->psu1553Hdr = (Su1553F1_Header *)
-        ((char *)(psuMsg->psu1553Hdr) + sizeof(Su1553F1_Header) + psuMsg->psu1553Hdr->uMsgLen);
+    msg->IPH = (MS1553F1_IPH *)
+        ((char *)(msg->IPH) + sizeof(MS1553F1_IPH) + msg->IPH->Length);
 
     // Check to make sure the data does run beyond the end of the buffer
-    if ((psuMsg->ulCurrOffset + sizeof(Su1553F1_Header) + psuMsg->psu1553Hdr->uMsgLen) > psuMsg->ulDataLen)
+    if ((msg->Offset + sizeof(MS1553F1_IPH) + msg->IPH->Length) > msg->DataLength)
         return I106_BUFFER_OVERRUN;
 
     // Get the other pointers
-    vFillInMsgPtrs(psuMsg);
+    FillInMessagePointers(msg);
 
     return I106_OK;
 }
 
 
-void vFillInMsgPtrs(Su1553F1_CurrMsg * psuCurrMsg){
+void FillInMessagePointers(MS1553F1_Message *msg){
 
-    psuCurrMsg->psuCmdWord1  = (SuCmdWordU *)
-        ((char *)(psuCurrMsg->psu1553Hdr) + sizeof(Su1553F1_Header));
+    msg->CommandWord1  = (CommandWordUnion *)((char *)(msg->IPH) + sizeof(MS1553F1_IPH));
 
     // Position of data and status response differ between transmit and receive
     // If not RT to RT
-    if ((psuCurrMsg->psu1553Hdr)->bRT2RT == 0){
+    if ((msg->IPH)->RT2RT == 0){
         // Second command and status words not available
-        psuCurrMsg->psuCmdWord2  = NULL;
-        psuCurrMsg->puStatWord2  = NULL;
+        msg->CommandWord2  = NULL;
+        msg->StatusWord2   = NULL;
 
         // Figure out the word count
-        psuCurrMsg->uWordCnt = i1553WordCnt(psuCurrMsg->psuCmdWord1);
+        msg->WordCount = MS1553WordCount(msg->CommandWord1);
 
         // Receive
-        if (psuCurrMsg->psuCmdWord1->suStruct.bTR == 0){
-            psuCurrMsg->pauData     = (uint16_t *)psuCurrMsg->psuCmdWord1 + 1;
-            psuCurrMsg->puStatWord1 = psuCurrMsg->pauData + psuCurrMsg->uWordCnt;
+        if (msg->CommandWord1->CommandWord.TR == 0){
+            msg->Data        = (uint16_t *)msg->CommandWord1 + 1;
+            msg->StatusWord1 = msg->Data + msg->WordCount;
         }
 
-        //Transmit
+        // Transmit
         else {
-            psuCurrMsg->puStatWord1 = (uint16_t *)psuCurrMsg->psuCmdWord1 + 1;
-            psuCurrMsg->pauData     = (uint16_t *)psuCurrMsg->psuCmdWord1 + 2;
+            msg->StatusWord1 = (uint16_t *)msg->CommandWord1 + 1;
+            msg->Data        = (uint16_t *)msg->CommandWord1 + 2;
         }
     }
 
     // RT to RT
     else {
-        psuCurrMsg->psuCmdWord2 = psuCurrMsg->psuCmdWord1 + 1;
-        psuCurrMsg->uWordCnt    = i1553WordCnt(psuCurrMsg->psuCmdWord2);
-        psuCurrMsg->puStatWord2 = (uint16_t *)psuCurrMsg->psuCmdWord1 + 2;
-        psuCurrMsg->pauData     = (uint16_t *)psuCurrMsg->psuCmdWord1 + 3;
-        psuCurrMsg->puStatWord1 = (uint16_t *)psuCurrMsg->pauData     + psuCurrMsg->uWordCnt;
+        msg->CommandWord2 = msg->CommandWord1 + 1;
+        msg->WordCount    = MS1553WordCount(msg->CommandWord2);
+        msg->StatusWord2  = (uint16_t *)msg->CommandWord1 + 2;
+        msg->Data         = (uint16_t *)msg->CommandWord1 + 3;
+        msg->StatusWord1  = (uint16_t *)msg->Data + msg->WordCount;
     }
 
     return;
 }
 
 
-char * szCmdWord(unsigned int iCmdWord){
-    static char     szCmdWord[16];
-    SuCmdWord     * psuCmdWord = (SuCmdWord *)&iCmdWord;
+char * GetCommandWord(unsigned int raw){
+    static char    string[16];
+    CommandWord  * command_word = (CommandWord *)&raw;
 
-    sprintf(szCmdWord, "%2d-%c-%2d-%2d",
-         psuCmdWord->uRTAddr,
-         psuCmdWord->bTR ? 'T' : 'R',
-         psuCmdWord->uSubAddr,
-         psuCmdWord->uWordCnt==0 ? 32 : psuCmdWord->uWordCnt);
+    sprintf(string, "%2d-%c-%2d-%2d",
+         command_word->RT,
+         command_word->TR ? 'T' : 'R',
+         command_word->SubAddress,
+         command_word->WordCount==0 ? 32 : command_word->WordCount);
 
-    return &szCmdWord[0];
+    return &string[0];
 }
 
 
 /* Return the number of word in a 1553 message taking into account mode codes */
-int I106_CALL_DECL i1553WordCnt(const SuCmdWordU * psuCmdWord){
+int MS1553WordCount(const CommandWordUnion *command_word){
 
     // If the subaddress is a mode code then find out number of data words
-    if ((psuCmdWord->suStruct.uSubAddr == 0x0000) || (psuCmdWord->suStruct.uSubAddr == 0x001f)){
-        if (psuCmdWord->suStruct.uWordCnt & 0x0010) return 1;
-        else                                        return 0;
+    if ((command_word->CommandWord.SubAddress == 0x0000) || (command_word->CommandWord.SubAddress == 0x001f)){
+        return (int)command_word->CommandWord.WordCount & 0x0010;
     }
 
     // If regular subaddress find out number of data words
     else {
-        if (psuCmdWord->suStruct.uWordCnt == 0)     return 32;
-        else                                        return psuCmdWord->suStruct.uWordCnt;
+        if (command_word->CommandWord.WordCount == 0)
+            return 32;
+        else
+            return command_word->CommandWord.WordCount;
     }
 }
-
-#ifdef __cplusplus
-} // end namespace i106
-#endif
