@@ -88,7 +88,7 @@ EnI106Status I106_CALL_DECL enI106_OpenNetStreamRead(int iHandle, uint16_t uPort
     int                     iIdx;
     int                     iResult;
     struct sockaddr_in      ServerAddr;
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
     WORD                    wVersionRequested;
     WSADATA                 wsaData;
 #endif
@@ -110,7 +110,7 @@ EnI106Status I106_CALL_DECL enI106_OpenNetStreamRead(int iHandle, uint16_t uPort
     struct in_addr          IrigMulticastGroup;
 #endif
 
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
     // Initialize WinSock, request version 2.2
     wVersionRequested = MAKEWORD(2, 2);
     iResult = WSAStartup(wVersionRequested, &wsaData);
@@ -122,7 +122,7 @@ EnI106Status I106_CALL_DECL enI106_OpenNetStreamRead(int iHandle, uint16_t uPort
     // Create a socket for listening to UDP
     m_suNetHandle[iHandle].suIrigSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (m_suNetHandle[iHandle].suIrigSocket == INVALID_SOCKET) {
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
         WSACleanup();
 #endif
         return I106_OPEN_ERROR;
@@ -135,7 +135,7 @@ EnI106Status I106_CALL_DECL enI106_OpenNetStreamRead(int iHandle, uint16_t uPort
 
     iResult = bind(m_suNetHandle[iHandle].suIrigSocket, (SOCKADDR*) &ServerAddr, sizeof(ServerAddr));
     if (iResult == SOCKET_ERROR) {
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
         closesocket(m_suNetHandle[iHandle].suIrigSocket);
         WSACleanup();
 #else
@@ -180,7 +180,7 @@ EnI106Status I106_CALL_DECL enI106_OpenNetStreamWrite(int iHandle, uint32_t uIpA
 #ifdef SO_MAX_MSG_SIZE
     int                     iMaxMsgSizeLen;
 #endif
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
     WORD                    wVersionRequested;
     WSADATA                 wsaData;
     DWORD                   iMaxMsgSize;
@@ -199,7 +199,7 @@ EnI106Status I106_CALL_DECL enI106_OpenNetStreamWrite(int iHandle, uint32_t uIpA
     }
 
 
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
     // Initialize WinSock, request version 2.2
     wVersionRequested = MAKEWORD(2, 2);
     iResult = WSAStartup(wVersionRequested, &wsaData);
@@ -211,7 +211,7 @@ EnI106Status I106_CALL_DECL enI106_OpenNetStreamWrite(int iHandle, uint32_t uIpA
     // Create a socket for writing to UDP
     m_suNetHandle[iHandle].suIrigSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (m_suNetHandle[iHandle].suIrigSocket == INVALID_SOCKET) {
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
         WSACleanup();
 #endif
         return I106_OPEN_ERROR;
@@ -261,7 +261,7 @@ EnI106Status I106_CALL_DECL enI106_CloseNetStream(int iHandle){
     switch (m_suNetHandle[iHandle].enNetMode){
         case I106_READ_NET_STREAM:
             // Close the receive socket
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
             closesocket(m_suNetHandle[iHandle].suIrigSocket);
             WSACleanup();
 #else
@@ -275,7 +275,7 @@ EnI106Status I106_CALL_DECL enI106_CloseNetStream(int iHandle){
 
         case I106_WRITE_NET_STREAM:
             // Close the transmit socket
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
             closesocket(m_suNetHandle[iHandle].suIrigSocket);
             WSACleanup();
 #else
@@ -298,7 +298,7 @@ EnI106Status I106_CALL_DECL enI106_CloseNetStream(int iHandle){
  * split a read across the header buffer and a body buffer.
  * suSocket       : The SOCKET handle to recv from
  * pvBuffer1      : Pointer to the first buffer to fill
- * ulBufLen1      : Length of the first buffer, in bytes 
+ * ulBufLen1      : Length of the first buffer, in bytes
  * pvBuffer2      : Pointer to the second buffer to fill
  * ulBufLen2      : Length of the second buffer, in bytes
  * ulBytesRcvdOut : Returns the number of bytes received and copied into the buffers
@@ -628,7 +628,7 @@ EnI106Status I106_CALL_DECL enI106_WriteNetStream(int iHandle, void * pvBuffer, 
             break;
         }
 
-        // There is another buffer so let's check its size. If next packet would put us over 
+        // There is another buffer so let's check its size. If next packet would put us over
         // max size then send what we have
         psuNextCh10Header = (SuI106Ch10Header *)((char *)psuCurrCh10Header + psuCurrCh10Header->ulPacketLen);
 
@@ -691,7 +691,7 @@ EnI106Status I106_CALL_DECL enI106_WriteNetNonSegmented(int iHandle, void * pvBu
 
     // Send the IRIG UDP packet
 #if defined(_MSC_VER)
-    // I don't really want or need control data. I hope this doesn't 
+    // I don't really want or need control data. I hope this doesn't
     // cause WSASendMsg() to fail.
     suMsControl.buf           = NULL;
     suMsControl.len           = 0;
@@ -764,7 +764,7 @@ EnI106Status I106_CALL_DECL enI106_WriteNetSegmented(int iHandle, void * pvBuffe
 
         uSendSize = MIN(m_suNetHandle[iHandle].uMaxUdpSize, uBuffSize-uBuffIdx);
 #if defined(_MSC_VER)
-        // I don't really want or need control data. I hope this doesn't 
+        // I don't really want or need control data. I hope this doesn't
         // cause WSASendMsg() to fail.
         suMsControl.buf           = NULL;
         suMsControl.len           = 0;
