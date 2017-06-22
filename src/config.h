@@ -4,12 +4,6 @@
 #ifndef _config_h_
 #define _config_h_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define PUBLIC
-
 #if defined(__GNUC__)
 #define PACKED __attribute__ ((packed))
 #else
@@ -33,19 +27,8 @@ extern "C" {
 #endif
 #endif
 
-// .NET managed code extends good ol' Stroustrup C++ in some interesting and unique ways.
-// I don't know what Bjarne would say, but here in the real world we need to deal with it.
-#if defined(_M_CEE)
-#define PUBLIC_CLASS    public
-
-#else
-#define PUBLIC_CLASS
-
-#endif
-
-/* The POSIX caseless string compare is strcasecmp(). MSVC uses the
- * non-standard stricmp(). Fix it up with a macro if necessary
- */
+// The POSIX caseless string compare is strcasecmp(). MSVC uses the
+// non-standard stricmp(). Fix it up with a macro if necessary
 
 #if defined(_MSC_VER)
 #define strcasecmp(s1, s2)          _stricmp(s1, s2)
@@ -53,15 +36,9 @@ extern "C" {
 #pragma warning(disable : 4996)
 #endif
 
-#define I106_CALL_DECL
-
-// Turn on network support - broken on windows
+// Turn on network support - broken on windows (currently disabled)
 #if !defined(_MSC_VER)
 /* #define IRIG_NETWORKING */
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #endif
