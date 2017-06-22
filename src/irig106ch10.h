@@ -120,13 +120,13 @@ typedef enum {
 
 // Used to keep track of the next expected data file structure
 typedef enum {
-    FILE_CLOSED,
-    FILE_WRITE,
-    FILE_READ_UNSYNCED,
-    FILE_READ_HEADER,
-    FILE_READ_DATA,
-    FILE_READ_NET_STREAM,
-} FileState;
+	I106_CLOSED,
+	I106_WRITE,
+	I106_READ_UNSYNCED,
+    I106_READ_HEADER,
+	I106_READ_DATA,
+	I106_READ_NET_STREAM,
+} I106FileState;
 
 // Index sort state
 typedef enum {
@@ -170,7 +170,8 @@ typedef struct {
 } InOrderPacketInfo;
 
 // Various file index array indexes
-typedef struct {
+typedef struct InOrderIndex InOrderIndex;
+struct InOrderIndex {
     SortStatus           SortStatus;
     InOrderPacketInfo  * Index;
     int                  ArraySize;
@@ -178,23 +179,24 @@ typedef struct {
     int                  ArrayPos;
     int64_t              NextReadOffset;
     int                  NumSearchSteps;
-} InOrderIndex;
+};
 
 // Data structure for IRIG 106 read/write handle
-typedef struct {
+typedef struct I106C10Handle I106C10Handle;
+struct I106C10Handle {
     int            InUse;
     int            File;
     char           FileName[MAX_PATH];
     I106C10Mode    FileMode;
-    FileState      FileState;
-    InOrderIndex   InOrderIndex;
+    I106FileState  File_State;
+    InOrderIndex   Index;
     unsigned long  PacketLength;
     unsigned long  HeaderBufferLength;
     unsigned long  DataBufferLength;
     unsigned long  DataBufferPos;
     unsigned long  BytesWritten;
-    char           Reserve[128];
-} I106C10Handle;
+    char           Reserved[128];
+};
 
 #if defined(_MSC_VER)
 #pragma pack(pop)

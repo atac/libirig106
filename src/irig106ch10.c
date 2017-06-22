@@ -12,7 +12,9 @@
 #include <errno.h>
 #include <assert.h>
 
+#if defined(__GNUC__)
 #include <unistd.h>
+#endif
 
 #ifndef __APPLE__
 #if defined(__GNUC__)
@@ -63,8 +65,8 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
         return I106_NO_FREE_HANDLES;
 
     // Initialize some data
-    handles[*handle].FileState = FILE_CLOSED;
-    handles[*handle].InOrderIndex.SortStatus = UNSORTED;
+    handles[*handle].File_State = I106_CLOSED;
+    handles[*handle].Index.SortStatus = UNSORTED;
 
     // Get a copy of the file name
     strncpy (handles[*handle].FileName, filename, sizeof(handles[*handle].FileName));
@@ -122,7 +124,7 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
 
         // Open OK and sync character OK so set read state to reflect this
         handles[*handle].FileMode  = mode;
-        handles[*handle].FileState = FILE_READ_HEADER;
+        handles[*handle].File_State = I106_READ_HEADER;
 
         // Make sure first packet is a config packet
         I106C10SetPos(*handle, 0L);
@@ -134,7 +136,7 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
 
         // Everything OK so get time and reset back to the beginning
         I106C10SetPos(*handle, 0L);
-        handles[*handle].FileState = FILE_READ_HEADER;
+        handles[*handle].File_State = I106_READ_HEADER;
         handles[*handle].FileMode = mode;
     }
 
@@ -167,14 +169,14 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
         }
 
         // Open OK and write state to reflect this
-        handles[*handle].FileState = FILE_WRITE;
+        handles[*handle].File_State = I106_WRITE;
         handles[*handle].FileMode = mode;
     }
 
 
     /* Any other mode is an error */
     else {
-        handles[*handle].FileState = FILE_CLOSED;
+        handles[*handle].File_State = I106_CLOSED;
         handles[*handle].FileMode  = CLOSED;
         handles[*handle].InUse = 0;
         *handle = -1;
@@ -200,18 +202,18 @@ I106Status I106C10Close(int handle){
         close(handles[handle].File);
 
     // Free index buffer and mark unsorted
-    free(handles[handle].InOrderIndex.Index);
-    handles[handle].InOrderIndex.Index          = NULL;
-    handles[handle].InOrderIndex.ArraySize      = 0;
-    handles[handle].InOrderIndex.ArrayUsed      = 0;
-    handles[handle].InOrderIndex.NumSearchSteps = 0;
-    handles[handle].InOrderIndex.SortStatus     = UNSORTED;
+    free(handles[handle].Index.Index);
+    handles[handle].Index.Index          = NULL;
+    handles[handle].Index.ArraySize      = 0;
+    handles[handle].Index.ArrayUsed      = 0;
+    handles[handle].Index.NumSearchSteps = 0;
+    handles[handle].Index.SortStatus     = UNSORTED;
 
     // Reset some status variables
     handles[handle].File      = -1;
     handles[handle].InUse     = 0;
     handles[handle].FileMode  = CLOSED;
-    handles[handle].FileState = FILE_CLOSED;
+    handles[handle].File_State = I106_CLOSED;
 
     return I106_OK;
 }
@@ -229,7 +231,7 @@ I106Status I106C10ReadNextHeader(int handle, I106C10Header * header){
             break;
 
         case READ_IN_ORDER : 
-            if (handles[handle].InOrderIndex.SortStatus == SORTED)
+            if (handles[handle].Index.SortStatus == SORTED)
                 status = I106C10ReadNextHeaderInOrder(handle, header);
             else
                 status = I106C10ReadNextHeaderFile(handle, header);
@@ -273,20 +275,20 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
     }
 
     // Check file state
-    switch (handles[handle].FileState){
-        case FILE_READ_NET_STREAM:
-        case FILE_CLOSED:
+    switch (handles[handle].File_State){
+        case I106_READ_NET_STREAM:
+        case I106_CLOSED:
             return I106_NOT_OPEN;
             break;
 
-        case FILE_WRITE:
+        case I106_WRITE:
             return I106_WRONG_FILE_MODE;
             break;
 
-        case FILE_READ_HEADER:
+        case I106_READ_HEADER:
             break;
 
-        case FILE_READ_DATA:
+        case I106_READ_DATA:
             skip_size = handles[handle].PacketLength - 
                 handles[handle].HeaderBufferLength -
                 handles[handle].DataBufferPos;
@@ -303,7 +305,7 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
                     return I106_SEEK_ERROR;
             }
 
-        case FILE_READ_UNSYNCED :
+        case I106_READ_UNSYNCED :
             break;
     }
 
@@ -322,7 +324,7 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
 
         // If there was an error reading, figure out why
         if (read_count != HEADER_SIZE){
-            handles[handle].FileState = FILE_READ_UNSYNCED;
+            handles[handle].File_State = I106_READ_UNSYNCED;
             if (read_count == -1)
                 return I106_READ_ERROR;
             else
@@ -334,7 +336,7 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
         do {
             // Read OK, check the sync field
             if (header->SyncPattern != IRIG106_SYNC){
-                handles[handle].FileState = FILE_READ_UNSYNCED;
+                handles[handle].File_State = I106_READ_UNSYNCED;
                 header_ok = 0;
                 break;
             }
@@ -344,8 +346,8 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
                 // If the header checksum was bad then set to unsynced state
                 // and return the error. Next time we're called we'll go
                 // through lots of heroics to find the next header.
-                if (handles[handle].FileState != FILE_READ_UNSYNCED){
-                    handles[handle].FileState = FILE_READ_UNSYNCED;
+                if (handles[handle].File_State != I106_READ_UNSYNCED){
+                    handles[handle].File_State = I106_READ_UNSYNCED;
                     return I106_HEADER_CHKSUM_BAD;
                 }
                 header_ok = 0;
@@ -366,7 +368,7 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
 
                 // If there was an error reading, figure out why
                 if (read_count != SEC_HEADER_SIZE){
-                    handles[handle].FileState = FILE_READ_UNSYNCED;
+                    handles[handle].File_State = I106_READ_UNSYNCED;
                     if (read_count == -1)
                         return I106_READ_ERROR;
                     else
@@ -378,8 +380,8 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
                     // If the header checksum was bad then set to unsynced state
                     // and return the error. Next time we're called we'll go
                     // through lots of heroics to find the next header.
-                    if (handles[handle].FileState != FILE_READ_UNSYNCED){
-                        handles[handle].FileState = FILE_READ_UNSYNCED;
+                    if (handles[handle].File_State != I106_READ_UNSYNCED){
+                        handles[handle].File_State = I106_READ_UNSYNCED;
                         return I106_HEADER_CHKSUM_BAD;
                     }
                     header_ok = 0;
@@ -413,7 +415,7 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
     handles[handle].PacketLength      = header->PacketLength;
     handles[handle].DataBufferLength  = GetDataLength(header);
     handles[handle].DataBufferPos     = 0;
-    handles[handle].FileState         = FILE_READ_DATA;
+    handles[handle].File_State         = I106_READ_DATA;
 
     return I106_OK;
 }
@@ -421,17 +423,17 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
 
 // Get the next header in time order from the file
 I106Status I106C10ReadNextHeaderInOrder(int handle, I106C10Header * header){
-    InOrderIndex  * index = &handles[handle].InOrderIndex;
+    InOrderIndex  * index = &handles[handle].Index;
     I106Status      status;
     int64_t         offset;
-    FileState       saved_file_state;
+    I106FileState       saved_file_state;
 
     // If we're at the end of the list then we are at the end of the file
     if (index->ArrayPos == index->ArrayUsed)
         return I106_EOF;
 
     // Save the read state going in
-    saved_file_state = handles[handle].FileState;
+    saved_file_state = handles[handle].File_State;
 
     // Move file pointer to the proper, er, point
     offset = index->Index[index->ArrayPos].Offset;
@@ -442,7 +444,7 @@ I106Status I106C10ReadNextHeaderInOrder(int handle, I106C10Header * header){
 
     // If the state was unsynced before but is synced now, figure out where in the
     // index we are
-    if ((saved_file_state == FILE_READ_UNSYNCED) && (handles[handle].FileState != FILE_READ_UNSYNCED)){
+    if ((saved_file_state == I106_READ_UNSYNCED) && (handles[handle].File_State != I106_READ_UNSYNCED)){
         I106C10GetPos(handle, &offset);
         offset -= GetHeaderLength(header);
         index->ArrayPos = 0;
@@ -497,25 +499,25 @@ I106Status I106C10ReadPrevHeader(int handle, I106C10Header * header){
     }
 
     // Check file mode
-    switch (handles[handle].FileState){
-        case FILE_READ_NET_STREAM:
-        case FILE_CLOSED:
+    switch (handles[handle].File_State){
+        case I106_READ_NET_STREAM:
+        case I106_CLOSED:
             return I106_NOT_OPEN;
             break;
 
-        case FILE_WRITE:
+        case I106_WRITE:
             return I106_WRONG_FILE_MODE;
             break;
 
-        case FILE_READ_HEADER:
-        case FILE_READ_DATA:
+        case I106_READ_HEADER:
+        case I106_READ_DATA:
             // Backup to a point just before the most recently read header.
             // The amount to backup is the size of the previous header and the amount
             // of data already read.
             initial_backup = handles[handle].HeaderBufferLength + handles[handle].DataBufferPos;
             break;
 
-        case FILE_READ_UNSYNCED:
+        case I106_READ_UNSYNCED:
             initial_backup = 0;
             break;
     }
@@ -638,21 +640,21 @@ I106Status I106C10ReadDataFile(int handle, unsigned long buffer_size, void *buff
     }
 
     // Check file state
-    switch (handles[handle].FileState){
-        case FILE_CLOSED:
+    switch (handles[handle].File_State){
+        case I106_CLOSED:
             return I106_NOT_OPEN;
             break;
 
-        case FILE_WRITE:
+        case I106_WRITE:
             return I106_WRONG_FILE_MODE;
             break;
 
-        case FILE_READ_DATA:
+        case I106_READ_DATA:
             break;
 
         default :
             // MIGHT WANT TO SUPPORT THE "MORE DATA" METHOD INSTEAD
-            handles[handle].FileState = FILE_READ_UNSYNCED;
+            handles[handle].File_State = I106_READ_UNSYNCED;
             return I106_READ_ERROR;
             break;
     }
@@ -669,7 +671,7 @@ I106Status I106C10ReadDataFile(int handle, unsigned long buffer_size, void *buff
 
     // If there was an error reading, figure out why
     if ((unsigned long)read_count != read_amount){
-        handles[handle].FileState = FILE_READ_UNSYNCED;
+        handles[handle].File_State = I106_READ_UNSYNCED;
         if (read_count == -1)
             return I106_READ_ERROR;
         else
@@ -682,7 +684,7 @@ I106Status I106C10ReadDataFile(int handle, unsigned long buffer_size, void *buff
     // MAY WANT TO DO CHECKSUM CHECKING SOMEDAY
 
     // Expect a header next read
-    handles[handle].FileState = FILE_READ_HEADER;
+    handles[handle].File_State = I106_READ_HEADER;
 
     return I106_OK;
 }    
@@ -757,7 +759,7 @@ I106Status I106C10FirstMsg(int handle){
             break;
 
         case READ_IN_ORDER:
-            handles[handle].InOrderIndex.ArrayPos = 0;
+            handles[handle].Index.ArrayPos = 0;
             I106C10SetPos(handle, 0L);
             break;
 
@@ -800,7 +802,7 @@ I106Status I106C10LastMsg(int handle){
         // If it's opened for reading in order then just set the index pointer
         // to the last index.
         case READ_IN_ORDER   :
-            handles[handle].InOrderIndex.ArrayPos = handles[handle].InOrderIndex.ArrayUsed - 1;
+            handles[handle].Index.ArrayPos = handles[handle].Index.ArrayUsed - 1;
             return_status = I106_OK;
             break;
 
@@ -895,7 +897,7 @@ I106Status I106C10SetPos(int handle, int64_t offset){
 #endif
 
             // Can't be sure we're on a message boundary so set unsync'ed
-            handles[handle].FileState = FILE_READ_UNSYNCED;
+            handles[handle].File_State = I106_READ_UNSYNCED;
             break;
     }
 
@@ -1166,7 +1168,7 @@ void InitHandles(){
         for (int i=0; i<MAX_HANDLES; i++){
             handles[i].InUse     = 0;
             handles[i].FileMode  = CLOSED;
-            handles[i].FileState = FILE_CLOSED;
+            handles[i].File_State = I106_CLOSED;
         }
         handles_inited = 1;
     }
@@ -1212,7 +1214,7 @@ int ReadInOrderIndex(int handle, char *filename){
     int               read_start;
     int               read_count;
     int               read_ok = 0;
-    InOrderIndex    * index = &handles[handle].InOrderIndex;
+    InOrderIndex    * index = &handles[handle].Index;
 
     // Setup a one time loop to make it easy to break out on errors
     do {
@@ -1256,7 +1258,7 @@ int WriteInOrderIndex(int handle, char *filename){
     int               flags;
     int               file_mode;
     int               file;
-    InOrderIndex    * index = &handles[handle].InOrderIndex;
+    InOrderIndex    * index = &handles[handle].Index;
 
     // Write out an index file for use next time
 #if defined(_MSC_VER)
@@ -1304,7 +1306,7 @@ void MakeInOrderIndex(int handle){
     int64_t           pos;      // Current file position
     I106C10Header     header;   // Data packet header
     int64_t           time;     // Current header time
-    InOrderIndex    * index = &handles[handle].InOrderIndex;
+    InOrderIndex    * index = &handles[handle].Index;
 
     // Remember the current file position
     status = I106C10GetPos(handle, &start);

@@ -41,7 +41,6 @@
     <ClInclude Include="..\src\i106_decode_video.h" />
     <ClInclude Include="..\src\i106_index.h" />
     <ClInclude Include="..\src\i106_time.h" />
-    <ClInclude Include="..\src\irig106cl.h" />
     <ClInclude Include="..\src\stdint.h" />
   </ItemGroup>
   <ItemGroup>
@@ -59,7 +58,6 @@
     <ClCompile Include="..\src\i106_index.c" />
     <ClCompile Include="..\src\i106_time.c" />
     <ClCompile Include="..\src\irig106ch10.c" />
-    <ClCompile Include="..\src\irig106cl.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{01E22346-C580-4DAC-BF7B-41E03399863E}</ProjectGuid>

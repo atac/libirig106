@@ -140,7 +140,7 @@ I106Status I106_Decode_TMATS(I106C10Header *header, void *buffer, TMATS_Info *tm
 
 // This routine parses just the text portion of TMATS.
 I106Status I106_Decode_TMATS_Text(void *text, uint32_t data_length, TMATS_Info *tmats_info){
-    unsigned long       buffer_pos;
+    unsigned long       buffer_pos = 0;
     char              * buffer;
     char                line[2048];
     int                 line_pos;

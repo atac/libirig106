@@ -276,7 +276,7 @@ I106Status I106_SyncTime(int handle, int sync, int max_seconds){
 I106Status I106C10SetPosToIrigTime(int handle, I106Time *irig_seek_time){
     uint8_t           rtc_seek_time[6];
     int64_t           seek_time;
-    InOrderIndex    * index = &handles[handle].InOrderIndex;
+    InOrderIndex    * index = &handles[handle].Index;
     int               upper_limit;
     int               lower_limit;
 
