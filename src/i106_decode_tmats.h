@@ -205,12 +205,12 @@ struct R_DataSource {
     char                 * PCMVideoTypeFormat;        // (R-x\PTF-n)
 
     // Analog channel attributes
-    char                 * AnalogChannelsPerPacket;  // (R-1\ACH\N-n)
+    char                 * AnalogChannelsPerPacket;   // (R-1\ACH\N-n)
     char                 * AnalogSampleRate;          // (R-1\ASR-n)
     char                 * AnalogDataPacking;         // (R-1\ADP-n)
 
-    struct M_Record      * M_Record;                // Corresponding M record
-    struct P_Record      * P_Record;                // Corresponding P record
+    struct M_Record      * M_Record;                  // Corresponding M record
+    struct P_Record      * P_Record;                  // Corresponding P record
     struct R_DataSource  * NextR_DataSource;
 }; 
 
