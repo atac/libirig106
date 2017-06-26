@@ -1,6 +1,5 @@
 
-UNITY_ROOT=tests/unity
-TEST_RUNNER=run_tests
+EXT=
 
 # Try to detect the OS we are running on, and adjust commands as needed
 ifeq ($(OS), Windows_NT)
@@ -11,7 +10,7 @@ ifeq ($(OS), Windows_NT)
 		CLEANUP = rm -f
 		MKDIR = mkdir -p
 	endif
-	TEST_RUNNER +=.exe
+	EXT =.exe
 else
 	CLEANUP = rm -rf
 	MKDIR = mkdir -p
@@ -29,20 +28,17 @@ CFLAGS += -fpack-struct=1
 CFLAGS += -fPIC
 CFLAGS += -Wno-address-of-packed-member
 
-TEST_SRC=\
-	$(UNITY_ROOT)/src/unity.c \
-	$(UNITY_ROOT)/extras/fixture/src/unity_fixture.c \
-	tests/src/ProductionCode.c \
-	tests/src/ProductionCode2.c \
-	tests/TestProductionCode.c \
-	tests/TestProductionCode2.c \
-	tests/test_runners/TestProductionCode_Runner.c \
-	tests/test_runners/TestProductionCode2_Runner.c \
-	tests/test_runners/all_tests.c
-INC_DIRS=-Itests/src -I$(UNITY_ROOT)/src -I$(UNITY_ROOT)/extras/fixture/src
-
 SRC_DIR=src
 OBJ_DIR=obj
+TEST_DIR=tests
+
+UNITY_ROOT=tests/unity
+TEST_INCLUDES=-I$(UNITY_ROOT)/src -I$(UNITY_ROOT)/extras/fixture/src
+TEST_DEPENDENCIES = $(UNITY_ROOT)/src/unity.c $(UNITY_ROOT)/extras/fixture/src/unity_fixture.c
+TEST_CASES := $(wildcard $(TEST_DIR)/test_*.c)
+TEST_RUNNERS := $(wildcard $(TEST_DIR)/test_runners/*.c)
+TEST_RUNNER = $(TEST_DIR)/run_tests$(EXT)
+TESTS = $(TEST_DEPENDENCIES) $(TEST_CASES) $(TEST_RUNNERS)
 
 SOURCES := $(wildcard $(SRC_DIR)/*.c)
 INCLUDES := $(wildcard $(SRC_DIR)/*.h)
@@ -68,8 +64,9 @@ clean:
 	$(CLEANUP) libirig106.so libirig106.a && \
 	$(CLEANUP) obj && \
 	$(CLEANUP) $(TEST_RUNNER) && \
-	$(CLEANUP) *.dSYM
+	$(CLEANUP) *.dSYM && \
+	$(CLEANUP) $(TEST_DIR)/*.dSYM
 
 test:
-	$(CC) $(CFLAGS) $(INC_DIRS) $(TEST_SRC) -o $(TEST_RUNNER)
+	$(CC) $(CFLAGS) $(TEST_INCLUDES) $(TESTS) $(SOURCES) -o $(TEST_RUNNER)
 	- ./$(TEST_RUNNER) -v

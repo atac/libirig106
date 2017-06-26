@@ -277,6 +277,6 @@ __pycache__/
 
 *.o
 *.a
-test/run_tests
-test/test_runners/*
+tests/run_tests
+*.dSYM
 *.so
