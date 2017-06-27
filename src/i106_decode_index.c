@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "stdint.h"
+#include "int.h"
 
 #include "irig106ch10.h"
 #include "i106_time.h"

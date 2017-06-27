@@ -18,7 +18,7 @@ Author: Spencer Hatch, Dartmouth College, Hanover, NH, USA
 #include <inttypes.h>
 
 #include "config.h"
-#include "stdint.h"
+#include "int.h"
 
 #include "irig106ch10.h"
 #include "i106_time.h"

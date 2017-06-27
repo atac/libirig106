@@ -14,7 +14,7 @@
 #include <assert.h>
 
 #include "config.h"
-#include "stdint.h"
+#include "int.h"
 
 #include "irig106ch10.h"
 #include "i106_decode_tmats.h"
