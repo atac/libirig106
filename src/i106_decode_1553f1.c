@@ -19,7 +19,8 @@
 static void FillInMessagePointers(MS1553F1_Message *msg);
 
 
-I106Status I106_Decode_First1553F1(I106C10Header *header, void *buffer, MS1553F1_Message *msg){
+I106Status I106_Decode_First1553F1(I106C10Header *header, void *buffer,
+        MS1553F1_Message *msg){
 
     // Set pointers to the beginning of the 1553 buffer
     msg->CSDW = (MS1553F1_CSDW *)buffer;
@@ -87,8 +88,8 @@ I106Status I106_Decode_Next1553F1(MS1553F1_Message *msg){
 
 
 void FillInMessagePointers(MS1553F1_Message *msg){
-
-    msg->CommandWord1  = (CommandWordUnion *)((char *)(msg->IPH) + sizeof(MS1553F1_IPH));
+    msg->CommandWord1  = (CommandWordUnion *)((char *)(msg->IPH) +
+            sizeof(MS1553F1_IPH));
 
     // Position of data and status response differ between transmit and receive
     // If not RT to RT
@@ -121,8 +122,6 @@ void FillInMessagePointers(MS1553F1_Message *msg){
         msg->Data         = (uint16_t *)msg->CommandWord1 + 3;
         msg->StatusWord1  = (uint16_t *)msg->Data + msg->WordCount;
     }
-
-    return;
 }
 
 

@@ -101,7 +101,7 @@ converting relative time count values to IRIG referenced time.
 These header files are necessary for every application that uses the IRIG 106 library.
 
 * config.h - A bunch of #defines to support various compiler environments.
-* stdint.h - Standard integer definions for environments that don't supply this.
+* int.h - Standard integer definions for environments that don't supply this.
 
 
 ## To Do
@@ -115,6 +115,8 @@ These header files are necessary for every application that uses the IRIG 106 li
 * Explore difference between rel_time and RTC (verbage is inconsistent esp. in
   i106_time)
 * Automated tests
+* Remove/replace Message->Datalength (refers to packet body size as opposed to
+  message length)
 
 ### Other
 
