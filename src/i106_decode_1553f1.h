@@ -8,6 +8,7 @@
 #define _I106_DECODE_1553F1_H
 
 #include "config.h"
+#include "irig106ch10.h"
 
 
 /* Data structures */

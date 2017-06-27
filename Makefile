@@ -17,9 +17,9 @@ else
 endif
 
 CC=gcc
-ifeq ($(shell uname -s), Darwin)
-CC=clang
-endif
+# ifeq ($(shell uname -s), Darwin)
+# CC=clang
+# endif
 
 CFLAGS =  -D_FILE_OFFSET_BITS=64
 CFLAGS += -D_LARGEFILE64_SOURCE
@@ -33,7 +33,7 @@ OBJ_DIR=obj
 TEST_DIR=tests
 
 UNITY_ROOT=tests/unity
-TEST_INCLUDES=-I$(UNITY_ROOT)/src -I$(UNITY_ROOT)/extras/fixture/src
+TEST_INCLUDES=-I$(UNITY_ROOT)/src -I$(UNITY_ROOT)/extras/fixture/src -I$(SRC_DIR)
 TEST_DEPENDENCIES = $(UNITY_ROOT)/src/unity.c $(UNITY_ROOT)/extras/fixture/src/unity_fixture.c
 TEST_CASES := $(wildcard $(TEST_DIR)/test_*.c)
 TEST_RUNNERS := $(wildcard $(TEST_DIR)/test_runners/*.c)
