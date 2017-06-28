@@ -36,9 +36,9 @@ UNITY_ROOT=tests/unity
 TEST_INCLUDES=-I$(UNITY_ROOT)/src -I$(UNITY_ROOT)/extras/fixture/src -I$(SRC_DIR)
 TEST_DEPENDENCIES = $(UNITY_ROOT)/src/unity.c $(UNITY_ROOT)/extras/fixture/src/unity_fixture.c
 TEST_CASES := $(wildcard $(TEST_DIR)/test_*.c)
-TEST_RUNNERS := $(wildcard $(TEST_DIR)/test_runners/*.c)
+# TEST_RUNNERS := $(wildcard $(TEST_DIR)/test_runners/*.c)
 TEST_RUNNER = $(TEST_DIR)/run_tests$(EXT)
-TESTS = $(TEST_DEPENDENCIES) $(TEST_CASES) $(TEST_RUNNERS)
+TESTS = $(TEST_DEPENDENCIES) $(TEST_CASES) $(TEST_RUNNERS) $(TEST_DIR)/all_tests.c
 
 SOURCES := $(wildcard $(SRC_DIR)/*.c)
 INCLUDES := $(wildcard $(SRC_DIR)/*.h)
