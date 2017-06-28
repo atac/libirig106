@@ -13,12 +13,17 @@ TODO:
 ----measure location using SubChBytesRead, i.e., you are currently at
     (uint8_t *)pauSubData + SubChBytesRead
 
-*At end of data packet, write "SubChBytesRead" to SubChOutFile, flush SubChBuffer, set BytesRead to zero, continue along
+*At end of data packet, write "SubChBytesRead" to SubChOutFile, flush SubChBuffer,
+set BytesRead to zero, continue along
  */
 
 
 #ifndef _I106_DECODE_ANALOGF1_H
 #define _I106_DECODE_ANALOGF1_H
+
+#include "irig106ch10.h"
+#include "i106_decode_tmats.h"
+#include "i106_time.h"
 
 
 /* Macros and definitions */
@@ -57,8 +62,7 @@ typedef enum{
 
 
 // Channel specific data word
-typedef struct AnalogF1_CSDW AnalogF1_CSDW;
-struct AnalogF1_CSDW {
+typedef struct {
     uint32_t    Mode           :  2;
     uint32_t    Length         :  6;      // Bits in A/D value
     uint32_t    Subchannel     :  8;      // Subchannel number
@@ -66,7 +70,7 @@ struct AnalogF1_CSDW {
     uint32_t    Factor         :  4;      // Sample rate exponent
     uint32_t    Same           :  1;      // One/multiple Channel Specific
     uint32_t    Reserved       :  3;
-} PACKED;
+} PACKED AnalogF1_CSDW;
 
 
 // Subchannel information structure

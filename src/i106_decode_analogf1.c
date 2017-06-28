@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_analogf1.c -
+ i106_decode_analogf1.c
  
 Author: Spencer Hatch, Dartmouth College, Hanover, NH, USA
  *STOLEN* from Hans-Gerhard Flohr's i106_decode_analogf1.c
@@ -31,11 +31,15 @@ Author: Spencer Hatch, Dartmouth College, Hanover, NH, USA
 // Local functions
 I106Status PrepareNextDecodingRun_AnalogF1(AnalogF1_Message *msg);
 
-I106Status I106_Setup_AnalogF1(I106C10Header *header, void *buffer, AnalogF1_Message *msg){
+
+// Print out analog information.
+I106Status I106_Setup_AnalogF1(I106C10Header *header, void *buffer,
+        AnalogF1_Message *msg){
+
     AnalogF1_Attributes  * attributes;
 
     // Check for attributes available
-    if(msg->Attributes == NULL)
+    if (msg->Attributes == NULL)
         return I106_INVALID_PARAMETER;
 
     attributes = msg->Attributes;
@@ -60,6 +64,7 @@ I106Status I106_Setup_AnalogF1(I106C10Header *header, void *buffer, AnalogF1_Mes
     
     // Based on first CSDWs 'Same' bit, prepare to allocate additional CSDW structs
     for (int i = 0; i < msg->CSDW->Subchannels; i++){
+
         // Allocate memory for _pointers_ to all CSDWs and allocate memory for
         // CSDWs themselves
         attributes->Subchannels[i] = malloc(sizeof(AnalogF1_Subchannel));

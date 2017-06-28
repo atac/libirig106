@@ -128,3 +128,5 @@ These header files are necessary for every application that uses the IRIG 106 li
 * Parse more TMATS fields
 * Provide better, more automatic ways to keep time in sync
 * Review "header version" to see what needs to be accounted for in code
+* Implement partial & missing datatypes
+    * 1394

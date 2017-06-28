@@ -89,4 +89,4 @@ $(TEST_RUNNER): $(OBJ_DIR)/all_tests.o $(TEST_OBJ) $(UNITY_OBJ) $(OBJECTS)
 	$(LINK) -o $@ $^
 
 test: mkdirs $(TEST_RUNNER)
-	./$(TEST_RUNNER) -v
+	./$(TEST_RUNNER)
