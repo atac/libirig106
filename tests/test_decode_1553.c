@@ -29,7 +29,41 @@ TEST(test_1553, TestDecodeFirst1553F1){
     memcpy(buffer + sizeof(MS1553F1_CSDW), (void *)&iph, sizeof(MS1553F1_IPH));
 
     status = I106_Decode_First1553F1(&header, buffer, &msg);
+    TEST_ASSERT_EQUAL(status, I106_OK);
     TEST_ASSERT_EQUAL(3, msg.IPH->Length);
+
+    free(buffer);
+}
+
+
+TEST(test_1553, TestDecodeNext1553F1){
+    I106C10Header       header;
+    I106Status          status;
+    void              * buffer;
+    MS1553F1_Message    msg;
+    MS1553F1_CSDW       csdw;
+    MS1553F1_IPH        iph;
+    int msg_size = sizeof(MS1553F1_IPH) + 3;
+    int offset = 0;
+
+    header.DataLength = sizeof(MS1553F1_CSDW) + (msg_size * 4);
+    buffer = malloc(header.DataLength);
+    csdw.MessageCount = 4;
+    msg.CSDW = &csdw;
+    msg.Offset = 0;
+    msg.MessageNumber = 0;
+    iph.Length = 3;
+
+    memcpy(buffer, (void *)&iph, sizeof(MS1553F1_IPH));
+    msg.IPH = (MS1553F1_IPH *)buffer;
+    offset = sizeof(MS1553F1_IPH) + iph.Length;
+
+    iph.Length = 4;
+    memcpy(buffer + offset, (void *)&iph, sizeof(MS1553F1_IPH));
+
+    status = I106_Decode_Next1553F1(&msg);
+    TEST_ASSERT_EQUAL(status, I106_OK);
+    TEST_ASSERT_EQUAL(4, msg.IPH->Length);
 
     free(buffer);
 }
