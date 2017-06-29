@@ -7,6 +7,11 @@
 #ifndef _I106_DECODE_DISCRETE_H
 #define _I106_DECODE_DISCRETE_H
 
+#include "config.h"
+#include "irig106ch10.h"
+#include "i106_time.h"
+
+
 /* Macros and definitions */
 #define I106CH10_NUM_DISCRETE_INPUTS_PER_STATE  (uint16_t)32
 

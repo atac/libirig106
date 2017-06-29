@@ -29,7 +29,7 @@ I106Status I106_Decode_FirstDiscreteF1(I106C10Header * header, void * buffer,
     // Set pointers to the beginning of the Discrete buffer
     msg->CSDW = (DiscreteF1_CSDW *)buffer;
 
-    msg->BytesRead+=sizeof(DiscreteF1_CSDW);
+    msg->BytesRead += sizeof(DiscreteF1_CSDW);
 
     // Check for no data
     if (header->DataLength <= msg->BytesRead)
@@ -47,7 +47,7 @@ I106Status I106_Decode_FirstDiscreteF1(I106C10Header * header, void * buffer,
 
 I106Status I106_Decode_NextDiscreteF1(I106C10Header *header, DiscreteF1_Message *msg, TimeRef *time){
 
-   // Check for no more data
+    // Check for no more data
     if (header->DataLength <= msg->BytesRead)
         return I106_NO_MORE_DATA;
 
@@ -61,11 +61,9 @@ I106Status I106_Decode_NextDiscreteF1(I106C10Header *header, DiscreteF1_Message 
 
 
 void FillInMessagePointers(DiscreteF1_Message *msg){
-
     msg->IPTS = (IntraPacketTS *)((char *)(msg->CSDW) + msg->BytesRead);
     msg->BytesRead+=sizeof(msg->IPTS->IPTS);
 
     msg->Data = *( (uint32_t *) ((char *)(msg->CSDW) + msg->BytesRead));
     msg->BytesRead+=sizeof(msg->Data);
-
 }
