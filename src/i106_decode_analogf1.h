@@ -162,7 +162,6 @@ struct AnalogF1_Message {
 I106Status I106_Setup_AnalogF1(I106C10Header *header, void *buffer, AnalogF1_Message *msg);
 I106Status I106_Decode_FirstAnalogF1(I106C10Header *header, void *buffer, AnalogF1_Message *msg);
 I106Status I106_Decode_NextAnalogF1(AnalogF1_Message *msg);
-I106Status DecodeBuffer_AnalogF1(AnalogF1_Message *msg);
 I106Status Set_Attributes_AnalogF1(R_DataSource *r_datasource, AnalogF1_Attributes *attributes);
 I106Status CreateOutputBuffers_AnalogF1(AnalogF1_Attributes *attributes, uint32_t data_length);
 I106Status FreeOutputBuffers_AnalogF1(AnalogF1_Attributes *attributes);

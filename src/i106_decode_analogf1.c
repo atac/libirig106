@@ -193,13 +193,7 @@ I106Status I106_Decode_FirstAnalogF1(I106C10Header *header, void *buffer, Analog
     }
 
     // Now start the decode of this buffer
-    return DecodeBuffer_AnalogF1(msg);
-}
-
-
-// SPENCE CHECK--Maybe this function is useless now...
-I106Status I106_Decode_NextAnalogF1(AnalogF1_Message *msg){
-  return DecodeBuffer_AnalogF1(msg);
+    return I106_Decode_NextAnalogF1(msg);
 }
 
 
@@ -333,7 +327,7 @@ I106Status CreateOutputBuffers_AnalogF1(AnalogF1_Attributes *attributes, uint32_
     // Allocate the Analog output buffer
     attributes->BufferSize = data_length;
     attributes->Buffer = (uint8_t *)calloc(sizeof(uint8_t), data_length);
-    if(attributes->Buffer == NULL){
+    if (attributes->Buffer == NULL){
         free(attributes->Buffer);
         attributes->Buffer = NULL;
         return I106_BUFFER_TOO_SMALL;
@@ -346,11 +340,11 @@ I106Status CreateOutputBuffers_AnalogF1(AnalogF1_Attributes *attributes, uint32_
 // Free the output buffers
 I106Status FreeOutputBuffers_AnalogF1(AnalogF1_Attributes *attributes){
 
-    if(attributes->Buffer){
+    if (attributes->Buffer){
         free(attributes->Buffer);
         attributes->Buffer = NULL;
     }
-    if(attributes->BufferError){
+    if (attributes->BufferError){
         free(attributes->BufferError);
         attributes->BufferError = NULL;
     }
@@ -366,11 +360,10 @@ I106Status PrepareNextDecodingRun_AnalogF1(AnalogF1_Message *msg){
     AnalogF1_Attributes *attributes = msg->Attributes;
 
     I106Status status = CreateOutputBuffers_AnalogF1(attributes, msg->Length);
-    if(status != I106_OK)
+    if (status != I106_OK)
         return status;
 
     attributes->PrepareNextDecodingRun = 0;
-    
     attributes->SaveData = 0;
 
     return I106_OK;
@@ -379,7 +372,7 @@ I106Status PrepareNextDecodingRun_AnalogF1(AnalogF1_Message *msg){
 
 // TODO: Implement reading of MSB- or LSB-padded packets
 // Currently only supports packed data
-I106Status DecodeBuffer_AnalogF1(AnalogF1_Message *msg){
+I106Status I106_Decode_NextAnalogF1(AnalogF1_Message *msg){
     //Use these arrays to save on time
     AnalogF1_Attributes  * attributes = msg->Attributes;
     uint32_t               sample_factors[ANALOG_MAX_SUBCHANS];
@@ -426,7 +419,6 @@ I106Status DecodeBuffer_AnalogF1(AnalogF1_Message *msg){
         }
         else {
             if (subchannels > 1){
-                /* int32_t iSimulSamp; */
                 while (msg->BytesRead < msg->Length ){
                     for (int i = 0; i < subchannels; i++){
                         subchannel = msg->Attributes->Subchannels[i];
@@ -443,9 +435,10 @@ I106Status DecodeBuffer_AnalogF1(AnalogF1_Message *msg){
                     return I106_INVALID_DATA;
                 }
 
-                int bytes_written = fwrite(msg->Data + msg->BytesRead, 1,
-                        msg->Length - msg->BytesRead, subchannel->OutputFile);
-                printf("Wrote %i bytes to %s\n", bytes_written, subchannel->OutputFilename);
+                // TODO: why are we writing here?
+                /* int bytes_written = fwrite(msg->Data + msg->BytesRead, 1, */
+                /*         msg->Length - msg->BytesRead, subchannel->OutputFile); */
+                /* printf("Wrote %i bytes to %s\n", bytes_written, subchannel->OutputFilename); */
 
                 msg->BytesRead = msg->Length;
             }
