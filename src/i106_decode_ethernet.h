@@ -8,6 +8,8 @@
 #ifndef _I106_DECODE_ETHERNET_H
 #define _I106_DECODE_ETHERNET_H
 
+#include "irig106ch10.h"
+
 
 /* Macros and definitions */
 

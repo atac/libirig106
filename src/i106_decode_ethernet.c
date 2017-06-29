@@ -19,7 +19,8 @@
 void FillInMessagePointers(EthernetF0_Message *msg);
 
 
-I106Status I106_Decode_FirstEthernetF0(I106C10Header *header, void *buffer, EthernetF0_Message *msg){
+I106Status I106_Decode_FirstEthernetF0(I106C10Header *header, void *buffer,
+        EthernetF0_Message *msg){
 
     // Set pointers to the beginning of the Ethernet buffer
     msg->CSDW = (EthernetF0_CSDW *)buffer;
