@@ -237,7 +237,7 @@ I106Status Set_Attributes_AnalogF1(R_DataSource *r_datasource,
     
     // Get whether data is packed
     if (r_datasource->AnalogDataPacking != NULL)
-        attributes->Packed = (uint32_t) r_datasource->AnalogDataPacking;
+        attributes->Packed = (uint32_t) *r_datasource->AnalogDataPacking;
 
     // Get size of a data sample on this channel
     /* if (r_datasource->AnalogDataLength != NULL) */
