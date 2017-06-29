@@ -8,6 +8,8 @@
 #ifndef _I106_DECODE_INDEX_H
 #define _I106_DECODE_INDEX_H
 
+#include "irig106ch10.h"
+#include "i106_time.h"
 #include "config.h"
 
 // Macros and definitions
