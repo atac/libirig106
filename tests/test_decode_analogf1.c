@@ -32,16 +32,20 @@ TEST(test_analog, TestDecode_FirstAnalogF1){
 
     csdw.Subchannels = 1;
     csdw.Mode = ANALOG_PACKED;
+    csdw.Factor = 8;
+    csdw.Length = 3;
     memcpy(buffer, &csdw, sizeof(AnalogF1_CSDW));
 
     header.DataLength = 32;
 
+    attributes.Packed = 1;
     attributes.ChannelsPerPacket = 1;
     attributes.Subchannels[0] = malloc(sizeof(AnalogF1_Subchannel));
     attributes.Subchannels[0]->CSDW = malloc(sizeof(AnalogF1_CSDW));
     memcpy(attributes.Subchannels[0]->CSDW, &csdw, sizeof(AnalogF1_CSDW));
 
     msg.Attributes = &attributes;
+    msg.Length = 4;
     msg.BytesRead = 0;
 
     status = I106_Decode_FirstAnalogF1(&header, buffer, &msg);
@@ -93,6 +97,8 @@ TEST(test_analog, TestCreateOutputBuffers_AnalogF1){
 
 TEST(test_analog, TestFreeOutputBuffers_AnalogF1){
     AnalogF1_Attributes attributes;
+
+    attributes.BufferError = NULL;
 
     // This is kinda cheating (test should only touch FreeOutputBuffers)
     CreateOutputBuffers_AnalogF1(&attributes, 64);
