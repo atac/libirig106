@@ -167,8 +167,7 @@ I106Status CreateOutputBuffers_AnalogF1(AnalogF1_Attributes *attributes, uint32_
 I106Status FreeOutputBuffers_AnalogF1(AnalogF1_Attributes *attributes);
 
 // Help functions
-I106Status SwapShortWords_AnalogF1(uint16_t *buffer, long bytes);
 I106Status PrintCSDW_AnalogF1(AnalogF1_CSDW *csdw);
 I106Status PrintAttributesfromTMATS_AnalogF1(R_DataSource *r_datasource, AnalogF1_Attributes *attributes, FILE *output_file);
 
-#endif // _I107_DECODE_ANALOGF1_H
+#endif

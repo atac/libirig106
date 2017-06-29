@@ -2,28 +2,27 @@
 
  i106_decode_analogf1.c
  
-Author: Spencer Hatch, Dartmouth College, Hanover, NH, USA
+ Author: Spencer Hatch, Dartmouth College, Hanover, NH, USA
  *STOLEN* from Hans-Gerhard Flohr's i106_decode_analogf1.c
  2014 NOV Initial Version 1.0
 
  ****************************************************************************/
 
 
+#include <assert.h>
+#include <ctype.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/* #include <malloc.h> */
-#include <ctype.h>
-#include <assert.h>
-#include <inttypes.h>
 
 #include "config.h"
-#include "int.h"
-
-#include "irig106ch10.h"
-#include "i106_time.h"
-#include "i106_decode_tmats.h"
 #include "i106_decode_analogf1.h"
+#include "i106_decode_tmats.h"
+#include "i106_time.h"
+#include "int.h"
+#include "util.h"
+#include "irig106ch10.h"
 
 
 /* Function Declaration */
@@ -56,9 +55,11 @@ I106Status I106_Setup_AnalogF1(I106C10Header *header, void *buffer,
     if(msg->CSDW->Mode != ANALOG_PACKED)
         return I106_UNSUPPORTED;
     
-    // Check whether number of subchannels reported by TMATS matches number reported by CSDW
+    // Check whether number of subchannels reported by TMATS matches number
+    // reported by CSDW
     if(attributes->ChannelsPerPacket != msg->CSDW->Subchannels){
-        fprintf(stderr, "TMATS # of subchannels reported does not match CSDW total number of channels!\n");
+        fprintf(stderr, "TMATS # of subchannels reported does not match CSDW \
+total number of channels!\n");
         return I106_INVALID_DATA;
     }
     
@@ -72,9 +73,11 @@ I106Status I106_Setup_AnalogF1(I106C10Header *header, void *buffer,
         attributes->Subchannels[i]->CSDW = malloc(sizeof(AnalogF1_CSDW));
 
         // Open and set name of subchan outfile, allocate subchan buffer
-        sprintf(attributes->Subchannels[i]->OutputFilename, "%s--Analog_Subchan%i.dmpanalog",
+        sprintf(attributes->Subchannels[i]->OutputFilename,
+                "%s--Analog_Subchan%i.dmpanalog",
                 attributes->DataSourceID, i);
-        printf("Opening subchannel output file %s...\n", attributes->Subchannels[i]->OutputFilename);
+        printf("Opening subchannel output file %s...\n",
+                attributes->Subchannels[i]->OutputFilename);
 
         // TODO: NEED TO FREE ALL MALLOC'ed MEM IF THINGS GO AWRY
         if((attributes->Subchannels[i]->OutputFile =
@@ -88,12 +91,14 @@ I106Status I106_Setup_AnalogF1(I106C10Header *header, void *buffer,
         // Copy CSDW into allocated mem for future reference
         // TODO: I have not tested situations where bSame is bFALSE!
         if(msg->CSDW->Same == 0)
-     	    memcpy(attributes->Subchannels[i]->CSDW, &(msg->CSDW[i]), sizeof(AnalogF1_CSDW));
+     	    memcpy(attributes->Subchannels[i]->CSDW, &(msg->CSDW[i]),
+                    sizeof(AnalogF1_CSDW));
         else {
             attributes->Subchannels[i]->CSDW = malloc(sizeof(AnalogF1_CSDW));
 	    
             // Copy CSDW into allocated mem for future reference
-            memcpy(attributes->Subchannels[i]->CSDW, &(msg->CSDW[0]), sizeof(AnalogF1_CSDW));
+            memcpy(attributes->Subchannels[i]->CSDW, &(msg->CSDW[0]),
+                    sizeof(AnalogF1_CSDW));
         }
  
         // Update bytes read outside do loop
@@ -106,7 +111,8 @@ I106Status I106_Setup_AnalogF1(I106C10Header *header, void *buffer,
     };
 
     // Bubble sort pointers to subchannels
-    // This is necessary (for this implementation) in order to comply with the organization of analog data packets as described in Ch.10
+    // This is necessary (for this implementation) in order to comply with the
+    // organization of analog data packets as described in Ch.10
     for (int i = 0; i < msg->CSDW->Subchannels; i++){
         AnalogF1_Subchannel *swap;
 
@@ -126,7 +132,8 @@ I106Status I106_Setup_AnalogF1(I106C10Header *header, void *buffer,
 }
 
 
-I106Status I106_Decode_FirstAnalogF1(I106C10Header *header, void *buffer, AnalogF1_Message *msg){
+I106Status I106_Decode_FirstAnalogF1(I106C10Header *header, void *buffer,
+        AnalogF1_Message *msg){
     int                    subchannel;
     uint32_t               subpacket_length;
     uint32_t               remainder;
@@ -153,9 +160,11 @@ I106Status I106_Decode_FirstAnalogF1(I106C10Header *header, void *buffer, Analog
         return I106_UNSUPPORTED;
     }    
 
-    // Check whether number of subchannels reported by TMATS matches number reported by CSDW
+    // Check whether number of subchannels reported by TMATS matches number
+    // reported by CSDW
     if(attributes->ChannelsPerPacket != msg->CSDW->Subchannels){
-        fprintf(stderr, "TMATS # of subchannels reported does not match CSDW total number of channels!\n");
+        fprintf(stderr, "TMATS # of subchannels reported does not match CSDW \
+total number of channels!\n");
         return I106_INVALID_DATA;
     }
 
@@ -164,9 +173,12 @@ I106Status I106_Decode_FirstAnalogF1(I106C10Header *header, void *buffer, Analog
         // TODO: I have not tested situations where bSame is bFALSE!
         if((attributes->Subchannels[i]->CSDW->Mode != msg->CSDW[i].Mode)
                 || (attributes->Subchannels[i]->CSDW->Length != msg->CSDW[i].Length )
-                || (attributes->Subchannels[i]->CSDW->Subchannels != msg->CSDW[i].Subchannels )){
-            fprintf(stderr, "ERROR for subchannel %i on analog channel %s: Current CSDW does not match initial CSDW\n",
-                    attributes->Subchannels[i]->CSDW->Subchannel, attributes->DataSourceID);
+                || (attributes->Subchannels[i]->CSDW->Subchannels !=
+                    msg->CSDW[i].Subchannels )){
+            fprintf(stderr, "ERROR for subchannel %i on analog channel %s: \
+Current CSDW does not match initial CSDW\n",
+                    attributes->Subchannels[i]->CSDW->Subchannel,
+                    attributes->DataSourceID);
             return I106_INVALID_DATA;
         }
     };
@@ -199,7 +211,8 @@ I106Status I106_Decode_FirstAnalogF1(I106C10Header *header, void *buffer, Analog
 
 // Fill the attributes from TMATS 
 // TODO: implement needed attributes parsing in TMATS module
-I106Status Set_Attributes_AnalogF1(R_DataSource *r_datasource, AnalogF1_Attributes *attributes){
+I106Status Set_Attributes_AnalogF1(R_DataSource *r_datasource,
+        AnalogF1_Attributes *attributes){
     uint32_t  bit_count;
 
     if (attributes == NULL)
@@ -216,11 +229,11 @@ I106Status Set_Attributes_AnalogF1(R_DataSource *r_datasource, AnalogF1_Attribut
 
     // Get number of chans per packet
     if (r_datasource->AnalogChannelsPerPacket != NULL)
-      attributes->ChannelsPerPacket = atoi(r_datasource->AnalogChannelsPerPacket);
+        attributes->ChannelsPerPacket = atoi(r_datasource->AnalogChannelsPerPacket);
 
     // Get sample rate
     if (r_datasource->AnalogSampleRate != NULL)
-       attributes->SampleRate = strtoull(r_datasource->AnalogSampleRate, NULL, 10);
+        attributes->SampleRate = strtoull(r_datasource->AnalogSampleRate, NULL, 10);
     
     // Get whether data is packed
     if (r_datasource->AnalogDataPacking != NULL)
@@ -323,7 +336,9 @@ I106Status Set_Attributes_AnalogF1(R_DataSource *r_datasource, AnalogF1_Attribut
 
 
 // Create the output buffers (data and error flags)
-I106Status CreateOutputBuffers_AnalogF1(AnalogF1_Attributes *attributes, uint32_t data_length){
+I106Status CreateOutputBuffers_AnalogF1(AnalogF1_Attributes *attributes,
+        uint32_t data_length){
+
     // Allocate the Analog output buffer
     attributes->BufferSize = data_length;
     attributes->Buffer = (uint8_t *)calloc(sizeof(uint8_t), data_length);
@@ -339,7 +354,6 @@ I106Status CreateOutputBuffers_AnalogF1(AnalogF1_Attributes *attributes, uint32_
 
 // Free the output buffers
 I106Status FreeOutputBuffers_AnalogF1(AnalogF1_Attributes *attributes){
-
     if (attributes->Buffer){
         free(attributes->Buffer);
         attributes->Buffer = NULL;
@@ -387,8 +401,9 @@ I106Status I106_Decode_NextAnalogF1(AnalogF1_Message *msg){
         if (msg->CSDW->Same == 0){
         
             // Calculate all factors for each channel (done here for speed)
-            // Also get max number of simultaneous samples (See pp 56-57 in IRIG-106 Ch10 June 2013 rev.)
-            // Also ensure all sample sizes an integer factor of 8
+            // Also get max number of simultaneous samples (See pp 56-57 in
+            // IRIG-106 Ch10 June 2013 rev.) Also ensure all sample sizes an
+            // integer factor of 8
             for (int i = 0; i < subchannels; i++){
                 subchannel = msg->Attributes->Subchannels[i];
                 sample_factors[i] = 0;
@@ -430,8 +445,10 @@ I106Status I106_Decode_NextAnalogF1(AnalogF1_Message *msg){
             else {
                 subchannel = msg->Attributes->Subchannels[0];
                 // Code to write all data to sampbuff
-                if (((msg->Length - msg->BytesRead ) % (subchannel->CSDW->Length / 8)) != 0 ){
-                    printf("What the !?!? Remaining databuff doesn't allow for clean copy!!!!\n");
+                if (((msg->Length - msg->BytesRead ) %
+                            (subchannel->CSDW->Length / 8)) != 0 ){
+
+                    printf("Remaining databuff doesn't allow for clean copy!\n");
                     return I106_INVALID_DATA;
                 }
 
@@ -446,52 +463,14 @@ I106Status I106_Decode_NextAnalogF1(AnalogF1_Message *msg){
     
     }
     else {
-        fprintf(stderr, "Unpacked analog data is currently unsupported!\nEnding...\n");
+        fprintf(stderr,
+                "Unpacked analog data is currently unsupported!\nEnding...\n");
         return I106_UNSUPPORTED;
     }
 
     return I106_NO_MORE_DATA;
 }
 
-
-// Swaps "bytes" bytes in place
-I106Status SwapBytes_AnalogF1(uint8_t *buffer, long bytes){
-    uint32_t  data = 0x03020100;
-    uint8_t   tmp;
-
-    if (bytes & 1)
-        return I106_BUFFER_OVERRUN;
-
-    while((bytes -= 2) >= 0){
-        tmp = *buffer;
-        *buffer = *(buffer + 1);
-        *++buffer = tmp;
-        buffer++;
-    }
-    SwapShortWords_AnalogF1((uint16_t *)&data, 4);
-
-    return I106_OK;
-}
-
-
-// Swaps "bytes" bytes of 16 bit words in place
-I106Status SwapShortWords_AnalogF1(uint16_t *buffer, long bytes){
-    long      counter = bytes;
-    uint16_t  tmp;
-
-    if (bytes & 3)
-        return I106_BUFFER_OVERRUN;
-
-    counter >>= 1;
-    while((counter -= 2) >= 0){
-        tmp = *buffer;
-        *buffer = *(buffer + 1);
-        *++buffer = tmp;
-        buffer++;
-    }
-
-    return I106_OK;
-}
 
 I106Status PrintCSDW_AnalogF1(AnalogF1_CSDW *csdw){
     printf("Subchannel number:\t\t %" PRIu32 "\n", csdw->Subchannel);
@@ -506,8 +485,10 @@ I106Status PrintCSDW_AnalogF1(AnalogF1_CSDW *csdw){
 
 
 // TODO: implement missing TMATS attributes and re-enable
-I106Status PrintAttributesfromTMATS_AnalogF1(R_DataSource *r_datasource, AnalogF1_Attributes *attributes, FILE *output){
-    if ((r_datasource == NULL)  || (attributes == NULL))
+I106Status PrintAttributesfromTMATS_AnalogF1(R_DataSource *r_datasource,
+        AnalogF1_Attributes *attributes, FILE *output){
+
+    if ((r_datasource == NULL) || (attributes == NULL))
         return I106_INVALID_PARAMETER;
 
     printf("\n");

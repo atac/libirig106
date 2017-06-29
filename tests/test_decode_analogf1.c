@@ -10,10 +10,8 @@
 TEST_GROUP_RUNNER(test_analog){
     RUN_TEST_CASE(test_analog, TestDecode_FirstAnalogF1);
     RUN_TEST_CASE(test_analog, TestDecode_NextAnalogF1);
-    /* RUN_TEST_CASE(test_analog, TestSet_Attributes_AnalogF1); */
     RUN_TEST_CASE(test_analog, TestCreateOutputBuffers_AnalogF1);
-    /* RUN_TEST_CASE(test_analog, TestFreeOutputBuffers_AnalogF1); */
-    /* RUN_TEST_CASE(test_analog, TestSwapShortWords_AnalogF1); */
+    RUN_TEST_CASE(test_analog, TestFreeOutputBuffers_AnalogF1);
     /* RUN_TEST_CASE(test_analog, TestPrintCSDW_AnalogF1); */
     /* RUN_TEST_CASE(test_analog, TestPrintAttributesfromTMATS_AnalogF1); */
 }
@@ -55,14 +53,6 @@ TEST(test_analog, TestDecode_FirstAnalogF1){
 }
 
 
-TEST(test_analog, TestCreateOutputBuffers_AnalogF1){
-    AnalogF1_Attributes attributes;
-    uint32_t data_length = 64;
-
-    TEST_ASSERT_EQUAL(I106_OK, CreateOutputBuffers_AnalogF1(&attributes, data_length));
-}
-
-
 TEST(test_analog, TestDecode_NextAnalogF1){
     AnalogF1_Message msg;
     AnalogF1_CSDW csdw;
@@ -90,4 +80,22 @@ TEST(test_analog, TestDecode_NextAnalogF1){
 
     free(attributes.Subchannels[0]);
     free(attributes.Subchannels[1]);
+}
+
+
+TEST(test_analog, TestCreateOutputBuffers_AnalogF1){
+    AnalogF1_Attributes attributes;
+    uint32_t data_length = 64;
+
+    TEST_ASSERT_EQUAL(I106_OK, CreateOutputBuffers_AnalogF1(&attributes, data_length));
+}
+
+
+TEST(test_analog, TestFreeOutputBuffers_AnalogF1){
+    AnalogF1_Attributes attributes;
+
+    // This is kinda cheating (test should only touch FreeOutputBuffers)
+    CreateOutputBuffers_AnalogF1(&attributes, 64);
+
+    TEST_ASSERT_EQUAL(I106_OK, FreeOutputBuffers_AnalogF1(&attributes));
 }

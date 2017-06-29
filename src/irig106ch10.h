@@ -8,6 +8,7 @@
 #define _irig106ch10_h_
 
 #include "config.h"
+#include "int.h"
 
 
 /* Macros and definitions */
