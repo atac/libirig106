@@ -15,7 +15,9 @@
 /* Function Declaration */
 
 
-I106Status I106_Decode_FirstArinc429F0(I106C10Header *header, void * buffer, Arinc429F0_Message * msg){
+I106Status I106_Decode_FirstArinc429F0(I106C10Header *header, void * buffer,
+        Arinc429F0_Message * msg){
+
     // Save pointer to channel specific data
     msg->CSDW = (Arinc429F0_CSDW *)buffer;
 
