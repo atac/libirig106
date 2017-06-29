@@ -8,6 +8,9 @@
 #ifndef _I106_DECODE_CAN_H
 #define _I106_DECODE_CAN_H
 
+#include "irig106ch10.h"
+#include "i106_time.h"
+
 
 /* Data structures */
 
@@ -18,7 +21,7 @@
 
 // Channel specific data word
 typedef struct {
-    uint32_t    Counter        : 16;
+    uint32_t    Count          : 16;
     uint32_t    Reserved       : 16;
 } PACKED CAN_CSDW;
 
@@ -61,6 +64,6 @@ typedef struct {
 
 /* Function Declaration */
 I106Status I106_Decode_FirstCAN(I106C10Header *header, void *buffer, CAN_Message *msg);
-I106Status I106_Decode_NextCan(CAN_Message *msg);
+I106Status I106_Decode_NextCAN(CAN_Message *msg);
 
 #endif

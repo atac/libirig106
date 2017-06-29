@@ -22,7 +22,8 @@
 static void FillInMessagePointers(CAN_Message *msg);
 
 
-I106Status I106_Decode_FirstCAN(I106C10Header *header, void * buffer, CAN_Message *msg){
+I106Status I106_Decode_FirstCAN(I106C10Header *header, void * buffer,
+        CAN_Message *msg){
 
     msg->BytesRead = 0;
 
@@ -35,7 +36,7 @@ I106Status I106_Decode_FirstCAN(I106C10Header *header, void * buffer, CAN_Messag
 
     // Check for no messages
     msg->MessageNumber = 0;
-    if (msg->CSDW->Counter == 0)
+    if (msg->CSDW->Count == 0)
         return I106_NO_MORE_DATA;
 
     // Get the other pointers
@@ -51,7 +52,7 @@ I106Status I106_Decode_NextCAN(CAN_Message *msg){
 
     // Check for no more messages
     msg->MessageNumber++;
-    if (msg->MessageNumber >= msg->CSDW->Counter)
+    if (msg->MessageNumber >= msg->CSDW->Count)
         return I106_NO_MORE_DATA;
 
     // Check for packet overrun
