@@ -51,6 +51,7 @@ TEST(test_decode_pcm, TestDecode_NextPCM){
     msg.Header = &header;
     msg.SubPacketLength = 12;
     msg.CSDW = &csdw;
+    msg.BytesRead = 0;
     msg.Length = 32;
 
     TEST_ASSERT_EQUAL(I106_OK, I106_Decode_NextPCMF1(&msg));
@@ -78,6 +79,10 @@ TEST(test_decode_pcm, TestSet_Attributes_PCMF1){
     p_record.ParityTransferOrder = NULL;
     p_record.NumberMinorFrames = NULL;
     p_record.WordsInMinorFrame = NULL;
+    p_record.BitsPerSecond = NULL;
+    p_record.CommonWordLength = NULL;
+    p_record.WordTransferOrder = NULL;
+    p_record.ParityType = NULL;
     p_record.WordsInMinorFrame = NULL;
     p_record.BitsInMinorFrame = NULL;
     p_record.MinorFrameSyncType = NULL;
