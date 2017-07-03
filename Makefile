@@ -30,6 +30,7 @@ CFLAGS += -D_LARGEFILE64_SOURCE
 CFLAGS += -ggdb
 CFLAGS += -fpack-struct=1
 CFLAGS += -fPIC
+CFLAGS += -std=c99
 CFLAGS += -Wno-address-of-packed-member
 
 UNITY_ROOT=tests/unity
@@ -90,3 +91,7 @@ $(TEST_RUNNER): $(OBJ_DIR)/all_tests.o $(TEST_OBJ) $(UNITY_OBJ) $(OBJECTS)
 
 test: mkdirs $(TEST_RUNNER)
 	./$(TEST_RUNNER)
+
+# Runs tests within docker using the Dockerfile.
+docker:
+	docker build . --no-cache
