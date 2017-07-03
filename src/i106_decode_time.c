@@ -16,6 +16,7 @@
 #endif
 
 #include "int.h"
+#include "config.h"
 
 #include "irig106ch10.h"
 #include "i106_time.h"

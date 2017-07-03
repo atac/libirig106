@@ -7,6 +7,9 @@
 #ifndef _I106_DECODE_TIME_H
 #define _I106_DECODE_TIME_H
 
+#include "i106_time.h"
+#include "irig106ch10.h"
+
 
 /* Macros and definitions */
 
