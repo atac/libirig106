@@ -32,14 +32,24 @@ TEST(test_decode_pcm, TestDecode_FirstPCM){
     csdw.Throughput = 1;
     memcpy(buffer, &csdw, sizeof(PCMF1_CSDW));
 
+    attributes.BitPosition = 0;
     attributes.BitsInMinorFrame = 16;
+    attributes.Buffer = malloc(32);
+    attributes.CommonWordLength = 2;
+    attributes.DataWordBitCount = 1;
+    attributes.MinorFrameWordCount = 1;
+    attributes.SaveData = 0;
+    attributes.WordsInMinorFrame = 3;
+
     header.DataLength = 32;
+    msg.SubPacketBits = 3;
     msg.Attributes = &attributes;
 
     TEST_ASSERT_EQUAL(I106_NO_MORE_DATA, I106_Decode_FirstPCMF1(&header,
                 buffer, &msg));
 
     free(buffer);
+    free(attributes.Buffer);
 }
 
 
@@ -60,6 +70,12 @@ TEST(test_decode_pcm, TestDecode_NextPCM){
 
 TEST(test_decode_pcm, TestDecodeMinorFrame_PCMF1){
     PCMF1_Message msg;
+    PCMF1_Attributes attributes;
+
+    msg.Attributes = &attributes;
+
+    attributes.BitPosition = 0;
+    msg.SubPacketBits = 3;
 
     TEST_ASSERT_EQUAL(I106_NO_MORE_DATA, DecodeMinorFrame_PCMF1(&msg));
 }
