@@ -76,20 +76,19 @@ TEST(test_decode_pcm, TestSet_Attributes_PCMF1){
     TEST_ASSERT_EQUAL(I106_INVALID_PARAMETER, Set_Attributes_PCMF1(&r_datasource, NULL));
 
     r_datasource.P_Record = &p_record;
-    p_record.ParityTransferOrder = NULL;
-    p_record.NumberMinorFrames = NULL;
-    p_record.WordsInMinorFrame = NULL;
-    p_record.BitsPerSecond = NULL;
-    p_record.CommonWordLength = NULL;
-    p_record.WordTransferOrder = NULL;
-    p_record.ParityType = NULL;
-    p_record.WordsInMinorFrame = NULL;
     p_record.BitsInMinorFrame = NULL;
-    p_record.MinorFrameSyncType = NULL;
-    p_record.MinorFrameSyncPatternLength = NULL;
+    p_record.BitsPerSecond = NULL;
+    p_record.CommonWordLength = "0";
     p_record.InSyncCritical = NULL;
-    p_record.MinorFrameSyncPattern = "1234";
-    p_record.MinorFrameSyncPatternLength = "2"; 
+    p_record.MinorFrameSyncPattern = "1010";
+    p_record.MinorFrameSyncPatternLength = "4"; 
+    p_record.MinorFrameSyncPatternLength = NULL;
+    p_record.MinorFrameSyncType = NULL;
+    p_record.NumberMinorFrames = NULL;
+    p_record.ParityTransferOrder = NULL;
+    p_record.ParityType = NULL;
+    p_record.WordTransferOrder = NULL;
+    p_record.WordsInMinorFrame = NULL;
     TEST_ASSERT_EQUAL(I106_OK, Set_Attributes_PCMF1(&r_datasource, &attributes));
 }
 
