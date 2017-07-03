@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_pcmf1.c -
+ i106_decode_pcmf1.c
  Author: Hans-Gerhard Flohr, Hasotec GmbH, www.hasotec.de
  2014/04/07 Initial Version 1.0
  2014/04/23 Version 1.1 
@@ -52,12 +52,13 @@ void RenewSyncCounters_PCMF1(PCMF1_Attributes *attributes, uint64_t sync_count);
 // Note; This code is tested only with Pcm in throughput mode
 
 
-I106Status I106_Decode_FirstPCMF1(I106C10Header *header, void *buffer, PCMF1_Message *msg){
+I106Status I106_Decode_FirstPCMF1(I106C10Header *header, void *buffer,
+        PCMF1_Message *msg){
     uint32_t subpacket_length;
     uint32_t remainder;
 
     // Check for attributes available
-    if(msg->Attributes == NULL)
+    if (msg->Attributes == NULL)
         return I106_UNSUPPORTED;
 
     // Set pointers to the beginning of the Pcm buffer
@@ -76,10 +77,8 @@ I106Status I106_Decode_FirstPCMF1(I106C10Header *header, void *buffer, PCMF1_Mes
     TimeArray2LLInt(header->RTC, &(msg->IPTS_Base));
 
     // Some precalculations inclusive time
-    if(msg->CSDW->Throughput)
-    {
+    if (msg->CSDW->Throughput){
         // Throughput mode, no intra packet header present
-        // -----------------------------------------------
         msg->IPH = NULL;
 
         // Take the whole remaining data buffer as packet len
@@ -103,7 +102,7 @@ I106Status I106_Decode_FirstPCMF1(I106C10Header *header, void *buffer, PCMF1_Mes
         subpacket_length = msg->Attributes->BitsInMinorFrame;
         
         // 16 bit alignement
-        if(!msg->CSDW->Alignment){
+        if (!msg->CSDW->Alignment){
             remainder = subpacket_length & 0xf; // %16
             subpacket_length >>= 4; // /= 16;
 
@@ -117,7 +116,7 @@ I106Status I106_Decode_FirstPCMF1(I106C10Header *header, void *buffer, PCMF1_Mes
             remainder = subpacket_length & 0x1f; // % 32
             subpacket_length >>= 5; // / 32
 
-            if(remainder)
+            if (remainder)
                 subpacket_length += 1;
             subpacket_length <<= 2; // * 4
         }
@@ -130,10 +129,11 @@ I106Status I106_Decode_FirstPCMF1(I106C10Header *header, void *buffer, PCMF1_Mes
 
     }
 
+
     // We continue with the throughput mode
 
     // Check for the amount of the remaining data including the length of the data
-    if(msg->Length < msg->BytesRead + msg->SubPacketLength)
+    if (msg->Length < msg->BytesRead + msg->SubPacketLength)
         return I106_NO_MORE_DATA;
 
     // Set the pointer to the Pcm message data
@@ -145,44 +145,39 @@ I106Status I106_Decode_FirstPCMF1(I106C10Header *header, void *buffer, PCMF1_Mes
     msg->SubPacketBits = msg->SubPacketLength * 8;
 
     // Prepare the Pcm buffers and load the first bits
-    if(msg->Attributes->PrepareNextDecodingRun){
+    if (msg->Attributes->PrepareNextDecodingRun){
 
         // Set up the data
         I106Status status = PrepareNextDecodingRun_PCMF1(msg);
-        if(status != I106_OK)
+        if (status != I106_OK)
             return status;
     }
 
     // Intra-packet not tested, so return
-    if(!msg->CSDW->Throughput)
+    if (!msg->CSDW->Throughput)
         return I106_UNSUPPORTED;
 
-    if(msg->CSDW->Throughput){
+    if (!msg->Attributes->DontSwapRawData){
+        if (SwapBytes_PCMF1(msg->Data, msg->SubPacketLength))
+            return I106_INVALID_DATA;
 
-        if(!msg->Attributes->DontSwapRawData){
-            if(SwapBytes_PCMF1(msg->Data, msg->SubPacketLength))
-                return I106_INVALID_DATA;
-
-            // Note: Untested 
-            if(msg->CSDW->Alignment){
-                if(SwapShortWords_PCMF1((uint16_t *)msg->Data, msg->SubPacketLength))
-                return I106_INVALID_DATA; 
-            }
+        // Note: Untested 
+        if (msg->CSDW->Alignment){
+            if(SwapShortWords_PCMF1((uint16_t *)msg->Data, msg->SubPacketLength))
+            return I106_INVALID_DATA; 
         }
-
-        // Now start the decode of this buffer
-        msg->Attributes->BitPosition = 0;
-
-        return DecodeMinorFrame_PCMF1(msg);
     }
 
-    return I106_OK;
+    // Now start the decode of this buffer
+    msg->Attributes->BitPosition = 0;
+
+    return DecodeMinorFrame_PCMF1(msg);
 }
 
 
 I106Status I106_Decode_NextPCMF1(PCMF1_Message *msg){
 
-    if(msg->CSDW->Throughput)
+    if (msg->CSDW->Throughput)
         return DecodeMinorFrame_PCMF1(msg);
 
     // Check for no (more) data
@@ -205,16 +200,16 @@ I106Status I106_Decode_NextPCMF1(PCMF1_Message *msg){
     // and publish it   
     msg->IPTS = msg->Time.RTC;
 
-  // Check for no more data (including the length of the minor frame)
-  if(msg->Length < msg->BytesRead + msg->SubPacketLength)
-      return I106_NO_MORE_DATA;
-        
-  // Set the pointer to the Pcm message data
-  msg->Data = (uint8_t *)((char *)(msg->CSDW) + msg->BytesRead);
+    // Check for no more data (including the length of the minor frame)
+    if (msg->Length < msg->BytesRead + msg->SubPacketLength)
+        return I106_NO_MORE_DATA;
 
-  msg->BytesRead += msg->SubPacketLength;
+    // Set the pointer to the Pcm message data
+    msg->Data = (uint8_t *)((char *)(msg->CSDW) + msg->BytesRead);
 
-  return I106_OK;
+    msg->BytesRead += msg->SubPacketLength;
+
+    return I106_OK;
 }
 
 
@@ -223,13 +218,13 @@ I106Status I106_Decode_NextPCMF1(PCMF1_Message *msg){
 I106Status Set_Attributes_PCMF1(R_DataSource *r_datasource, PCMF1_Attributes *attributes){
     P_Record          * p_record;
 
-    if(attributes == NULL)
+    if (attributes == NULL)
         return I106_INVALID_PARAMETER;
 
     memset(attributes, 0, sizeof(PCMF1_Attributes));
     p_record = r_datasource->P_Record;
 
-    if(p_record == NULL)
+    if (p_record == NULL)
         return I106_INVALID_PARAMETER;
 
     // Collect the TMATS values
@@ -260,26 +255,26 @@ I106Status Set_Attributes_PCMF1(R_DataSource *r_datasource, PCMF1_Attributes *at
 
     attributes->RecordNumber = p_record->RecordNumber; // P-x
 
-    if(p_record->BitsPerSecond != NULL)
+    if (p_record->BitsPerSecond != NULL)
         attributes->BitsPerSecond = atol(p_record->BitsPerSecond); // P-x\D2
-    if(p_record->CommonWordLength != NULL)
+    if (p_record->CommonWordLength != NULL)
         attributes->CommonWordLength = atol(p_record->CommonWordLength); // P-x\F1
     
     // P-x\F2 most significant bit "M", least significant bit "L". default: M
-    if(p_record->WordTransferOrder != NULL){
+    if (p_record->WordTransferOrder != NULL){
         /*
         Measurement Transfer Order. Which bit is being transferred first is specified as Most Significant Bit (M), 
         Least Significant Bit (L), or Default (D). The default is specified in the P-Group - (P-x\F2:M).
         D-1\MN3-1-1:M;
         */
-        if(p_record->WordTransferOrder[0] == 'L'){
+        if (p_record->WordTransferOrder[0] == 'L'){
             attributes->WordTransferOrder = PCM_LSB_FIRST;
             return I106_UNSUPPORTED;
         }
     }
     
     // P-x/F3
-    if(p_record->ParityType != NULL){
+    if (p_record->ParityType != NULL){
         //even "EV", odd "OD", or none "NO", default: none
         if (strncasecmp(p_record->ParityType, "EV", 2) == 0) 
             attributes->ParityType = PCM_PARITY_EVEN;
@@ -289,37 +284,37 @@ I106Status Set_Attributes_PCMF1(R_DataSource *r_datasource, PCMF1_Attributes *at
             attributes->ParityType = PCM_PARITY_NONE;
     }
 
-    if(p_record->ParityTransferOrder != NULL){
+    if (p_record->ParityTransferOrder != NULL){
         if (strncasecmp(p_record->ParityType, "L", 1) == 0)    // P-x/F4
             attributes->ParityTransferOrder = 1;
         else
             attributes->ParityTransferOrder = 0;
     }
-    if(p_record->NumberMinorFrames != NULL)
+    if (p_record->NumberMinorFrames != NULL)
         attributes->MinorFrames = atol(p_record->NumberMinorFrames); // P-x\MF\N
 
-    if(p_record->WordsInMinorFrame != NULL)
+    if (p_record->WordsInMinorFrame != NULL)
         attributes->WordsInMinorFrame = atol(p_record->WordsInMinorFrame); // P-x\MF1
 
-    if(p_record->BitsInMinorFrame != NULL)
+    if (p_record->BitsInMinorFrame != NULL)
         attributes->BitsInMinorFrame = atol(p_record->BitsInMinorFrame); // P-x\MF2
 
-    if(p_record->MinorFrameSyncType != NULL){
+    if (p_record->MinorFrameSyncType != NULL){
         // if not "FPT" : Error
         if (strncasecmp(p_record->MinorFrameSyncType, "FPT", 3) != 0) // P-x\MF3
             return I106_UNSUPPORTED;
         attributes->MinorFrameSyncType = 0;
     }
 
-    if(p_record->MinorFrameSyncPatternLength != NULL)
+    if (p_record->MinorFrameSyncPatternLength != NULL)
         attributes->MinorFrameSyncPatternLength = atol(p_record->MinorFrameSyncPatternLength); // P-x\MF4
 
     // to declare that the system is in sync – First good sync (0), Check (1 or greater), or Not specified (NS).
-    if(p_record->InSyncCritical != NULL)
+    if (p_record->InSyncCritical != NULL)
         attributes->MinSyncs = 0; // Minimal number of syncs P-x\SYNC1;
-    
+
     // P-x\MF5
-    if(p_record->MinorFrameSyncPattern != NULL){
+    if (p_record->MinorFrameSyncPattern != NULL){
         uint64_t sync_pattern = 0;
         uint64_t sync_mask = 0;
         uint32_t minor_frame_sync_length = 0;
@@ -329,11 +324,11 @@ I106Status Set_Attributes_PCMF1(R_DataSource *r_datasource, PCMF1_Attributes *at
         //pChar = xx;
             
         // Skip leading blanks
-        while(*pattern == ' ')
+        while (*pattern == ' ')
             pattern++;
 
         // Transfer the sync bits
-        while((*pattern == '0') || (*pattern == '1')){
+        while ((*pattern == '0') || (*pattern == '1')){
             minor_frame_sync_length++;
             sync_mask <<= 1;
             sync_mask |= 1;
@@ -345,16 +340,16 @@ I106Status Set_Attributes_PCMF1(R_DataSource *r_datasource, PCMF1_Attributes *at
         }
         attributes->MinorFrameSyncPattern = sync_pattern;
         attributes->MinorFrameSyncMask = sync_mask;
-        if(attributes->MinorFrameSyncPatternLength == 0)
+        if (attributes->MinorFrameSyncPatternLength == 0)
             attributes->MinorFrameSyncPatternLength = minor_frame_sync_length;
     }
         
     // Some post processing
-    if(attributes->BitsInMinorFrame == 0){
+    if (attributes->BitsInMinorFrame == 0){
         attributes->BitsInMinorFrame = attributes->CommonWordLength * (attributes->WordsInMinorFrame - 1)
             + attributes->MinorFrameSyncPatternLength;
     }
-    for(uint32_t i = 0; i < attributes->CommonWordLength; i++){
+    for (uint32_t i = 0; i < attributes->CommonWordLength; i++){
         attributes->CommonWordMask <<= 1;
         attributes->CommonWordMask |= 1;
     }
@@ -369,7 +364,8 @@ I106Status Set_Attributes_PCMF1(R_DataSource *r_datasource, PCMF1_Attributes *at
 
 // Fill the attributes from an external source
 // Replace the correspondent TMATS values, if the argument value is >= 0
-I106Status Set_Attributes_Ext_PCMF1(R_DataSource *r_datasource, PCMF1_Attributes *attributes,
+I106Status Set_Attributes_Ext_PCMF1(R_DataSource *r_datasource,
+        PCMF1_Attributes *attributes,
         int32_t record_number,             // P-x
         int32_t bits_per_second,           // P-x\D2
         int32_t common_word_length,        // P-x\F1
@@ -434,7 +430,7 @@ I106Status Set_Attributes_Ext_PCMF1(R_DataSource *r_datasource, PCMF1_Attributes
     attributes->Delta100NanoSeconds = d100NANOSECONDS / attributes->BitsPerSecond;
     attributes->PrepareNextDecodingRun = 1;
 
-  return I106_OK;
+    return I106_OK;
 }
 
 
@@ -444,12 +440,11 @@ I106Status CreateOutputBuffers_PCMF1(PCMF1_Attributes *attributes){
     // Allocate the Pcm output buffer for a minor frame
     attributes->BufferSize = attributes->WordsInMinorFrame;
     attributes->Buffer = (uint64_t *)calloc(sizeof(uint64_t), attributes->BufferSize);
-    if(attributes->Buffer == NULL)
+    if (attributes->Buffer == NULL)
         return I106_BUFFER_TOO_SMALL;
     
     attributes->BufferError = (uint8_t *)calloc(sizeof(uint8_t), attributes->BufferSize);
-    if(attributes->BufferError == NULL)
-    {
+    if (attributes->BufferError == NULL){
         free(attributes->Buffer);
         attributes->Buffer = NULL;
         return I106_BUFFER_TOO_SMALL;
@@ -462,12 +457,11 @@ I106Status CreateOutputBuffers_PCMF1(PCMF1_Attributes *attributes){
 // Free the output buffers for a minor frame
 I106Status FreeOutputBuffers_PCMF1(PCMF1_Attributes *attributes){
 
-    if(attributes->Buffer){
+    if (attributes->Buffer){
         free(attributes->Buffer);
         attributes->Buffer = NULL;
     }
-    if(attributes->BufferError)
-    {
+    if (attributes->BufferError){
         free(attributes->BufferError);
         attributes->BufferError = NULL;
     }
@@ -512,20 +506,20 @@ I106Status PrepareNextDecodingRun_PCMF1(PCMF1_Message *msg){
 I106Status DecodeMinorFrame_PCMF1(PCMF1_Message *msg){
     PCMF1_Attributes * attributes = msg->Attributes;
 
-    while(attributes->BitPosition < msg->SubPacketBits){
+    while (attributes->BitPosition < msg->SubPacketBits){
 
         GetNextBit_PCMF1(msg, attributes);
 
         // Check for a sync word
 
-        if(IsSyncWordFound_PCMF1(attributes)){   
+        if (IsSyncWordFound_PCMF1(attributes)){   
             // Prevent an overflow after a terabyte of bits
-            if(attributes->BitsLoaded > 1000000000000)
+            if (attributes->BitsLoaded > 1000000000000)
                 attributes->BitsLoaded = 1000000000;
 
             attributes->SyncCount++;
 
-            if(attributes->MinorFrameBitCount == attributes->BitsInMinorFrame){
+            if (attributes->MinorFrameBitCount == attributes->BitsInMinorFrame){
                 // A sync word found at the correct offset to the previous one
 
                 RenewSyncCounters_PCMF1(attributes, attributes->SyncCount); // with the current sync counter
@@ -564,9 +558,9 @@ I106Status DecodeMinorFrame_PCMF1(PCMF1_Message *msg){
 
         // Collect the data
 
-        if(attributes->SaveData == 1){
+        if (attributes->SaveData == 1){
             attributes->DataWordBitCount++;
-            if(attributes->DataWordBitCount >= attributes->CommonWordLength){
+            if (attributes->DataWordBitCount >= attributes->CommonWordLength){
                 attributes->Buffer[attributes->MinorFrameWordCount - 1] = attributes->TestWord;
                 attributes->DataWordBitCount = 0;
                 attributes->MinorFrameWordCount++;
@@ -574,7 +568,7 @@ I106Status DecodeMinorFrame_PCMF1(PCMF1_Message *msg){
         }
 
         // Don't release the data here but wait for a trailing sync word. 
-        if(attributes->MinorFrameWordCount >= attributes->WordsInMinorFrame)
+        if (attributes->MinorFrameWordCount >= attributes->WordsInMinorFrame)
             attributes->SaveData = 2;
 
     }
@@ -582,7 +576,7 @@ I106Status DecodeMinorFrame_PCMF1(PCMF1_Message *msg){
     // Preset for the next run
     attributes->BitPosition = 0;
 
-  return I106_NO_MORE_DATA;
+    return I106_NO_MORE_DATA;
 }
 
 
@@ -622,7 +616,8 @@ void RenewSyncCounters_PCMF1(PCMF1_Attributes *attributes, uint64_t sync_count){
 
 
 // Returns I106_OK on success, I106_INVALID_DATA on error
-I106Status CheckParity_PCMF1(uint64_t test_word, int word_length, int parity_type, int parity_transfer_order){
+I106Status CheckParity_PCMF1(uint64_t test_word, int word_length, int parity_type,
+        int parity_transfer_order){
     uint64_t test_bit    = 1;
     unsigned int bit_sum = 0;
 

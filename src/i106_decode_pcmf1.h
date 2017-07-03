@@ -13,6 +13,10 @@
 #ifndef _I106_DECODE_PCMF1_H
 #define _I106_DECODE_PCMF1_H
 
+#include "irig106ch10.h"
+#include "i106_decode_tmats.h"
+#include "i106_time.h"
+
 
 /* Macros and definitions */
 
