@@ -161,7 +161,8 @@ I106Status I106_Decode_TimeF1(I106C10Header  *header, void *raw_buffer, I106Time
 }
 
 
-void I106_Decode_TimeF1_Buffer(int date_format, int leap_year, void *buffer, I106Time *time){
+void I106_Decode_TimeF1_Buffer(int date_format, int leap_year, void *buffer,
+        I106Time *time){
     struct tm                tm_time;
     Time_MessageDMYFormat  * time_dmy;
     Time_MessageDayFormat  * time_day;
@@ -213,75 +214,55 @@ void I106_Decode_TimeF1_Buffer(int date_format, int leap_year, void *buffer, I10
 }
 
 
-I106Status I106_Encode_TimeF1(I106C10Header *header,
-                         unsigned int  time_source,
-                         unsigned int  time_format,
-                         unsigned int  date_format,
-                         I106Time     *time,
-                         void         *buffer){
+I106Status I106_Encode_TimeF1(I106C10Header *header, unsigned int time_source,
+        unsigned int time_format, unsigned int date_format, I106Time *time,
+        void *buffer){
 
-    // A temporary integer to decimate to get BCD factors
-    uint32_t                 int_time;
+    uint32_t millisecond, second, minute, hour, day, month, year;
     struct tm              * tm_time;
     MessageTimeF1          * message;
     Time_MessageDayFormat  * day_format;
     Time_MessageDMYFormat  * dmy_format;
 
-    // Now, after creating this ubertime-structure above, create a 
-    // couple of pointers to make the code below simpler to read.
+    // Allocate an empty message and build CSDW.
     message = (MessageTimeF1 *)buffer;
-    day_format = &(message->Message.DayFormat);
-    dmy_format = &(message->Message.DMYFormat);
-
-    // Zero out all the time fields
     memset(message, 0, sizeof(TimeF1_CSDW));
-
-    // Break time down to DMY HMS
-    tm_time = gmtime((time_t *)&(time->Seconds));
-
-    // Make channel specific data word
-    message->CSDW.TimeSource    = time_source;
-    message->CSDW.TimeFormat    = time_format;
-    message->CSDW.DateFormat    = date_format;
+    message->CSDW.TimeSource = time_source;
+    message->CSDW.TimeFormat = time_format;
+    message->CSDW.DateFormat = date_format;
     if (tm_time->tm_year % 4 == 0)
         message->CSDW.LeapYear = 1;
     else
         message->CSDW.LeapYear = 0;
 
-/* #pragma message("WARNING - Don't zero out the whole packet") */
+    // Break time down to DMY HMS
+    tm_time = gmtime((time_t *)&(time->Seconds));
+    millisecond = time->Fraction / 100000L;
+    second = tm_time->tm_sec;
+    minute = tm_time->tm_min;
+    hour = tm_time->tm_hour;
+    day = tm_time->tm_yday + 1;
+    month = tm_time->tm_mon + 1;
+    year = tm_time->tm_year + 1900;
 
     // Fill in day of year format
     if (date_format == 0){
         // Zero out all the time fields
+        day_format = &(message->Message.DayFormat);
         memset(day_format, 0, sizeof(Time_MessageDayFormat));
 
         // Set the various time fields
-        int_time = time->Fraction / 100000L;
-        day_format->Tmn = (uint16_t)(int_time  % 10);
-        int_time = (int_time - day_format->Hmn) / 10;
-        day_format->Hmn = (uint16_t)(int_time  % 10);
-
-        int_time = tm_time->tm_sec;
-        day_format->Sn  = (uint16_t)(int_time  % 10);
-        int_time = (int_time - day_format->Sn)  / 10;
-        day_format->TSn = (uint16_t)(int_time  % 10);
-
-        int_time = tm_time->tm_min;
-        day_format->Mn  = (uint16_t)(int_time  % 10);
-        int_time = (int_time - day_format->Mn)  / 10;
-        day_format->TMn = (uint16_t)(int_time  % 10);
-
-        int_time = tm_time->tm_hour;
-        day_format->Hn  = (uint16_t)(int_time  % 10);
-        int_time = (int_time - day_format->Hn)  / 10;
-        day_format->THn = (uint16_t)(int_time  % 10);
-
-        int_time = tm_time->tm_yday + 1;
-        day_format->Dn = (uint16_t)(int_time   % 10);
-        int_time = (int_time - day_format->Dn)  / 10;
-        day_format->TDn = (uint16_t)(int_time  % 10);
-        int_time = (int_time - day_format->TDn) / 10;
-        day_format->HDn  = (uint16_t)(int_time  % 10);
+        day_format->Tmn = (uint16_t)(millisecond % 10);
+        day_format->Hmn = (uint16_t)((millisecond / 10) % 10);
+        day_format->Sn  = (uint16_t)(second % 10);
+        day_format->TSn = (uint16_t)((second / 10) % 10);
+        day_format->Mn  = (uint16_t)(minute % 10);
+        day_format->TMn = (uint16_t)((minute / 10) % 10);
+        day_format->Hn  = (uint16_t)(hour % 10);
+        day_format->THn = (uint16_t)((hour / 10) % 10);
+        day_format->Dn = (uint16_t)(day % 10);
+        day_format->TDn = (uint16_t)((day / 10) % 10);
+        day_format->HDn  = (uint16_t)((day / 100) % 10);
 
         // Set the data length in the header
         header->DataLength = sizeof(TimeF1_CSDW) + sizeof(Time_MessageDayFormat);
@@ -290,47 +271,26 @@ I106Status I106_Encode_TimeF1(I106C10Header *header,
     // Fill in day, month, year format
     else {
         // Zero out all the time fields
+        dmy_format = &(message->Message.DMYFormat);
         memset(dmy_format, 0, sizeof(Time_MessageDMYFormat));
 
         // Set the various time fields
-        int_time = time->Fraction / 100000L;
-        dmy_format->Tmn = (uint16_t)(int_time  % 10);
-        int_time = (int_time - dmy_format->Hmn) / 10;
-        dmy_format->Hmn = (uint16_t)(int_time  % 10);
-
-        int_time = tm_time->tm_sec;
-        dmy_format->Sn  = (uint16_t)(int_time  % 10);
-        int_time = (int_time - dmy_format->Sn)  / 10;
-        dmy_format->TSn = (uint16_t)(int_time  % 10);
-
-        int_time = tm_time->tm_min;
-        dmy_format->Mn  = (uint16_t)(int_time  % 10);
-        int_time = (int_time - dmy_format->Mn)  / 10;
-        dmy_format->TMn = (uint16_t)(int_time  % 10);
-
-        int_time = tm_time->tm_hour;
-        dmy_format->Hn  = (uint16_t)(int_time  % 10);
-        int_time = (int_time - dmy_format->Hn)  / 10;
-        dmy_format->THn = (uint16_t)(int_time  % 10);
-
-        int_time = tm_time->tm_mday;
-        dmy_format->Dn  = (uint16_t)(int_time  % 10);
-        int_time = (int_time - dmy_format->Dn)  / 10;
-        dmy_format->TDn = (uint16_t)(int_time  % 10);
-
-        int_time = tm_time->tm_mon + 1;
-        dmy_format->On  = (uint16_t)(int_time  % 10);
-        int_time = (int_time - dmy_format->On)  / 10;
-        dmy_format->TOn = (uint16_t)(int_time  % 10);
-
-        int_time = tm_time->tm_year + 1900;
-        dmy_format->Yn  = (uint16_t)(int_time  % 10);
-        int_time = (int_time - dmy_format->Yn)  / 10;
-        dmy_format->TYn = (uint16_t)(int_time  % 10);
-        int_time = (int_time - dmy_format->TYn) / 10;
-        dmy_format->HYn = (uint16_t)(int_time  % 10);
-        int_time = (int_time - dmy_format->HYn) / 10;
-        dmy_format->OYn = (uint16_t)(int_time  % 10);
+        dmy_format->Tmn = (uint16_t)(millisecond  % 10);
+        dmy_format->Hmn = (uint16_t)((millisecond / 10) % 10);
+        dmy_format->Sn  = (uint16_t)(second % 10);
+        dmy_format->TSn = (uint16_t)((second / 10) % 10);
+        dmy_format->Mn  = (uint16_t)(minute % 10);
+        dmy_format->TMn = (uint16_t)((minute / 10) % 10);
+        dmy_format->Hn  = (uint16_t)(hour % 10);
+        dmy_format->THn = (uint16_t)((hour / 10) % 10);
+        dmy_format->Dn  = (uint16_t)(day % 10);
+        dmy_format->TDn = (uint16_t)((day / 10) % 10);
+        dmy_format->On  = (uint16_t)(month % 10);
+        dmy_format->TOn = (uint16_t)((month / 10) % 10);
+        dmy_format->Yn  = (uint16_t)(year % 10);
+        dmy_format->TYn = (uint16_t)((year / 10) % 10);
+        dmy_format->HYn = (uint16_t)((year / 100) % 10);
+        dmy_format->OYn = (uint16_t)((year / 1000) % 10);
 
         // Set the data length in the header
         header->DataLength = 
