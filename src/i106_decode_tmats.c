@@ -69,10 +69,11 @@ for 1553IN type data sources.
 // This is an empty string that text fields can point to before
 // they get a value. This ensures that if fields don't get set while
 // reading the TMATS record they will point to something benign.
-char                    empty_string[] = "";
+char                 empty_string[] = "";
 
-static TMATS_Info      *module_tmats_info;
-static int              tmats_version = 0;
+static TMATS_Info  * module_tmats_info;
+static int           tmats_version = 0;
+
 
 /* Function Declaration */
 
@@ -105,7 +106,6 @@ char * FirstNonWhitespace(char *string);
 
 uint32_t Fletcher32(uint8_t *data, int count);
 
-/* ======================================================================= */
 
 /* The idea behind this routine is to read the TMATS record, parse it, and 
  * put the various data fields into a tree structure that can be used later
@@ -114,11 +114,8 @@ uint32_t Fletcher32(uint8_t *data, int count);
  * pulling out the CSDW stuff, it punts to the text decoder which does the
  * actual heaving lifting.
  */
-
 I106Status I106_Decode_TMATS(I106C10Header *header, void *buffer, TMATS_Info *tmats_info){
-    I106Status    status;
     TMATS_CSDW  * csdw;
-    void        * tmats;
 
     // Decode any available info from channel specific data word
     switch (header->HeaderVersion){
@@ -133,8 +130,8 @@ I106Status I106_Decode_TMATS(I106C10Header *header, void *buffer, TMATS_Info *tm
             break;
     }
 
-    tmats = (char *)buffer + sizeof(TMATS_CSDW);
-    return I106_Decode_TMATS_Text(tmats, header->DataLength, tmats_info);
+    return I106_Decode_TMATS_Text(buffer + sizeof(TMATS_CSDW), header->DataLength,
+            tmats_info);
 }
 
 
@@ -165,21 +162,17 @@ I106Status I106_Decode_TMATS_Text(void *text, uint32_t data_length, TMATS_Info *
     buffer = (char *)text;
 
     // Loop until we get to the end of the buffer
-    while (1){
+    while (buffer_pos < data_length){
 
-        // Fill a local buffer with one line
-        // Initialize input line buffer
+        // Take a single line from the buffer.
         line[0] = '\0';
         line_pos  = 0;
-
-        // Read from buffer until complete line
         while (1){
             // If at the end of the buffer then break out
             if (buffer_pos >= data_length)
                 break;
 
-            // If CR or LF then swallow them, they mean nothing to TMATS
-            // Else copy next character to line buffer
+            // Copy anything other than CR and LF into "line".
             if ((buffer[buffer_pos] != CR) && (buffer[buffer_pos] != LF)){
                 line[line_pos] = buffer[buffer_pos];
                 if (line_pos < 2048)
@@ -187,52 +180,56 @@ I106Status I106_Decode_TMATS_Text(void *text, uint32_t data_length, TMATS_Info *
                 line[line_pos] = '\0';
             }
 
-            // Next character from buffer
+            // Advance the buffer
             buffer_pos++;
 
-            // If line terminator and line buffer not empty then break out
-            if (buffer[buffer_pos-1] == ';'){
-                if (strlen(line) != 0)
-                    break;
-            }
+            // If we find a semicolon and the line isn't empty, break out.
+            if (buffer[buffer_pos-1] == ';' && strlen(line) != 0)
+                break;
         }
 
 
         // Decode the TMATS line
 
-        // Go ahead and split the line into left hand and right hand sides
+        // Split the line into left hand and right hand sides
         code_name = strtok(line, ":");
         data_item = strtok(NULL, ";");
 
-        // If errors tokenizing the line then skip over them
+        // If errors tokenizing the line then skip 
         if ((code_name == NULL) || (data_item == NULL))
             continue;
 
         // Determine and decode different TMATS types
         switch (code_name[0]){
             case 'G' : // General Information
-                parse_error = DecodeGLine(code_name, data_item, &tmats_info->FirstG_Record);
+                parse_error = DecodeGLine(code_name, data_item,
+                        &tmats_info->FirstG_Record);
                 break;
 
             case 'B' : // Bus Data Attributes
-                parse_error = DecodeBLine(code_name, data_item, &tmats_info->FirstB_Record);
+                parse_error = DecodeBLine(code_name, data_item,
+                        &tmats_info->FirstB_Record);
                 break;
 
             case 'R' : // Tape/Storage Source Attributes
-                parse_error = DecodeRLine(code_name, data_item, &tmats_info->FirstR_Record);
+                parse_error = DecodeRLine(code_name, data_item,
+                        &tmats_info->FirstR_Record);
                 break;
 
             case 'T' : // Transmission Attributes
                 break;
 
             case 'M' : // Multiplexing/Modulation Attributes
-                parse_error = DecodeMLine(code_name, data_item, &tmats_info->FirstM_Record);
+                parse_error = DecodeMLine(code_name, data_item,
+                        &tmats_info->FirstM_Record);
                 break;
 
             case 'P' : // PCM Format Attributes
-                parse_error = DecodePLine(code_name, data_item, &tmats_info->FirstP_Record);
+                parse_error = DecodePLine(code_name, data_item,
+                        &tmats_info->FirstP_Record);
                 break;
 
+            // TODO: implement these and any other missing groups/attributes
             case 'D' : // PCM Measurement Description
                 break;
 
@@ -256,7 +253,8 @@ I106Status I106_Decode_TMATS_Text(void *text, uint32_t data_length, TMATS_Info *
 
         }
 
-    } // end looping forever on reading TMATS buffer
+    }
+
 
     /* Now link the various records together into a tree.  This is a bit involved.
     
@@ -1506,11 +1504,12 @@ char * FirstNonWhitespace(char * string){
 // Calculate a "fingerprint" checksum code from TMATS info
 // Do not include CSDW!!!
 I106Status I106_TMATS_Signature(void      *raw_buffer,         // TMATS text without CSDW
-                                uint32_t   data_length,        // Length of TMATS in pvBuff
+                                uint32_t   data_length,        // Length of TMATS in raw_buffer
                                 int        signature_version,  // Request signature version (0 = default)
                                 int        signature_flags,    // Additional flags
                                 uint16_t  *opcode,             // Version and flag op code
                                 uint32_t  *signature){         // TMATS signature
+
     unsigned long       buffer_index;
     char              * buffer;
     char                line[2048];
@@ -1569,7 +1568,6 @@ I106Status I106_TMATS_Signature(void      *raw_buffer,         // TMATS text wit
                 if (strlen(line) != 0)
                     break;
             }
-
         }
 
 

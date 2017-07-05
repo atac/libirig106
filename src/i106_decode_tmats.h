@@ -8,16 +8,17 @@
 #define _I106_DECODE_TMATS_H
 
 #include "config.h"
+#include "irig106ch10.h"
 
 
 /* Macros and definitions */
 
 // TMATS signature generating options
 #define TMATS_SIGFLAG_NONE          0x0000
-#define TMATS_SIGFLAG_INC_ALL       0x0001  ///< Include all fields
-#define TMATS_SIGFLAG_INC_COMMENT   0x0002  ///< Include comment fields
-#define TMATS_SIGFLAG_INC_VENDOR    0x0004  ///< Include vendor fields
-#define TMATS_SIGFLAG_INC_G         0x0008  ///< Include vendor fields
+#define TMATS_SIGFLAG_INC_ALL       0x0001  // Include all fields
+#define TMATS_SIGFLAG_INC_COMMENT   0x0002  // Include comment fields
+#define TMATS_SIGFLAG_INC_VENDOR    0x0004  // Include vendor fields
+#define TMATS_SIGFLAG_INC_G         0x0008  // Include vendor fields
 
 // TMATS signature version
 #define TMATS_SIGVER_1              1
