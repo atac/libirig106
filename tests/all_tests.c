@@ -12,6 +12,7 @@ static void RunAllTests(void){
     RUN_TEST_GROUP(test_decode_pcm);
     RUN_TEST_GROUP(test_decode_time);
     RUN_TEST_GROUP(test_decode_tmats);
+    RUN_TEST_GROUP(test_decode_uart);
 }
 
 int main(int argc, const char * argv[]){

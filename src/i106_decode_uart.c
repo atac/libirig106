@@ -21,7 +21,8 @@
 static void FillInMessagePointers(UARTF0_Message *msg);
 
 
-I106Status I106_Decode_FirstUARTF0(I106C10Header *header, void *buffer, UARTF0_Message *msg){
+I106Status I106_Decode_FirstUARTF0(I106C10Header *header, void *buffer,
+        UARTF0_Message *msg){
 
     // Keep a pointer to the current header    
     msg->Header = header;
@@ -33,16 +34,7 @@ I106Status I106_Decode_FirstUARTF0(I106C10Header *header, void *buffer, UARTF0_M
 
     msg->BytesRead += sizeof(UARTF0_CSDW);
 
-    // Check for no data
-    if (header->DataLength <= msg->BytesRead)
-        return I106_NO_MORE_DATA;
-
-    // Get the other pointers
-    FillInMessagePointers(msg);
-
-    FillInTimeStruct(header, msg->IPTS, &msg->Time);
-
-    return I106_OK;
+    return I106_Decode_NextUARTF0(msg);
 }
 
 
