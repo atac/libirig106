@@ -1,6 +1,6 @@
 /****************************************************************************
 
- i106_decode_1553f1.c
+ i106_decode_video.c
 
  ****************************************************************************/
 
@@ -16,7 +16,8 @@
 /* Function Declaration */
 
 // Setup reading multiple Video Format 0 messages
-I106Status I106_Decode_FirstVideoF0(I106C10Header *header, void *buffer, VideoF0_Message *msg){
+I106Status I106_Decode_FirstVideoF0(I106C10Header *header, void *buffer,
+        VideoF0_Message *msg){
 
     // Save pointer to channel specific data
     msg->CSDW = (VideoF0_CSDW *)buffer;
@@ -33,7 +34,7 @@ I106Status I106_Decode_FirstVideoF0(I106C10Header *header, void *buffer, VideoF0
         msg->Data  = (uint8_t *)buffer + sizeof(VideoF0_CSDW);
     }
 
-    // TAKE CARE OF BYTE SWAPPING BASED ON CH 10 RELEASE AND BA CSDW (NEW IN -09)
+    // TODO: BYTE SWAPPING BASED ON CH 10 RELEASE AND BA CSDW (NEW IN -09)
 
     return I106_OK;
 }
