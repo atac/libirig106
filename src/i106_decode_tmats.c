@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #ifndef __APPLE__
 #include <malloc.h>
 #endif
