@@ -33,7 +33,8 @@ TEST(test_analog, TestDecode_FirstAnalogF1){
     csdw.Subchannels = 1;
     csdw.Mode = ANALOG_PACKED;
     csdw.Factor = 8;
-    csdw.Length = 3;
+    csdw.Length = 16;
+    csdw.Same = 1;
     memcpy(buffer, &csdw, sizeof(AnalogF1_CSDW));
 
     header.DataLength = 32;

@@ -397,7 +397,7 @@ I106Status I106_Decode_NextAnalogF1(AnalogF1_Message *msg){
 
     if (attributes->Packed) {
         // Need to distinguish between subchannels if not identical
-        // NOTE: I have not tested code where bSame == bFALSE!
+        // TODO: finish implementation and testing of Same == 0
         if (msg->CSDW->Same == 0){
         
             // Calculate all factors for each channel (done here for speed)
@@ -411,8 +411,9 @@ I106Status I106_Decode_NextAnalogF1(AnalogF1_Message *msg){
                     for (int j = 0; j < subchannel->CSDW->Factor; j++){
                         sample_factors[i] *= 2;
                     }
-                    if (max_simultaneous < sample_factors[i])
+                    if (max_simultaneous < sample_factors[i]){
                         max_simultaneous = sample_factors[i];
+                    }
                 }
                 // Now get sample sizes for each subchannel
                 sample_sizes[i] = subchannel->CSDW->Length;
