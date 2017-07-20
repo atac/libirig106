@@ -73,11 +73,18 @@ TEST(test_decode_pcm, TestDecodeMinorFrame_PCMF1){
     PCMF1_Attributes attributes;
 
     msg.Attributes = &attributes;
+    msg.Data = malloc(16);
 
+    attributes.BitPosition = 0;
+    attributes.TestWord = 0x0000;
+    attributes.BitsLoaded = 0;
+    attributes.MinorFrameBitCount = 0;
     attributes.BitPosition = 0;
     msg.SubPacketBits = 3;
 
     TEST_ASSERT_EQUAL(I106_NO_MORE_DATA, DecodeMinorFrame_PCMF1(&msg));
+
+    free(msg.Data);
 }
 
 
