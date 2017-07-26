@@ -230,13 +230,13 @@ I106Status I106_Encode_TimeF1(I106C10Header *header, unsigned int time_source,
     message->CSDW.TimeSource = time_source;
     message->CSDW.TimeFormat = time_format;
     message->CSDW.DateFormat = date_format;
+
+    // Break time down to DMY HMS
+    tm_time = gmtime((time_t *)&(time->Seconds));
     if (tm_time->tm_year % 4 == 0)
         message->CSDW.LeapYear = 1;
     else
         message->CSDW.LeapYear = 0;
-
-    // Break time down to DMY HMS
-    tm_time = gmtime((time_t *)&(time->Seconds));
     millisecond = time->Fraction / 100000L;
     second = tm_time->tm_sec;
     minute = tm_time->tm_min;
