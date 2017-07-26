@@ -1,28 +1,29 @@
 /****************************************************************************
 
- irig106ch10.c - 
+ irig106ch10.c
 
  ****************************************************************************/
 
+#include <assert.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
 #include <sys/stat.h>
-#include <errno.h>
-#include <assert.h>
+#include <sys/types.h>
 
 #if defined(__GNUC__)
 #include <unistd.h>
 #endif
 
-#ifndef __APPLE__
-#if defined(__GNUC__)
-#include <sys/io.h>
-#else
-#include <io.h>
-#endif
-#endif
+/* #ifndef __APPLE__ */
+/* #if defined(__GNUC__) */
+/* #include <sys/io.h> */
+/* #else */
+/* #include <io.h> */
+/* #endif */
+/* #endif */
 
 #include "config.h"
 #include "int.h"
@@ -82,16 +83,12 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
     if ((mode == READ) || (mode == READ_IN_ORDER)){
 
         // Try to open file
+        flags = O_RDONLY;
 #if defined(_MSC_VER)
-        flags = O_RDONLY | O_BINARY;
-#elif defined(__GNUC__)
-#if __APPLE__
-        flags = O_RDONLY;
-#else
-        flags = O_RDONLY | O_LARGEFILE;
+        flags |= O_BINARY;
 #endif
-#else
-        flags = O_RDONLY;
+#ifndef __APPLE__
+        flags |= O_LARGEFILE;
 #endif
         handles[*handle].File = open(filename, flags, 0);
         if (handles[*handle].File == -1){
@@ -601,6 +598,8 @@ I106Status I106C10ReadData(int handle, unsigned long buffer_size, void *buffer){
     switch (handles[handle].FileMode){
         case READ_NET_STREAM: 
         case READ: 
+            status = I106C10ReadDataFile(handle, buffer_size, buffer);
+            break;
         case READ_IN_ORDER : 
             status = I106C10ReadDataFile(handle, buffer_size, buffer);
             break;
@@ -625,17 +624,18 @@ I106Status I106C10ReadDataFile(int handle, unsigned long buffer_size, void *buff
 
     // Check for invalid file modes
     switch (handles[handle].FileMode){
-        case READ:
         case READ_IN_ORDER:
         case READ_NET_STREAM:
         case WRITE_NET_STREAM:
-        case CLOSED:
-            return I106_NOT_OPEN;
-            break;
-
         case OVERWRITE:
         case APPEND:
             return I106_WRONG_FILE_MODE;
+            break;
+        case CLOSED:
+            return I106_NOT_OPEN;
+            break;
+        case READ:
+        default:
             break;
     }
 
@@ -787,6 +787,7 @@ I106Status I106C10LastMsg(int handle){
         return I106_INVALID_HANDLE;
 
     // Check file modes
+    struct stat file_stat;
     switch (handles[handle].FileMode){
         case CLOSED:
             return I106_NOT_OPEN;
@@ -830,8 +831,9 @@ I106Status I106C10LastMsg(int handle){
                 // Read and check the header
                 read_count = read(handles[handle].File, &header, HEADER_SIZE);
 
-                if (read_count != HEADER_SIZE)
+                if (read_count != HEADER_SIZE){
                     continue;
+                }
 
                 if (header.SyncPattern != IRIG106_SYNC)
                     continue;
