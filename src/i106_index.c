@@ -8,6 +8,7 @@
 
  ****************************************************************************/
 
+#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -130,7 +131,7 @@ I106Status IndexPresent(const int handle, int *found_index){
             break;
 
         if (header.DataType == I106CH10_DTYPE_RECORDING_INDEX)
-            *found_index = 0;
+            *found_index = 1;
 
     } while (0);
 
