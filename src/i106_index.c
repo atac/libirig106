@@ -217,7 +217,7 @@ I106Status ProcessRootIndexPacket(int handle, int64_t offset, int64_t *next){
     I106Status         status = I106_OK;
     I106C10Header      header;
     void             * buffer = NULL;
-    IndexMsg    msg;
+    IndexMsg           msg;
 
     // Go to what should be a root index packet
     status = I106C10SetPos(handle, offset);
@@ -225,9 +225,7 @@ I106Status ProcessRootIndexPacket(int handle, int64_t offset, int64_t *next){
         return status;
 
     // Read what should be a root index packet
-    status = I106C10ReadNextHeader(handle, &header);
-
-    if (status != I106_OK)
+    if (status = I106C10ReadNextHeader(handle, &header))
         return status;
 
     if (header.DataType != I106CH10_DTYPE_RECORDING_INDEX)
@@ -237,10 +235,7 @@ I106Status ProcessRootIndexPacket(int handle, int64_t offset, int64_t *next){
     buffer = malloc(header.PacketLength);
 
     // Read the data buffer
-    status = I106C10ReadData(handle, header.PacketLength, buffer);
-
-    // Check for data read errors
-    if (status != I106_OK)
+    if (status = I106C10ReadData(handle, header.PacketLength, buffer))
         return status;
 
     // Decode the first root index message
