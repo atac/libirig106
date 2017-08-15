@@ -18,7 +18,7 @@ int tmats_size;
 TEST_GROUP_RUNNER(test_index){
     RUN_TEST_CASE(test_index, TestIndexPresent);
     RUN_TEST_CASE(test_index, TestReadIndexes);
-    /* RUN_TEST_CASE(test_index, TestMakeIndex); */
+    RUN_TEST_CASE(test_index, TestMakeIndex);
 }
 
 
@@ -42,17 +42,17 @@ TEST(test_index, TestIndexPresent){
 
 TEST(test_index, TestReadIndexes){
     int handle = 1;
-    I106C10Header header;
-    void * buffer = malloc(64);
-    FILE * tmp = fopen("tests/indexed.c10", "rb");
-
-    memset(&handles, 0, sizeof(I106C10Handle));
-    handles[handle].InUse = 1;
-    handles[handle].FileMode = READ;
-    handles[handle].File_State = I106_READ_HEADER;
-    handles[handle].File = fileno(tmp);
+    I106Status status = I106C10Open(&handle, "tests/indexed.c10", READ);
+    assert(status == I106_OK);
 
     TEST_ASSERT_EQUAL(I106_OK, ReadIndexes(handle));
+}
 
-    free(buffer);
+
+TEST(test_index, TestMakeIndex){
+    int handle = 1;
+    I106Status status = I106C10Open(&handle, "tests/copy.c10", READ);
+    assert(status == I106_OK);
+
+    TEST_ASSERT_EQUAL(I106_OK, MakeIndex(handle, 2));
 }

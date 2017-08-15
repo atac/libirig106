@@ -439,49 +439,39 @@ I106Status MakeIndex(const int handle, uint16_t channel_id){
 
     // Loop through the file
     while (1) {
+
         // Get the current file offset
         I106C10GetPos(handle, &offset);
 
         // Read the next header
         status = I106C10ReadNextHeader(handle, &header);
 
-        // Setup a one time loop to make it easy to break out on error
-        do {
-            if (status == I106_EOF)
-                break;
+        // If selected channel then put info into the index
+        if (status == I106_OK && header.ChannelID == channel_id){
 
-            // Check for header read errors
-            if (status != I106_OK)
-                break;
-
-            // If selected channel then put info into the index
-            if (header.ChannelID == channel_id){
-
-                // Make sure our buffer is big enough, size *does* matter
-                if (buffer_size < header.PacketLength){
-                    buffer = (unsigned char *)realloc(buffer, header.PacketLength);
-                    buffer_size = header.PacketLength;
-                }
-
-                // Read the data buffer
-                status = I106C10ReadData(handle, buffer_size, buffer);
-
-                // Populate index info
-                index_info.Offset     = offset;
-                index_info.DataType   = header.DataType;
-                index_info.ChannelID  = channel_id;
-                TimeArray2LLInt(header.RTC, &index_info.RTC);
-                AddNodeToIndex(handle, &index_info);
+            // Make sure our buffer is big enough, size *does* matter
+            if (buffer_size < header.PacketLength){
+                buffer = (unsigned char *)realloc(buffer, header.PacketLength);
+                buffer_size = header.PacketLength;
             }
 
-        } while (0);
+            // Read the data buffer
+            status = I106C10ReadData(handle, buffer_size, buffer);
+
+            // Populate index info
+            index_info.Offset     = offset;
+            index_info.DataType   = header.DataType;
+            index_info.ChannelID  = channel_id;
+            TimeArray2LLInt(header.RTC, &index_info.RTC);
+            AddNodeToIndex(handle, &index_info);
+        }
 
         // If EOF break out of main read loop
         if (status == I106_EOF)
-            break;
+            return I106_OK;
     }
 
-    return I106_OK;
+    return status;
 }
 
 
