@@ -101,7 +101,7 @@ I106Status I106_IEEE15882IrigTime(IEEE1588_Time *i1588_time, I106Time *irig_time
 I106Status FillInTimeStruct(I106C10Header *header, IntraPacketTS *ipts, TimeRef *time_ref);
 
 // Warning - array to int / int to array functions are little endian only!
-void Int2TimeArray(int64_t * rel_time, uint8_t rtc[]);
+void LLInt2TimeArray(int64_t * rel_time, uint8_t rtc[]);
 void TimeArray2LLInt(uint8_t rtc[], int64_t *rel_time);
 I106Status I106_SyncTime(int handle, int sync, int time_limit);
 I106Status I106Ch10SetPosToIrigTime(int handle, I106Time *seek_time);

@@ -64,8 +64,8 @@ I106Status I106_SetRelTime(int handle, I106Time *time, uint8_t rtc[]){
 // Take a 6 byte relative time value (like the one in the IRIG header) and
 // turn it into a real time based on the current reference IRIG time.
 I106Status I106_Rel2IrigTime(int handle, uint8_t rtc[], I106Time *time){
-    int64_t         rel_time;
-    I106Status    status;
+    int64_t     rel_time;
+    I106Status  status;
 
     // Convert 6 byte time array to 16 bit int.  This only works for 
     // positive time, but that shouldn't be a problem
@@ -108,8 +108,8 @@ I106Status I106_RelInt2IrigTime(int handle, int64_t rel_time, I106Time *time){
 
     // Now add the time difference to the last IRIG time reference
     time->Fraction = (unsigned long)fraction;
-    time->Seconds = (unsigned long)seconds;
-    time->Format  = time_ref[handle].IrigTime.Format;
+    time->Seconds  = (unsigned long)seconds;
+    time->Format   = time_ref[handle].IrigTime.Format;
 
     return I106_OK;
 }
@@ -182,7 +182,7 @@ I106Status I106_SyncTime(int handle, int sync, int max_seconds){
     int64_t             current_time;
     I106Status          status;
     I106Status          return_status;
-    I106C10Header      header;
+    I106C10Header       header;
     I106Time            time;
     unsigned long       buffer_size = 0;
     void              * buffer = NULL;
