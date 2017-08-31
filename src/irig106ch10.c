@@ -51,68 +51,47 @@ int GetHandle();
 
 I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
     int            read_count;
-    int            flags;
-    int            file_mode;
     uint16_t       signature;
     I106Status     status;
     I106C10Header  header;
 
-    // Initialize handle data if necessary
+    // Get the next available handle and initialize it.
     InitHandles();
-
-    // Get the next available handle
-    *handle = GetHandle();
-    if (*handle == -1)
+    if ((*handle = GetHandle()) == -1)
         return I106_NO_FREE_HANDLES;
 
-    // Initialize some data
     handles[*handle].File_State = I106_CLOSED;
     handles[*handle].Index.SortStatus = UNSORTED;
-
-    // Get a copy of the file name
     strncpy (handles[*handle].FileName, filename, sizeof(handles[*handle].FileName));
     handles[*handle].FileName[sizeof(handles[*handle].FileName) - 1] = '\0';
-
-    // Reset total bytes written
     handles[*handle].BytesWritten = 0L;
 
+    // Open file in correct mode
+    if (mode == READ || mode == READ_IN_ORDER)
+        handles[*handle].File = open(filename, READ_FLAGS, 0);
+    else if (mode == OVERWRITE)
+        handles[*handle].File = open(filename, OVERWRITE_FLAGS, OVERWRITE_MODE);
 
-    /* Read Mode */
+    // Any other mode is an error
+    else {
+        handles[*handle].File_State = I106_CLOSED;
+        handles[*handle].FileMode  = CLOSED;
+        handles[*handle].InUse = 0;
+        *handle = -1;
+        return I106_OPEN_ERROR;
+    }
 
-    // Open for read
-    if ((mode == READ) || (mode == READ_IN_ORDER)){
+    if (handles[*handle].File == -1){
+        handles[*handle].InUse = 0;
+        *handle = -1;
+        return I106_OPEN_ERROR;
+    }
 
-        // Try to open file
-        flags = O_RDONLY;
-#if defined(_MSC_VER)
-        flags |= O_BINARY;
-#endif
-#ifndef __APPLE__
-        flags |= O_LARGEFILE;
-#endif
-        handles[*handle].File = open(filename, flags, 0);
-        if (handles[*handle].File == -1){
-            handles[*handle].InUse = 0;
-            *handle = -1;
-            return I106_OPEN_ERROR;
-        }
-    
+    if (mode == READ || mode == READ_IN_ORDER){
 
-        /* Check to make sure it is a valid IRIG 106 Ch 10 data file */
-
-        // Check for valid signature (sync pattern)
-
-        // If we couldn't even read the first 2 bytes then return error
+        // Check for valid sync pattern
         read_count = read(handles[*handle].File, &signature, 2);
-        if (read_count != 2){
-            close(handles[*handle].File);
-            handles[*handle].InUse = 0;
-            *handle = -1;
-            return I106_OPEN_ERROR;
-        }
-
-        // If the first word isn't the sync value then return error
-        if (signature != IRIG106_SYNC){
+        if (read_count != 2 || signature != IRIG106_SYNC){
             close(handles[*handle].File);
             handles[*handle].InUse = 0;
             *handle = -1;
@@ -120,13 +99,12 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
         }
 
         // Open OK and sync character OK so set read state to reflect this
-        handles[*handle].FileMode  = mode;
+        handles[*handle].FileMode   = mode;
         handles[*handle].File_State = I106_READ_HEADER;
 
         // Make sure first packet is a config packet
         I106C10SetPos(*handle, 0L);
-        status = I106C10ReadNextHeaderFile(*handle, &header);
-        if (status != I106_OK)
+        if ((status = I106C10ReadNextHeaderFile(*handle, &header)))
             return I106_OPEN_WARNING;
         if (header.DataType != I106CH10_DTYPE_COMPUTER_1)
             return I106_OPEN_WARNING;
@@ -137,47 +115,9 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
         handles[*handle].FileMode = mode;
     }
 
-
-    /* Overwrite Mode */
-
-    // Open for overwrite
     else if (mode == OVERWRITE){
-
-        // Try to open file
-#if defined(_MSC_VER)
-        flags = O_WRONLY | O_CREAT | _O_TRUNC | O_BINARY;
-        file_mode = _S_IREAD | _S_IWRITE;
-#elif defined(__GNUC__)
-#if __APPLE__
-        flags = O_WRONLY | O_CREAT;
-#else
-        flags = O_WRONLY | O_CREAT | O_LARGEFILE;
-#endif
-        file_mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-#else
-        flags = O_WRONLY | O_CREAT;
-        file_mode = 0;
-#endif
-        handles[*handle].File = open(filename, flags, file_mode);
-        if (handles[*handle].File == -1){
-            handles[*handle].InUse = 0;
-            *handle = -1;
-            return I106_OPEN_ERROR;
-        }
-
-        // Open OK and write state to reflect this
         handles[*handle].File_State = I106_WRITE;
         handles[*handle].FileMode = mode;
-    }
-
-
-    /* Any other mode is an error */
-    else {
-        handles[*handle].File_State = I106_CLOSED;
-        handles[*handle].FileMode  = CLOSED;
-        handles[*handle].InUse = 0;
-        *handle = -1;
-        return I106_OPEN_ERROR;
     }
 
     return I106_OK;

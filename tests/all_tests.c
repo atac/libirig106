@@ -16,6 +16,7 @@ static void RunAllTests(void){
     RUN_TEST_GROUP(test_decode_video);
     RUN_TEST_GROUP(test_index);
     RUN_TEST_GROUP(test_time);
+    RUN_TEST_GROUP(test_i106);
 }
 
 int main(int argc, const char * argv[]){
