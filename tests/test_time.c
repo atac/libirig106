@@ -24,8 +24,8 @@ TEST_GROUP_RUNNER(test_time){
     RUN_TEST_CASE(test_time, TestTimeArray2LLInt);
     RUN_TEST_CASE(test_time, TestI106_SyncTime);
     RUN_TEST_CASE(test_time, TestC10SetPosToIrigTime);
-    /* RUN_TEST_CASE(test_time, TestIrigTime2String); */
-    /* RUN_TEST_CASE(test_time, Testmkgmtime); */
+    RUN_TEST_CASE(test_time, TestIrigTime2String);
+    RUN_TEST_CASE(test_time, Testmkgmtime);
 }
 
 
@@ -112,4 +112,31 @@ TEST(test_time, TestC10SetPosToIrigTime){
     MakeInOrderIndex(handle);
     assert(I106_OK == I106_RelInt2IrigTime(handle, 38129384813, &t));
     TEST_ASSERT_EQUAL(I106_OK, I106C10SetPosToIrigTime(handle, &t));
+}
+
+
+TEST(test_time, TestIrigTime2String){
+    I106Time t;
+    t.Seconds = 1504191545;
+    t.Fraction = 0;
+    t.Format = I106_DATEFMT_DAY;
+    TEST_ASSERT_EQUAL_STRING("243:14:59:05.000", IrigTime2String(&t));
+
+    t.Format = I106_DATEFMT_DMY;
+    TEST_ASSERT_EQUAL_STRING("2017/08/31 14:59:05.000", IrigTime2String(&t));
+}
+
+
+TEST(test_time, Testmkgmtime){
+    struct tm t = {
+        .tm_year = 117,
+        .tm_mon = 7,
+        .tm_mday = 31,
+        .tm_hour = 14,
+        .tm_min = 59,
+        .tm_sec = 5,
+        .tm_isdst = 1
+    };
+
+    TEST_ASSERT_EQUAL(1504191545, mkgmtime(&t));
 }
