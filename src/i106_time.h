@@ -104,7 +104,7 @@ I106Status FillInTimeStruct(I106C10Header *header, IntraPacketTS *ipts, TimeRef 
 void LLInt2TimeArray(int64_t * rel_time, uint8_t rtc[]);
 void TimeArray2LLInt(uint8_t rtc[], int64_t *rel_time);
 I106Status I106_SyncTime(int handle, int sync, int time_limit);
-I106Status I106Ch10SetPosToIrigTime(int handle, I106Time *seek_time);
+I106Status I106C10SetPosToIrigTime(int handle, I106Time *seek_time);
 
 
 /* General purpose time utilities */

@@ -26,13 +26,13 @@
 #define leapday(m, y) ((m) == 1 && leap (y))
 
 #define ADJUST_TM(tm_member, tm_carry, modulus) \
-  if ((tm_member) < 0) { \
-    tm_carry -= (1 - ((tm_member)+1) / (modulus)); \
-    tm_member = (modulus-1) + (((tm_member)+1) % (modulus)); \
-  } else if ((tm_member) >= (modulus)) { \
-    tm_carry += (tm_member) / (modulus); \
-    tm_member = (tm_member) % (modulus); \
-  }
+    if ((tm_member) < 0) { \
+        tm_carry -= (1 - ((tm_member)+1) / (modulus)); \
+        tm_member = (modulus-1) + (((tm_member)+1) % (modulus)); \
+    } else if ((tm_member) >= (modulus)) { \
+        tm_carry += (tm_member) / (modulus); \
+        tm_member = (tm_member) % (modulus); \
+    }
 
 // Length of month `m' (0 .. 11)
 #define monthlen(m, y) (julian_day[(m)+1] - julian_day[m] + leapday (m, y))
@@ -296,7 +296,7 @@ I106Status I106C10SetPosToIrigTime(int handle, I106Time *irig_seek_time){
         return I106_TIME_NOT_FOUND;
     };
 
-    if (seek_time > index->Index[index->ArrayUsed].Time){
+    if (seek_time > index->Index[index->ArrayUsed - 1].Time){
         I106C10LastMsg(handle);
         return I106_TIME_NOT_FOUND;
     };

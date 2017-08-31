@@ -34,14 +34,14 @@
 /* Data structures */
 
 typedef struct {
-    uint32_t          NodesUsed;        // Number of index nodes actually used
-    uint32_t          NodesAvailable;   // Number of index nodes available in the table
-    uint32_t          NodeIncrement;    // Amount to increase the number of nodes
-    I106C10Header     Header;           // Header and buffer for an IRIG Format 1 time packet. 
-    void            * TimePacket;       // This is necessary for date format and leap year flags
-    I106Time          Time;             // as well as relative time to absolute time mapping
-                                      // if absolute time isn't provided.
-    PacketIndexInfo * IndexTable;  // The main table of indexes
+    uint32_t          NodesUsed;       // Number of index nodes actually used
+    uint32_t          NodesAvailable;  // Number of index nodes available in the table
+    uint32_t          NodeIncrement;   // Amount to increase the number of nodes
+    I106C10Header     Header;          // Header and buffer for an IRIG Format 1 time packet. 
+    void            * TimePacket;      // This is necessary for date format and leap year flags
+    I106Time          Time;            // as well as relative time to absolute time mapping
+                                       // if absolute time isn't provided.
+    PacketIndexInfo * IndexTable;      // The main table of indexes
 } C10Index;
 
 

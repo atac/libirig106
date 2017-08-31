@@ -22,8 +22,8 @@ TEST_GROUP_RUNNER(test_time){
     RUN_TEST_CASE(test_time, TestFillInTimeStruct);
     RUN_TEST_CASE(test_time, TestLLInt2TimeArray);
     RUN_TEST_CASE(test_time, TestTimeArray2LLInt);
-    /* RUN_TEST_CASE(test_time, TestI106_SyncTime); */
-    /* RUN_TEST_CASE(test_time, TestCh10SetPosToIrigTime); */
+    RUN_TEST_CASE(test_time, TestI106_SyncTime);
+    RUN_TEST_CASE(test_time, TestC10SetPosToIrigTime);
     /* RUN_TEST_CASE(test_time, TestIrigTime2String); */
     /* RUN_TEST_CASE(test_time, Testmkgmtime); */
 }
@@ -100,5 +100,16 @@ TEST(test_time, TestTimeArray2LLInt){
 TEST(test_time, TestI106_SyncTime){
     int handle;
     assert(I106_OK == I106C10Open(&handle, "tests/indexed.c10", READ));
-    TEST_ASSERT_EQUAL(I106_OK, I106_SyncTime(handle, 1, 10));
+    TEST_ASSERT_EQUAL(I106_OK, I106_SyncTime(handle, 0, 10));
+}
+
+
+TEST(test_time, TestC10SetPosToIrigTime){
+    int handle;
+    I106Time t;
+
+    assert(I106_OK == I106C10Open(&handle, "tests/indexed.c10", READ));
+    MakeInOrderIndex(handle);
+    assert(I106_OK == I106_RelInt2IrigTime(handle, 38129384813, &t));
+    TEST_ASSERT_EQUAL(I106_OK, I106C10SetPosToIrigTime(handle, &t));
 }
