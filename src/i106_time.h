@@ -32,7 +32,7 @@ typedef enum {
 // a new time representation.  So there.
 typedef struct {
     time_t           Seconds;
-    uint32_t         Fraction;     // LSB = 100ns
+    uint32_t         Fraction;    // LSB = 100ns
     I106DateFormat   Format;      // Day or DMY format
 } I106Time;
 

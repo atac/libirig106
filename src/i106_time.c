@@ -452,7 +452,7 @@ uint32_t mkgmtime(struct tm *time){
 
     // Accumulated number of days from 01-Jan up to start of current month.
     static short julian_day[] = {
-      0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365
+        0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365
     };
 
     int years, months, days, hours, minutes, seconds;
