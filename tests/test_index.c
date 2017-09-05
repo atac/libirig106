@@ -30,7 +30,6 @@ TEST_TEAR_DOWN(test_index){}
 TEST(test_index, TestIndexPresent){
     int handle = 1;
     int found_index;
-    I106C10Header header;
 
     I106Status status = I106C10Open(&handle, "tests/copy.c10", READ);
     assert(status == I106_OK);
