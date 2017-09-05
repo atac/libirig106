@@ -47,6 +47,7 @@ static int     handles_inited = 0;
 
 void InitHandles();
 int GetHandle();
+I106Status ValidHandle(int handle);
 
 
 I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
@@ -125,14 +126,15 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
 
 
 I106Status I106C10Close(int handle){
+    I106Status status = I106_OK;
 
     // If handles have not been init'ed then bail
     if (handles_inited == 0)
         return I106_NOT_OPEN;
 
     // Check for a valid handle
-    if ((handle <  0) || (handle >= MAX_HANDLES) || (handles[handle].InUse == 0))
-        return I106_INVALID_HANDLE;
+    if ((status = ValidHandle(handle)))
+        return status;
 
     // Close file if open
     if ((handles[handle].File != -1) && (handles[handle].InUse == 1))
@@ -147,39 +149,27 @@ I106Status I106C10Close(int handle){
     handles[handle].Index.SortStatus     = UNSORTED;
 
     // Reset some status variables
-    handles[handle].File      = -1;
-    handles[handle].InUse     = 0;
-    handles[handle].FileMode  = CLOSED;
+    handles[handle].File       = -1;
+    handles[handle].InUse      = 0;
+    handles[handle].FileMode   = CLOSED;
     handles[handle].File_State = I106_CLOSED;
 
-    return I106_OK;
+    return status;
 }
 
 
 // Get the next header.  Depending on how the file was opened for reading,
 // call the appropriate routine.
-I106Status I106C10ReadNextHeader(int handle, I106C10Header * header){
-    I106Status status;
+I106Status I106C10ReadNextHeader(int handle, I106C10Header *header){
+    I106C10Mode mode = handles[handle].FileMode;
 
-    switch (handles[handle].FileMode){
-        case READ_NET_STREAM : 
-        case READ : 
-            status = I106C10ReadNextHeaderFile(handle, header);
-            break;
-
-        case READ_IN_ORDER : 
-            if (handles[handle].Index.SortStatus == SORTED)
-                status = I106C10ReadNextHeaderInOrder(handle, header);
-            else
-                status = I106C10ReadNextHeaderFile(handle, header);
-            break;
-
-        default :
-            status = I106_WRONG_FILE_MODE;
-            break;
+    if (mode == READ_NET_STREAM || mode == READ || mode == READ_IN_ORDER){
+        if (mode == READ_IN_ORDER && handles[handle].Index.SortStatus == SORTED)
+            return I106C10ReadNextHeaderInOrder(handle, header);
+        return I106C10ReadNextHeaderFile(handle, header);
     }
-    
-    return status;
+
+    return I106_WRONG_FILE_MODE;
 }
 
 
@@ -1130,6 +1120,13 @@ int GetHandle(){
     }
 
     return handle;
+}
+
+
+I106Status ValidHandle(int handle){
+    if ((handle <  0) || (handle >= MAX_HANDLES) || (handles[handle].InUse == 0))
+        return I106_INVALID_HANDLE;
+    return I106_OK;
 }
 
 
