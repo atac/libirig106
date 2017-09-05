@@ -357,68 +357,40 @@ I106Status I106C10ReadNextHeaderInOrder(int handle, I106C10Header *header){
 }
 
 
-I106Status I106C10ReadPrevHeader(int handle, I106C10Header * header){
-    int         still_reading;
-    int         read_count;
-    int64_t     pos;
+I106Status I106C10ReadPrevHeader(int handle, I106C10Header *header){
+    int         buffer_size, buffer_pos;
+    int64_t     pos, initial_backup = 0;
     I106Status  status;
-
-    uint64_t    initial_backup;
-    int         backup_amount;
-    uint64_t    next_read_pos;
-    uint8_t     buffer[BACKUP_SIZE+HEADER_SIZE];
-    int         buffer_pos;
+    uint8_t     buffer[BACKUP_SIZE + HEADER_SIZE];
     uint16_t    checksum;
 
     // Check for a valid handle
-    if ((handle <  0) || (handle >= MAX_HANDLES) || (handles[handle].InUse == 0))
-        return I106_INVALID_HANDLE;
+    if ((status = ValidHandle(handle)))
+        return status;
 
     // Check for invalid file modes
-    switch (handles[handle].FileMode){
-        case CLOSED:
-            return I106_NOT_OPEN;
-            break;
+    I106C10Mode mode = handles[handle].FileMode;
+    if (mode == CLOSED)
+        return I106_NOT_OPEN;
+    // @TODO: handle read_in_order mode
+    if (mode != READ && mode != READ_IN_ORDER && mode != READ_NET_STREAM)
+        return I106_WRONG_FILE_MODE;
 
-        case OVERWRITE:
-        case APPEND:
-        case READ_IN_ORDER: // HANDLE THE READ IN ORDER MODE!!!!
-        case READ_NET_STREAM: 
-        default:
-            return I106_WRONG_FILE_MODE;
-            break;
-
-        case READ:
-            break;
-    }
-
-    // Check file mode
-    switch (handles[handle].File_State){
-        case I106_READ_NET_STREAM:
-        case I106_CLOSED:
-            return I106_NOT_OPEN;
-            break;
-
-        case I106_WRITE:
-            return I106_WRONG_FILE_MODE;
-            break;
-
-        case I106_READ_HEADER:
-        case I106_READ_DATA:
-            // Backup to a point just before the most recently read header.
-            // The amount to backup is the size of the previous header and the amount
-            // of data already read.
-            initial_backup = handles[handle].HeaderBufferLength + handles[handle].DataBufferPos;
-            break;
-
-        case I106_READ_UNSYNCED:
-            initial_backup = 0;
-            break;
-    }
+    // Check file state
+    I106FileState state = handles[handle].File_State;
+    if (state == I106_CLOSED)
+        return I106_NOT_OPEN;
+    // Backup to a point just before the most recently read header.
+    // The amount to backup is the size of the previous header and the amount
+    // of data already read.
+    if (state == I106_READ_DATA)
+        initial_backup = handles[handle].HeaderBufferLength + handles[handle].DataBufferPos;
+    else if (state != I106_READ_HEADER && state != I106_READ_UNSYNCED)
+        return I106_WRONG_FILE_MODE;
 
     // This puts us at the beginning of the most recently read header (or BOF)
     I106C10GetPos(handle, &pos);
-    pos = pos - initial_backup;
+    pos -= initial_backup;
 
     // If at the beginning of the file then done, return BOF
     if (pos <= 0){
@@ -427,87 +399,60 @@ I106Status I106C10ReadPrevHeader(int handle, I106C10Header * header){
     }
 
     // Loop until previous packet found
-    still_reading = 1;
-    while (still_reading){
+    while (1){
 
         // Figure out how much to backup
         if (pos >= BACKUP_SIZE)
-            backup_amount = BACKUP_SIZE;
+            buffer_size = BACKUP_SIZE;
         else
-            backup_amount = (int)pos;
+            buffer_size = (int)pos;
 
         // Backup that amount
-        next_read_pos = pos - backup_amount;
-        I106C10SetPos(handle, next_read_pos);
+        I106C10SetPos(handle, pos - buffer_size);
 
         // Read a buffer of data to scan backwards through
-        read_count = read(handles[handle].File, buffer, backup_amount + HEADER_SIZE);
+        read(handles[handle].File, buffer, buffer_size + HEADER_SIZE);
 
         // Go to the end of the buffer and start scanning backwards
-        for (buffer_pos = backup_amount - 1; buffer_pos >= 0; buffer_pos--){
+        for (buffer_pos = buffer_size - 1; buffer_pos >= 0; buffer_pos--){
 
             // Keep track of where we are in the file
             pos--;
 
-            // Check for sync chars
+            // Check for sync pattern
             if ((buffer[buffer_pos] != 0x25) || (buffer[buffer_pos + 1] != 0xEB))
                 continue;
 
-            // Sync chars found so check header checksum
+            // Compute checksum
             checksum = HeaderChecksum((I106C10Header *)(&buffer[buffer_pos]));
             if (checksum != ((I106C10Header *)(&buffer[buffer_pos]))->Checksum)
                 continue;
 
-            // Header checksum found so let ReadNextHeader() have a crack
-            status = I106C10SetPos(handle, pos);
-            if (status != I106_OK)
+            // Let ReadNextHeader() have a crack
+            if ((status = I106C10SetPos(handle, pos)))
                 continue;
-            status = I106C10ReadNextHeaderFile(handle, header);
-            if (status != I106_OK)
+            if ((status = I106C10ReadNextHeaderFile(handle, header)))
                 continue;
 
-            // Header OK so break out
-            still_reading = 0;
-            break;
-
-            // At the beginning of the buffer go back and read some more
-
+            // If everything checks out, return OK.
+            return status;
         }
 
-        // Check to see if we're at the BOF.  BTW, if we're at the beginning of
-        // a file and a valid header wasn't found then it IS a seek error.
-        if (pos == 0){
-            still_reading = 0;
-            status = I106_SEEK_ERROR;
-        }
-            
+        // Return a seek error if we've reached BOF without a valid header.
+        if (pos == 0)
+            return I106_SEEK_ERROR;
     }
-
-    return status;
 }
 
 
-// Get the next header.  Depending on how the file was opened for reading,
-// call the appropriate routine.
+// Read chapter 10 data based on file mode.
 I106Status I106C10ReadData(int handle, unsigned long buffer_size, void *buffer){
-    I106Status  status;
+    I106C10Mode mode = handles[handle].FileMode;
 
-    switch (handles[handle].FileMode){
-        case READ_NET_STREAM: 
-        case READ: 
-            status = I106C10ReadDataFile(handle, buffer_size, buffer);
-            break;
-        case READ_IN_ORDER : 
-            status = I106C10ReadDataFile(handle, buffer_size, buffer);
-            break;
+    if (mode == READ_NET_STREAM || mode == READ || mode == READ_IN_ORDER)
+        return I106C10ReadDataFile(handle, buffer_size, buffer);
 
-        default :
-            status = I106_WRONG_FILE_MODE;
-            break;
-
-    }
-    
-    return status;
+    return I106_WRONG_FILE_MODE;
 }
 
 

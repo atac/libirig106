@@ -19,8 +19,8 @@ TEST_GROUP_RUNNER(test_i106){
     RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeader);
     RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeaderFile);
     RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeaderInOrder);
-    /* RUN_TEST_CASE(test_i106, TestI106C10ReadPrevHeader); */
-    /* RUN_TEST_CASE(test_i106, TestI106C10ReadData); */
+    RUN_TEST_CASE(test_i106, TestI106C10ReadPrevHeader);
+    RUN_TEST_CASE(test_i106, TestI106C10ReadData);
     /* RUN_TEST_CASE(test_i106, TestI106C10ReadDataFile); */
     /* RUN_TEST_CASE(test_i106, TestI106C10WriteMsg); */
 
@@ -100,4 +100,33 @@ TEST(test_i106, TestI106C10ReadNextHeaderInOrder){
     MakeInOrderIndex(handle);
 
     TEST_ASSERT_EQUAL(I106_OK, I106C10ReadNextHeaderInOrder(handle, &header));
+}
+
+
+TEST(test_i106, TestI106C10ReadPrevHeader){
+    int handle;
+    I106C10Header header;
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/indexed.c10", READ));
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10SetPos(handle, 10000));
+    TEST_ASSERT_EQUAL(I106_OK, I106C10ReadPrevHeader(handle, &header));
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10SetPos(handle, 0));
+    TEST_ASSERT_EQUAL(I106_BOF, I106C10ReadPrevHeader(handle, &header));
+}
+
+
+
+TEST(test_i106, TestI106C10ReadData){
+    int handle;
+    unsigned long buffer_size = 100;
+    void *buffer = malloc(buffer_size);
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
+    TEST_ASSERT_EQUAL(
+            I106C10ReadDataFile(handle, buffer_size, buffer),
+            I106C10ReadData(handle, buffer_size, buffer));
+
+    free(buffer);
 }
