@@ -18,7 +18,7 @@ TEST_GROUP_RUNNER(test_i106){
 
     RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeader);
     RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeaderFile);
-    /* RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeaderInOrder); */
+    RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeaderInOrder);
     /* RUN_TEST_CASE(test_i106, TestI106C10ReadPrevHeader); */
     /* RUN_TEST_CASE(test_i106, TestI106C10ReadData); */
     /* RUN_TEST_CASE(test_i106, TestI106C10ReadDataFile); */
@@ -85,7 +85,19 @@ TEST(test_i106, TestI106C10ReadNextHeaderFile){
     int handle;
     I106C10Header header;
 
-    /* TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ)); */
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
 
-    /* TEST_ASSERT_EQUAL(I106_OK, I106C10ReadNextHeaderFile(handle, &header)); */
+    TEST_ASSERT_EQUAL(I106_OK, I106C10ReadNextHeaderFile(handle, &header));
+}
+
+
+TEST(test_i106, TestI106C10ReadNextHeaderInOrder){
+    int handle;
+    I106C10Header header;
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/indexed.c10", READ));
+
+    MakeInOrderIndex(handle);
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10ReadNextHeaderInOrder(handle, &header));
 }

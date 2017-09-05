@@ -177,69 +177,50 @@ I106Status I106C10ReadNextHeader(int handle, I106C10Header *header){
 I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
     int         read_count;
     int         header_ok;
-    int64_t     skip_size;
     int64_t     offset;
     I106Status  status;
 
     // Check for a valid handle
-    if ((handle <  0) || (handle >= MAX_HANDLES) || (handles[handle].InUse == 0))
-        return I106_INVALID_HANDLE;
+    if ((status = ValidHandle(handle)))
+        return status;
 
     // Check for invalid file modes
-    switch (handles[handle].FileMode){
-        case CLOSED:
-            return I106_NOT_OPEN;
-            break;
-        case OVERWRITE:
-        case APPEND:
-        case READ_IN_ORDER: 
-        default:
-            return I106_WRONG_FILE_MODE;
-            break;
-        case READ_NET_STREAM:
-        case READ:
-            break;
-    }
+    I106C10Mode mode = handles[handle].FileMode;
+    if (mode == CLOSED)
+        return I106_NOT_OPEN;
+    if (mode != READ && mode != READ_NET_STREAM && mode != READ_IN_ORDER)
+        return I106_WRONG_FILE_MODE;
 
-    // Check file state
+    // Check file state, and ensure we're at the start of a packet header.
     switch (handles[handle].File_State){
-        case I106_READ_NET_STREAM:
         case I106_CLOSED:
             return I106_NOT_OPEN;
-            break;
-
-        case I106_WRITE:
-            return I106_WRONG_FILE_MODE;
-            break;
-
-        case I106_READ_HEADER:
-            break;
 
         case I106_READ_DATA:
-            skip_size = handles[handle].PacketLength - 
-                handles[handle].HeaderBufferLength -
-                handles[handle].DataBufferPos;
-
-            if (handles[handle].FileMode != READ_NET_STREAM){
-                status = I106C10GetPos(handle, &offset);
-                if (status != I106_OK)
+            if (mode != READ_NET_STREAM){
+                if ((status = I106C10GetPos(handle, &offset)))
                     return I106_SEEK_ERROR;
 
-                offset += skip_size;
+                offset += handles[handle].PacketLength - 
+                          handles[handle].HeaderBufferLength -
+                          handles[handle].DataBufferPos;
 
-                status = I106C10SetPos(handle, offset);
-                if (status != I106_OK)
+                if ((status = I106C10SetPos(handle, offset)))
                     return I106_SEEK_ERROR;
             }
 
+        case I106_READ_NET_STREAM:
+        case I106_READ_HEADER:
         case I106_READ_UNSYNCED :
             break;
+
+        default:
+            return I106_WRONG_FILE_MODE;
     }
 
     // Now we might be at the beginning of a header. Read what we think
     // is a header, check it, and keep reading if things don't look correct.
     while (1){
-        // Assume header is OK, only set false if not
         header_ok = 1;
 
         // Read the header
@@ -254,22 +235,48 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
             handles[handle].File_State = I106_READ_UNSYNCED;
             if (read_count == -1)
                 return I106_READ_ERROR;
-            else
-                return I106_EOF;
+            return I106_EOF;
         }
 
-        // Setup a one time loop to make it easy to break out if
-        // there is an error encountered
-        do {
-            // Read OK, check the sync field
-            if (header->SyncPattern != IRIG106_SYNC){
+        // Read OK, check the sync field
+        if (header->SyncPattern != IRIG106_SYNC){
+            handles[handle].File_State = I106_READ_UNSYNCED;
+            header_ok = 0;
+        }
+
+        // Check the header checksum
+        else if (header->Checksum != HeaderChecksum(header)){
+            // If the header checksum was bad then set to unsynced state
+            // and return the error. Next time we're called we'll go
+            // through lots of heroics to find the next header.
+            if (handles[handle].File_State != I106_READ_UNSYNCED){
                 handles[handle].File_State = I106_READ_UNSYNCED;
-                header_ok = 0;
-                break;
+                return I106_HEADER_CHKSUM_BAD;
+            }
+            header_ok = 0;
+        }
+
+        // @TODO: header version check?
+
+        // Check secondary header if present 
+        else if (header->PacketFlags & I106CH10_PFLAGS_SEC_HEADER){
+            // Read the secondary header
+            if (handles[handle].FileMode != READ_NET_STREAM)
+                read_count = read(handles[handle].File, &header->Time[0], SEC_HEADER_SIZE);
+
+            // Keep track of how much header we've read
+            handles[handle].HeaderBufferLength += SEC_HEADER_SIZE;
+
+            // If there was an error reading, figure out why
+            if (read_count != SEC_HEADER_SIZE){
+                handles[handle].File_State = I106_READ_UNSYNCED;
+                if (read_count == -1)
+                    return I106_READ_ERROR;
+                return I106_EOF;
             }
 
-            // Always check the header checksum
-            if (header->Checksum != HeaderChecksum(header)){
+            // Secondary header checksum
+            else if (header->SecondaryChecksum != SecondaryHeaderChecksum(header)){
                 // If the header checksum was bad then set to unsynced state
                 // and return the error. Next time we're called we'll go
                 // through lots of heroics to find the next header.
@@ -278,46 +285,8 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
                     return I106_HEADER_CHKSUM_BAD;
                 }
                 header_ok = 0;
-                break;
             }
-
-            // MIGHT NEED TO CHECK HEADER VERSION HERE
-
-            // Header seems OK at this point
-            // Figure out if there is a secondary header
-            if (header->PacketFlags & I106CH10_PFLAGS_SEC_HEADER){
-                // Read the secondary header
-                if (handles[handle].FileMode != READ_NET_STREAM)
-                    read_count = read(handles[handle].File, &header->Time[0], SEC_HEADER_SIZE);
-
-                // Keep track of how much header we've read
-                handles[handle].HeaderBufferLength += SEC_HEADER_SIZE;
-
-                // If there was an error reading, figure out why
-                if (read_count != SEC_HEADER_SIZE){
-                    handles[handle].File_State = I106_READ_UNSYNCED;
-                    if (read_count == -1)
-                        return I106_READ_ERROR;
-                    else
-                        return I106_EOF;
-                }
-
-                // Always check the secondary header checksum now
-                if (header->SecondaryChecksum != SecondaryHeaderChecksum(header)){
-                    // If the header checksum was bad then set to unsynced state
-                    // and return the error. Next time we're called we'll go
-                    // through lots of heroics to find the next header.
-                    if (handles[handle].File_State != I106_READ_UNSYNCED){
-                        handles[handle].File_State = I106_READ_UNSYNCED;
-                        return I106_HEADER_CHKSUM_BAD;
-                    }
-                    header_ok = 0;
-                    break;
-                }
-
-            }
-
-        } while (0); // end one time loop
+        }
 
         // If read header was OK then break out
         if (header_ok)
@@ -325,14 +294,12 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
 
         // Read header was not OK so try again beyond previous read point
         if (handles[handle].FileMode != READ_NET_STREAM){
-            status = I106C10GetPos(handle, &offset);
-            if (status != I106_OK)
+            if ((status = I106C10GetPos(handle, &offset)))
                 return I106_SEEK_ERROR;
 
-            offset = offset - handles[handle].HeaderBufferLength + 1;
+            offset -= handles[handle].HeaderBufferLength + 1;
 
-            status = I106C10SetPos(handle, offset);
-            if (status != I106_OK)
+            if ((status = I106C10SetPos(handle, offset)))
                 return I106_SEEK_ERROR;
         }
 
@@ -342,18 +309,18 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
     handles[handle].PacketLength      = header->PacketLength;
     handles[handle].DataBufferLength  = GetDataLength(header);
     handles[handle].DataBufferPos     = 0;
-    handles[handle].File_State         = I106_READ_DATA;
+    handles[handle].File_State        = I106_READ_DATA;
 
     return I106_OK;
 }
 
 
 // Get the next header in time order from the file
-I106Status I106C10ReadNextHeaderInOrder(int handle, I106C10Header * header){
-    InOrderIndex  * index = &handles[handle].Index;
+I106Status I106C10ReadNextHeaderInOrder(int handle, I106C10Header *header){
+    InOrderIndex   *index = &handles[handle].Index;
     I106Status      status;
     int64_t         offset;
-    I106FileState       saved_file_state;
+    I106FileState   saved_file_state;
 
     // If we're at the end of the list then we are at the end of the file
     if (index->ArrayPos == index->ArrayUsed)
