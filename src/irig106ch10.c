@@ -459,50 +459,33 @@ I106Status I106C10ReadData(int handle, unsigned long buffer_size, void *buffer){
 I106Status I106C10ReadDataFile(int handle, unsigned long buffer_size, void *buffer){
     int             read_count;
     unsigned long   read_amount;
+    I106Status      status = I106_OK;
 
     // Check for a valid handle
-    if ((handle <  0) || (handle >= MAX_HANDLES) || (handles[handle].InUse == 0))
+    if ((status = ValidHandle(handle)))
         return I106_INVALID_HANDLE;
 
     // Check for invalid file modes
-    switch (handles[handle].FileMode){
-        case READ_IN_ORDER:
-        case READ_NET_STREAM:
-        case WRITE_NET_STREAM:
-        case OVERWRITE:
-        case APPEND:
-            return I106_WRONG_FILE_MODE;
-            break;
-        case CLOSED:
-            return I106_NOT_OPEN;
-            break;
-        case READ:
-        default:
-            break;
-    }
+    I106C10Mode mode = handles[handle].FileMode;
+    if (mode == CLOSED)
+        return I106_NOT_OPEN;
+    else if (mode != READ)
+        return I106_WRONG_FILE_MODE;
 
     // Check file state
-    switch (handles[handle].File_State){
-        case I106_CLOSED:
-            return I106_NOT_OPEN;
-            break;
-
-        case I106_WRITE:
-            return I106_WRONG_FILE_MODE;
-            break;
-
-        case I106_READ_DATA:
-            break;
-
-        default :
-            // MIGHT WANT TO SUPPORT THE "MORE DATA" METHOD INSTEAD
-            handles[handle].File_State = I106_READ_UNSYNCED;
-            return I106_READ_ERROR;
-            break;
+    I106FileState state = handles[handle].File_State;
+    if (state == I106_CLOSED)
+        return I106_NOT_OPEN;
+    else if (state == I106_WRITE)
+        return I106_WRONG_FILE_MODE;
+    else if (state != I106_READ_DATA){
+        // @TODO: MIGHT WANT TO SUPPORT THE "MORE DATA" METHOD INSTEAD
+        handles[handle].File_State = I106_READ_UNSYNCED;
+        return I106_READ_ERROR;
     }
 
     // Make sure there is enough room in the user buffer
-    // MIGHT WANT TO SUPPORT THE "MORE DATA" METHOD INSTEAD
+    // @TODO: MIGHT WANT TO SUPPORT THE "MORE DATA" METHOD INSTEAD
     read_amount = handles[handle].DataBufferLength - handles[handle].DataBufferPos;
     if (buffer_size < read_amount)
         return I106_BUFFER_TOO_SMALL;
@@ -516,14 +499,13 @@ I106Status I106C10ReadDataFile(int handle, unsigned long buffer_size, void *buff
         handles[handle].File_State = I106_READ_UNSYNCED;
         if (read_count == -1)
             return I106_READ_ERROR;
-        else
-            return I106_EOF;
+        return I106_EOF;
     }
 
     // Keep track of our read position in the current data buffer
     handles[handle].DataBufferPos = read_amount;
 
-    // MAY WANT TO DO CHECKSUM CHECKING SOMEDAY
+    // @TODO: MAY WANT TO DO CHECKSUM CHECKING SOMEDAY
 
     // Expect a header next read
     handles[handle].File_State = I106_READ_HEADER;
@@ -533,41 +515,31 @@ I106Status I106C10ReadDataFile(int handle, unsigned long buffer_size, void *buff
 
 
 I106Status I106C10WriteMsg(int handle, I106C10Header *header, void *buffer){
-    int  header_length;
-    int  write_count;
 
     // Check for a valid handle
-    if ((handle <  0) || (handle >= MAX_HANDLES) || (handles[handle].InUse == 0))
+    if (ValidHandle(handle))
         return I106_INVALID_HANDLE;
 
     // Check for invalid file modes
-    switch (handles[handle].FileMode){
-        case OVERWRITE:
-        case APPEND:
-        case WRITE_NET_STREAM:
-        case CLOSED:
-            return I106_NOT_OPEN;
-            break;
-
-        case READ:
-        case READ_IN_ORDER: 
-        case READ_NET_STREAM:
-            return I106_WRONG_FILE_MODE;
-            break;
-    }
+    I106C10Mode mode = handles[handle].FileMode;
+    if (mode == CLOSED)
+        return I106_NOT_OPEN;
+    else if (mode != OVERWRITE)
+        return I106_WRONG_FILE_MODE;
 
     // Figure out header length
-    header_length = GetHeaderLength(header);
+    int header_length = GetHeaderLength(header);
 
     // Write the header
-    write_count = write(handles[handle].File, header, header_length);
+    int write_count = write(handles[handle].File, header, header_length);
 
     // If there was an error reading, figure out why
     if (write_count != header_length)
         return I106_WRITE_ERROR;
     
     // Write the data
-    write_count = write(handles[handle].File, buffer, header->PacketLength - header_length);
+    write_count = write(
+        handles[handle].File, buffer, header->PacketLength - header_length);
 
     // If there was an error reading, figure out why
     if ((unsigned long)write_count != (header->PacketLength - header_length))

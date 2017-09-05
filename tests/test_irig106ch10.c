@@ -21,8 +21,8 @@ TEST_GROUP_RUNNER(test_i106){
     RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeaderInOrder);
     RUN_TEST_CASE(test_i106, TestI106C10ReadPrevHeader);
     RUN_TEST_CASE(test_i106, TestI106C10ReadData);
-    /* RUN_TEST_CASE(test_i106, TestI106C10ReadDataFile); */
-    /* RUN_TEST_CASE(test_i106, TestI106C10WriteMsg); */
+    RUN_TEST_CASE(test_i106, TestI106C10ReadDataFile);
+    RUN_TEST_CASE(test_i106, TestI106C10WriteMsg);
 
     /* RUN_TEST_CASE(test_i106, TestI106C10FirstMsg); */
     /* RUN_TEST_CASE(test_i106, TestI106C10LastMsg); */
@@ -117,7 +117,6 @@ TEST(test_i106, TestI106C10ReadPrevHeader){
 }
 
 
-
 TEST(test_i106, TestI106C10ReadData){
     int handle;
     unsigned long buffer_size = 100;
@@ -128,5 +127,36 @@ TEST(test_i106, TestI106C10ReadData){
             I106C10ReadDataFile(handle, buffer_size, buffer),
             I106C10ReadData(handle, buffer_size, buffer));
 
+    free(buffer);
+}
+
+
+TEST(test_i106, TestI106C10ReadDataFile){
+    int handle;
+    unsigned long buffer_size = 10000;
+    void *buffer = malloc(buffer_size);
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
+    TEST_ASSERT_EQUAL(I106_OK, I106C10SetPos(handle, 24));
+    handles[handle].File_State = I106_READ_DATA;
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10ReadDataFile(handle, buffer_size, buffer));
+
+    free(buffer);
+}
+
+
+TEST(test_i106, TestI106C10WriteMsg){
+    int handle;
+    I106C10Header header;
+    void *buffer = malloc(100);
+    header.DataLength = 100;
+    header.PacketLength = 124;
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/tmp.c10", OVERWRITE));
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10WriteMsg(handle, &header, buffer));
+
+    unlink("tests/tmp.c10");
     free(buffer);
 }
