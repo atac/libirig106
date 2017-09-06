@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <string.h>
 #include "irig106ch10.h"
 #include "unity.h"
@@ -24,8 +25,8 @@ TEST_GROUP_RUNNER(test_i106){
     RUN_TEST_CASE(test_i106, TestI106C10ReadDataFile);
     RUN_TEST_CASE(test_i106, TestI106C10WriteMsg);
 
-    /* RUN_TEST_CASE(test_i106, TestI106C10FirstMsg); */
-    /* RUN_TEST_CASE(test_i106, TestI106C10LastMsg); */
+    RUN_TEST_CASE(test_i106, TestI106C10FirstMsg);
+    RUN_TEST_CASE(test_i106, TestI106C10LastMsg);
     /* RUN_TEST_CASE(test_i106, TestI106C10SetPos); */
     /* RUN_TEST_CASE(test_i106, TestI106C10GetPos); */
 
@@ -159,4 +160,21 @@ TEST(test_i106, TestI106C10WriteMsg){
 
     unlink("tests/tmp.c10");
     free(buffer);
+}
+
+
+TEST(test_i106, TestI106C10FirstMsg){
+    int handle;
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
+    TEST_ASSERT_EQUAL(I106_OK, I106C10FirstMsg(handle));
+
+    I106C10Close(handle);
+}
+
+
+TEST(test_i106, TestI106C10LastMsg){
+    int handle;
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
+    TEST_ASSERT_EQUAL(I106_OK, I106C10LastMsg(handle));
+    I106C10Close(handle);
 }

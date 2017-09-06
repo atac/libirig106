@@ -555,125 +555,62 @@ I106Status I106C10WriteMsg(int handle, I106C10Header *header, void *buffer){
 // Move file pointer
 I106Status I106C10FirstMsg(int handle){
 
-    // Check for a valid handle
-    if ((handle <  0) || (handle >= MAX_HANDLES) || (handles[handle].InUse == 0))
+    if (ValidHandle(handle))
         return I106_INVALID_HANDLE;
 
     // Check file modes
-    switch (handles[handle].FileMode){
-        case CLOSED:
-            return I106_NOT_OPEN;
-            break;
-
-        case OVERWRITE:
-        case APPEND:
-        case READ_NET_STREAM:
-        default:
-            return I106_WRONG_FILE_MODE;
-            break;
-
-        case READ_IN_ORDER:
+    I106C10Mode mode = handles[handle].FileMode;
+    if (mode == CLOSED)
+        return I106_NOT_OPEN;
+    else if (mode == READ || mode == READ_IN_ORDER){
+        if (mode == READ_IN_ORDER)
             handles[handle].Index.ArrayPos = 0;
-            I106C10SetPos(handle, 0L);
-            break;
-
-        case READ:
-            I106C10SetPos(handle, 0L);
-            break;
+        return I106C10SetPos(handle, 0L);
     }
 
-    return I106_OK;
+    return I106_WRONG_FILE_MODE;
 }
 
 
 I106Status I106C10LastMsg(int handle){
-    I106Status     return_status;
-    I106Status     status;
+    I106Status     return_status, status;
     int64_t        pos;
     I106C10Header  header;
     int            read_count;  
-#if !defined(_MSC_VER)
-    struct stat    stat_buffer;
-#endif
+    struct stat    stat_buffer, file_stat;
 
     // Check for a valid handle
-    if ((handle <  0) || (handle >= MAX_HANDLES) || (handles[handle].InUse == 0))
+    if (ValidHandle(handle))
         return I106_INVALID_HANDLE;
 
     // Check file modes
-    struct stat file_stat;
-    switch (handles[handle].FileMode){
-        case CLOSED:
-            return I106_NOT_OPEN;
-            break;
-
-        case OVERWRITE:
-        case APPEND:
-        case READ_NET_STREAM: 
-        default:
-            return I106_WRONG_FILE_MODE;
-            break;
-
-        // If it's opened for reading in order then just set the index pointer
-        // to the last index.
-        case READ_IN_ORDER   :
-            handles[handle].Index.ArrayPos = handles[handle].Index.ArrayUsed - 1;
-            return_status = I106_OK;
-            break;
-
-        // If there is no index then do it the hard way
-        case READ :
-
-            // Figure out how big the file is and go to the end
-#if defined(_MSC_VER)       
-            pos = _filelengthi64(handles[handle].File) - HEADER_SIZE;
-#else   
-            fstat(handles[handle].File, &stat_buffer);
-            pos = stat_buffer.st_size - HEADER_SIZE;
-#endif      
-
-            // Now loop forever looking for a valid packet or die trying
-            while (1){
-                // Not at the beginning so go back 1 byte and try again
-                pos -= 1;
-
-                // Go to the new position and look for a legal header
-                status = I106C10SetPos(handle, pos);
-                if (status != I106_OK)
-                    return I106_SEEK_ERROR;
-
-                // Read and check the header
-                read_count = read(handles[handle].File, &header, HEADER_SIZE);
-
-                if (read_count != HEADER_SIZE){
-                    continue;
-                }
-
-                if (header.SyncPattern != IRIG106_SYNC)
-                    continue;
-            
-                // Sync pattern matched so check the header checksum
-                if (header.Checksum == HeaderChecksum(&header)){
-                    return_status = I106_OK;
-                    break;
-                }
-
-                // No match, check for begining of file
-                // ONLY NEED TO GO BACK THE MAX PACKET SIZE
-                if (pos <= 0){
-                    return_status = I106_SEEK_ERROR;
-                    break;
-                }
-
-            }
-
-            // Go back to the good position
-            status = I106C10SetPos(handle, pos);
-
-            break;
+    if (handles[handle].FileMode == CLOSED)
+        return I106_NOT_OPEN;
+    else if (handles[handle].FileMode == READ_IN_ORDER){
+        handles[handle].Index.ArrayPos = handles[handle].Index.ArrayUsed - 1;
+        return I106_OK;
     }
+    else if (handles[handle].FileMode != READ)
+        return I106_WRONG_FILE_MODE;
 
-    return return_status;
+    // Figure out how big the file is and go to the end
+    fstat(handles[handle].File, &stat_buffer);
+    pos = stat_buffer.st_size - HEADER_SIZE;
+
+    // Seek to the end of the file
+    if ((status = I106C10SetPos(handle, pos)))
+        return status;
+
+    // Find last header
+    if ((status = I106C10ReadPrevHeader(handle, &header)))
+        return status;
+
+    // Seek back to the beginning of the packet
+    pos -= handles[handle].HeaderBufferLength;
+    if ((status = I106C10SetPos(handle, pos)))
+        return status;
+
+    return I106_OK;
 }
 
 
