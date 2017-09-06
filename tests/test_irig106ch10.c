@@ -1,16 +1,16 @@
 
-#include <errno.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <string.h>
 #include "irig106ch10.h"
 #include "unity.h"
 #include "unity_fixture.h"
 #include <assert.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 
 TEST_GROUP_RUNNER(test_i106){
@@ -27,8 +27,8 @@ TEST_GROUP_RUNNER(test_i106){
 
     RUN_TEST_CASE(test_i106, TestI106C10FirstMsg);
     RUN_TEST_CASE(test_i106, TestI106C10LastMsg);
-    /* RUN_TEST_CASE(test_i106, TestI106C10SetPos); */
-    /* RUN_TEST_CASE(test_i106, TestI106C10GetPos); */
+    RUN_TEST_CASE(test_i106, TestI106C10SetPos);
+    RUN_TEST_CASE(test_i106, TestI106C10GetPos);
 
     /* RUN_TEST_CASE(test_i106, TestHeaderInit); */
     /* RUN_TEST_CASE(test_i106, TestGetHeaderLength); */
@@ -176,5 +176,30 @@ TEST(test_i106, TestI106C10LastMsg){
     int handle;
     TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
     TEST_ASSERT_EQUAL(I106_OK, I106C10LastMsg(handle));
+    I106C10Close(handle);
+}
+
+
+TEST(test_i106, TestI106C10SetPos){
+    int handle;
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
+    TEST_ASSERT_EQUAL(I106_OK, I106C10SetPos(handle, 1000));
+    off_t pos = lseek(handles[handle].File, 0, SEEK_CUR);
+    TEST_ASSERT_EQUAL(pos, 1000);
+
+    I106C10Close(handle);
+}
+
+
+TEST(test_i106, TestI106C10GetPos){
+    int handle;
+    int64_t offset;
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
+
+    lseek(handles[handle].File, 1500, SEEK_SET);
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10GetPos(handle, &offset));
+    TEST_ASSERT_EQUAL(1500, offset);
+
     I106C10Close(handle);
 }

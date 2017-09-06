@@ -617,44 +617,25 @@ I106Status I106C10LastMsg(int handle){
 I106Status I106C10SetPos(int handle, int64_t offset){
 
     // Check for a valid handle
-    if ((handle <  0) || (handle >= MAX_HANDLES) || (handles[handle].InUse == 0))
+    if (ValidHandle(handle))
         return I106_INVALID_HANDLE;
 
     // Check file modes
-    switch (handles[handle].FileMode){
-        case CLOSED:
-            return I106_NOT_OPEN;
-            break;
+    if (handles[handle].FileMode == CLOSED)
+        return I106_NOT_OPEN;
+    else if (handles[handle].FileMode == READ 
+            || handles[handle].FileMode == READ_IN_ORDER){
+        // Seek
+        off_t status = lseek(handles[handle].File, (off_t)offset, SEEK_SET);
+        assert(status >= 0);
 
-        case OVERWRITE:
-        case APPEND:
-        case READ_NET_STREAM: 
-        default:
-            return I106_WRONG_FILE_MODE;
-            break;
+        // Can't be sure we're on a message boundary so set unsync'ed
+        handles[handle].File_State = I106_READ_UNSYNCED;
 
-        case READ_IN_ORDER:
-        case READ:
-            // Seek
-#if defined(_WIN32)
-            {
-                __int64  status;
-                status = _lseeki64(handles[handle].File, offset, SEEK_SET);
-            }
-#else
-            {
-                off64_t  status;
-                status = lseek64(handles[handle].File, (off64_t)offset, SEEK_SET);
-                assert(status >= 0);
-            }
-#endif
-
-            // Can't be sure we're on a message boundary so set unsync'ed
-            handles[handle].File_State = I106_READ_UNSYNCED;
-            break;
+        return I106_OK;
     }
-
-    return I106_OK;
+    else
+        return I106_WRONG_FILE_MODE;
 }
 
 
