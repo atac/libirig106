@@ -163,7 +163,7 @@ I106Status I106_IEEE15882IrigTime(IEEE1588_Time *i1588_time, I106Time  *irig_tim
 
 // Create a 6 byte array value from a 64 bit int relative time
 void LLInt2TimeArray(int64_t *rel_time, uint8_t rtc[]){
-    memcpy((char *)rtc, (char *)rel_time, 6);
+    memcpy((char *)&rtc, (char *)rel_time, 6);
 }
 
 

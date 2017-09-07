@@ -86,7 +86,7 @@ TEST(test_time, TestFillInTimeStruct){
 TEST(test_time, TestLLInt2TimeArray){
     uint8_t arr[] = {1, 2, 3};
     int64_t rtc;
-    LLInt2TimeArray(&rtc, &arr[0]);
+    LLInt2TimeArray(&rtc, arr);
 }
 
 
