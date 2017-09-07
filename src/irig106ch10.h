@@ -238,7 +238,7 @@ uint32_t GetDataLength(I106C10Header *header);
 uint16_t HeaderChecksum(I106C10Header *header);
 uint16_t SecondaryHeaderChecksum(I106C10Header *header);
 char * I106ErrorString(I106Status status);
-int DataChecksum(void *buffer);
+/* int DataChecksum(void *buffer); */
 uint32_t BufferSize(uint32_t data_length, int checksum_type);
 I106Status AddFillerAndChecksum(I106C10Header *header, unsigned char data[]);
 

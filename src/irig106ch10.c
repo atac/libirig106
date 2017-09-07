@@ -712,32 +712,23 @@ int HeaderInit(
 
 
 int GetHeaderLength(I106C10Header *header){
-    int  header_length;
-
     if ((header->PacketFlags & I106CH10_PFLAGS_SEC_HEADER) == 0)
-        header_length = HEADER_SIZE;
-    else
-        header_length = HEADER_SIZE + SEC_HEADER_SIZE;
-
-    return header_length;
+        return HEADER_SIZE;
+    
+    return HEADER_SIZE + SEC_HEADER_SIZE;
 }
 
 
 // Figure out data length including padding and any data checksum
 uint32_t GetDataLength(I106C10Header *header){
-    int data_length;
-
-    data_length  = header->PacketLength - GetHeaderLength(header);
-
-    return data_length;
+    return header->PacketLength - GetHeaderLength(header);
 }
 
 
 uint16_t HeaderChecksum(I106C10Header *header){
-    uint16_t        header_sum;
-    uint16_t      * header_array = (uint16_t *)header;
+    uint16_t   header_sum = 0;
+    uint16_t  *header_array = (uint16_t *)header;
 
-    header_sum = 0;
     for (int i=0; i<(HEADER_SIZE-2)/2; i++)
         header_sum += header_array[i];
 
@@ -746,13 +737,11 @@ uint16_t HeaderChecksum(I106C10Header *header){
 
 
 uint16_t SecondaryHeaderChecksum(I106C10Header *header){
-    uint16_t        sum;
-    // TODO: MAKE THIS 16 BIT UNSIGNEDS LIKE ABOVE
-    unsigned char * byte_array = (unsigned char *)header;
+    uint16_t   sum = 0;
+    uint16_t  *secondary_array = (uint16_t *)(header + HEADER_SIZE);
 
-    sum = 0;
-    for (int i=0; i<SEC_HEADER_SIZE-2; i++)
-        sum += byte_array[i + HEADER_SIZE];
+    for (int i=0; i<(SEC_HEADER_SIZE-2)/2; i++)
+        sum += secondary_array[i];
 
     return sum;
 }
@@ -860,39 +849,35 @@ I106Status AddFillerAndChecksum(I106C10Header *header, unsigned char data[]){
 
 
 char * I106ErrorString(I106Status status){
-    char  *error_msg;
-
     switch (status){
-        case I106_OK                : error_msg = "No error";              break;
-        case I106_OPEN_ERROR        : error_msg = "File open failed";      break;
-        case I106_OPEN_WARNING      : error_msg = "File open warning";     break;
-        case I106_EOF               : error_msg = "End of file";           break;
-        case I106_BOF               : error_msg = "Beginning of file";     break;
-        case I106_READ_ERROR        : error_msg = "Read error";            break;
-        case I106_WRITE_ERROR       : error_msg = "Write error";           break;
-        case I106_MORE_DATA         : error_msg = "More data available";   break;
-        case I106_SEEK_ERROR        : error_msg = "Seek error";            break;
-        case I106_WRONG_FILE_MODE   : error_msg = "Wrong file mode";       break;
-        case I106_NOT_OPEN          : error_msg = "File not open";         break;
-        case I106_ALREADY_OPEN      : error_msg = "File already open";     break;
-        case I106_BUFFER_TOO_SMALL  : error_msg = "Buffer too small";      break;
-        case I106_NO_MORE_DATA      : error_msg = "No more data";          break;
-        case I106_NO_FREE_HANDLES   : error_msg = "No free file handles";  break;
-        case I106_INVALID_HANDLE    : error_msg = "Invalid file handle";   break;
-        case I106_TIME_NOT_FOUND    : error_msg = "Time not found";        break;
-        case I106_HEADER_CHKSUM_BAD : error_msg = "Bad header checksum";   break;
-        case I106_NO_INDEX          : error_msg = "No index";              break;
-        case I106_UNSUPPORTED       : error_msg = "Unsupported feature";   break;
-        case I106_BUFFER_OVERRUN    : error_msg = "Buffer overrun";        break;
-        case I106_INDEX_NODE        : error_msg = "Index node";            break;
-        case I106_INDEX_ROOT        : error_msg = "Index root";            break;
-        case I106_INDEX_ROOT_LINK   : error_msg = "Index root link";       break;
-        case I106_INVALID_DATA      : error_msg = "Invalid data";          break;
-        case I106_INVALID_PARAMETER : error_msg = "Invalid parameter";     break;
-        default                     : error_msg = "Unknown error";         break;
+        case I106_OK                : return "No error";
+        case I106_OPEN_ERROR        : return "File open failed";
+        case I106_OPEN_WARNING      : return "File open warning";
+        case I106_EOF               : return "End of file";
+        case I106_BOF               : return "Beginning of file";
+        case I106_READ_ERROR        : return "Read error";
+        case I106_WRITE_ERROR       : return "Write error";
+        case I106_MORE_DATA         : return "More data available";
+        case I106_SEEK_ERROR        : return "Seek error";
+        case I106_WRONG_FILE_MODE   : return "Wrong file mode";
+        case I106_NOT_OPEN          : return "File not open";
+        case I106_ALREADY_OPEN      : return "File already open";
+        case I106_BUFFER_TOO_SMALL  : return "Buffer too small";
+        case I106_NO_MORE_DATA      : return "No more data";
+        case I106_NO_FREE_HANDLES   : return "No free file handles";
+        case I106_INVALID_HANDLE    : return "Invalid file handle";
+        case I106_TIME_NOT_FOUND    : return "Time not found";
+        case I106_HEADER_CHKSUM_BAD : return "Bad header checksum";
+        case I106_NO_INDEX          : return "No index";
+        case I106_UNSUPPORTED       : return "Unsupported feature";
+        case I106_BUFFER_OVERRUN    : return "Buffer overrun";
+        case I106_INDEX_NODE        : return "Index node";
+        case I106_INDEX_ROOT        : return "Index root";
+        case I106_INDEX_ROOT_LINK   : return "Index root link";
+        case I106_INVALID_DATA      : return "Invalid data";
+        case I106_INVALID_PARAMETER : return "Invalid parameter";
+        default                     : return "Unknown error";
     }
-
-    return error_msg;
 }
 
 
