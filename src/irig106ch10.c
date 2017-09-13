@@ -17,14 +17,6 @@
 #include <unistd.h>
 #endif
 
-/* #ifndef __APPLE__ */
-/* #if defined(__GNUC__) */
-/* #include <sys/io.h> */
-/* #else */
-/* #include <io.h> */
-/* #endif */
-/* #endif */
-
 #include "config.h"
 #include "int.h"
 
@@ -63,7 +55,7 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
 
     handles[*handle].File_State = I106_CLOSED;
     handles[*handle].Index.SortStatus = UNSORTED;
-    strncpy (handles[*handle].FileName, filename, sizeof(handles[*handle].FileName));
+    strncpy(handles[*handle].FileName, filename, sizeof(handles[*handle].FileName));
     handles[*handle].FileName[sizeof(handles[*handle].FileName) - 1] = '\0';
     handles[*handle].BytesWritten = 0L;
 
@@ -411,7 +403,12 @@ I106Status I106C10ReadPrevHeader(int handle, I106C10Header *header){
         I106C10SetPos(handle, pos - buffer_size);
 
         // Read a buffer of data to scan backwards through
-        read(handles[handle].File, buffer, buffer_size + HEADER_SIZE);
+        off_t read_count = read(handles[handle].File, buffer, buffer_size + HEADER_SIZE);
+        assert(read_count != -1);
+        if (read_count == 0){
+            pos-= BACKUP_SIZE;
+            continue;
+        }
 
         // Go to the end of the buffer and start scanning backwards
         for (buffer_pos = buffer_size - 1; buffer_pos >= 0; buffer_pos--){
@@ -594,8 +591,7 @@ I106Status I106C10LastMsg(int handle){
         return I106_WRONG_FILE_MODE;
 
     // Figure out how big the file is and go to the end
-    fstat(handles[handle].File, &stat_buffer);
-    pos = stat_buffer.st_size - HEADER_SIZE;
+    pos = (int64_t)lseek(handles[handle].File, 0, SEEK_END) - (int64_t)HEADER_SIZE;
 
     // Seek to the end of the file
     if ((status = I106C10SetPos(handle, pos)))
@@ -661,14 +657,8 @@ I106Status I106C10GetPos(int handle, int64_t *offset){
         case READ_IN_ORDER:
         case READ:
             // Get position
-#if defined(_WIN32)
-            *offset = _telli64(handles[handle].File);
-#else
-            {
-                *offset = (int64_t)lseek64(handles[handle].File, (off64_t)0, SEEK_CUR);
-                assert(*offset >= 0);
-            }
-#endif
+            *offset = (int64_t)lseek(handles[handle].File, (off_t)0, SEEK_CUR);
+            assert(*offset >= 0);
             break;
     }
 

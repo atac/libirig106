@@ -36,6 +36,7 @@ TEST(test_index, TestIndexPresent){
 
     TEST_ASSERT_EQUAL(I106_OK, IndexPresent(handle, &found_index));
     TEST_ASSERT_EQUAL(0, found_index);
+    I106C10Close(handle);
 }
 
 
@@ -45,6 +46,7 @@ TEST(test_index, TestReadIndexes){
     assert(status == I106_OK);
 
     TEST_ASSERT_EQUAL(I106_OK, ReadIndexes(handle));
+    I106C10Close(handle);
 }
 
 
@@ -54,4 +56,5 @@ TEST(test_index, TestMakeIndex){
     assert(status == I106_OK);
 
     TEST_ASSERT_EQUAL(I106_OK, MakeIndex(handle, 2));
+    I106C10Close(handle);
 }

@@ -101,6 +101,7 @@ TEST(test_time, TestI106_SyncTime){
     int handle;
     assert(I106_OK == I106C10Open(&handle, "tests/indexed.c10", READ));
     TEST_ASSERT_EQUAL(I106_OK, I106_SyncTime(handle, 0, 10));
+    I106C10Close(handle);
 }
 
 
@@ -112,6 +113,7 @@ TEST(test_time, TestC10SetPosToIrigTime){
     MakeInOrderIndex(handle);
     assert(I106_OK == I106_RelInt2IrigTime(handle, 38129384813, &t));
     TEST_ASSERT_EQUAL(I106_OK, I106C10SetPosToIrigTime(handle, &t));
+    I106C10Close(handle);
 }
 
 

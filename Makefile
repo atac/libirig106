@@ -19,13 +19,14 @@ endif
 CC=gcc
 LINK=gcc
 DEPEND=gcc -MM -MG -MF
+CFLAGS=
 
 # Just use GCC on mac for now
-# ifeq ($(shell uname -s), Darwin)
-# CC=clang
-# endif
+ifeq ($(shell uname -s), Darwin)
+CC=gcc-7
+endif
 
-CFLAGS =  -D_FILE_OFFSET_BITS=64
+CFLAGS += -D_FILE_OFFSET_BITS=64
 CFLAGS += -D_LARGEFILE64_SOURCE
 CFLAGS += -ggdb
 CFLAGS += -fpack-struct=1
