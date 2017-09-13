@@ -33,7 +33,7 @@ TEST(test_decode_video, Test_Decode_NextVideoF0){
     I106C10Header header;
     VideoF0_Message msg;
     VideoF0_CSDW csdw;
-    void * buffer = malloc(254);
+    char * buffer = malloc(254);
 
     memset(buffer, 0, sizeof(VideoF0_CSDW));
     header.DataLength = 512;

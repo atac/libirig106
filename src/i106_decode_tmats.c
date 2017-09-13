@@ -7,7 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _WIN32
 #include <strings.h>
+#endif
 #ifndef __APPLE__
 #include <malloc.h>
 #endif
@@ -131,13 +133,13 @@ I106Status I106_Decode_TMATS(I106C10Header *header, void *buffer, TMATS_Info *tm
             break;
     }
 
-    return I106_Decode_TMATS_Text(buffer + sizeof(TMATS_CSDW), header->DataLength,
+    return I106_Decode_TMATS_Text((char *)buffer + sizeof(TMATS_CSDW), header->DataLength,
             tmats_info);
 }
 
 
 // This routine parses just the text portion of TMATS.
-I106Status I106_Decode_TMATS_Text(void *text, uint32_t data_length, TMATS_Info *tmats_info){
+I106Status I106_Decode_TMATS_Text(char *text, uint32_t data_length, TMATS_Info *tmats_info){
     unsigned long       buffer_pos = 0;
     char              * buffer;
     char                line[2048];

@@ -8,9 +8,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
+#ifndef _WIN32
+#include <sys/mman.h>
 #include <unistd.h>
+#endif
 
 
 TEST_GROUP_RUNNER(test_i106){

@@ -23,7 +23,7 @@ TEST_TEAR_DOWN(test_1553){}
 TEST(test_1553, TestDecodeFirst1553F1){
     I106C10Header       header;
     I106Status          status;
-    void              * buffer;
+    char              * buffer;
     MS1553F1_Message    msg;
     MS1553F1_CSDW       csdw;
     MS1553F1_IPH        iph;
@@ -48,7 +48,7 @@ TEST(test_1553, TestDecodeFirst1553F1){
 TEST(test_1553, TestDecodeNext1553F1){
     I106C10Header       header;
     I106Status          status;
-    void              * buffer;
+    char              * buffer;
     MS1553F1_Message    msg;
     MS1553F1_CSDW       csdw;
     MS1553F1_IPH        iph;

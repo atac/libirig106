@@ -1,6 +1,8 @@
 
 #include <errno.h>
+#ifndef _WIN32
 #include <sys/mman.h>
+#endif
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
