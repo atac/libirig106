@@ -77,16 +77,13 @@ TEST(test_i106, TestI106C10ReadNextHeader){
     int handle = 0;
     I106C10Header header;
 
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/indexed.c10", READ));
+
     MakeInOrderIndex(handle);
 
     handles[handle].FileMode = OVERWRITE;
     TEST_ASSERT_EQUAL(I106_WRONG_FILE_MODE, I106C10ReadNextHeader(handle, &header));
 
-    handles[handle].FileMode = READ_NET_STREAM;
-    TEST_ASSERT_EQUAL(I106C10ReadNextHeaderFile(handle, &header), I106C10ReadNextHeader(handle, &header));
-
-    I106C10Open(&handle, "tests/indexed.c10", READ);
-    MakeInOrderIndex(handle);
     handles[handle].FileMode = READ_IN_ORDER;
     handles[handle].Index.SortStatus = SORTED;
     TEST_ASSERT_EQUAL(I106C10ReadNextHeaderInOrder(handle, &header), I106C10ReadNextHeader(handle, &header));
@@ -237,6 +234,7 @@ TEST(test_i106, TestHeaderInit){
 
 TEST(test_i106, TestGetHeaderLength){
     I106C10Header header;
+    header.PacketFlags = 0;
 
     TEST_ASSERT_EQUAL(24, GetHeaderLength(&header));
 
@@ -247,6 +245,7 @@ TEST(test_i106, TestGetHeaderLength){
 
 TEST(test_i106, TestGetDataLength){
     I106C10Header header;
+    header.PacketFlags = 0;
     header.PacketLength = 100;
     TEST_ASSERT_EQUAL(76, GetDataLength(&header));
 }

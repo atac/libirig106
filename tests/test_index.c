@@ -33,8 +33,7 @@ TEST(test_index, TestIndexPresent){
     int handle = 1;
     int found_index;
 
-    I106Status status = I106C10Open(&handle, "tests/copy.c10", READ);
-    assert(status == I106_OK);
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
 
     TEST_ASSERT_EQUAL(I106_OK, IndexPresent(handle, &found_index));
     TEST_ASSERT_EQUAL(0, found_index);
@@ -44,8 +43,7 @@ TEST(test_index, TestIndexPresent){
 
 TEST(test_index, TestReadIndexes){
     int handle = 1;
-    I106Status status = I106C10Open(&handle, "tests/indexed.c10", READ);
-    assert(status == I106_OK);
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/indexed.c10", READ));
 
     TEST_ASSERT_EQUAL(I106_OK, ReadIndexes(handle));
     I106C10Close(handle);
@@ -54,8 +52,7 @@ TEST(test_index, TestReadIndexes){
 
 TEST(test_index, TestMakeIndex){
     int handle = 1;
-    I106Status status = I106C10Open(&handle, "tests/copy.c10", READ);
-    assert(status == I106_OK);
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
 
     TEST_ASSERT_EQUAL(I106_OK, MakeIndex(handle, 2));
     I106C10Close(handle);
