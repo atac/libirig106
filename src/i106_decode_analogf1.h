@@ -24,6 +24,7 @@ set BytesRead to zero, continue along
 #include "irig106ch10.h"
 #include "i106_decode_tmats.h"
 #include "i106_time.h"
+#include "int.h"
 
 
 /* Macros and definitions */

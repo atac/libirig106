@@ -24,7 +24,7 @@ TEST_TEAR_DOWN(test_decode_pcm){}
 
 TEST(test_decode_pcm, TestDecode_FirstPCM){
     I106C10Header header;
-    void * buffer = malloc(32);
+    char * buffer = malloc(32);
     PCMF1_Message msg;
     PCMF1_Attributes attributes;
     PCMF1_CSDW csdw;
@@ -34,12 +34,13 @@ TEST(test_decode_pcm, TestDecode_FirstPCM){
 
     attributes.BitPosition = 0;
     attributes.BitsInMinorFrame = 16;
-    attributes.Buffer = malloc(32);
     attributes.CommonWordLength = 2;
     attributes.DataWordBitCount = 1;
     attributes.MinorFrameWordCount = 1;
     attributes.SaveData = 0;
     attributes.WordsInMinorFrame = 3;
+
+    CreateOutputBuffers_PCMF1(&attributes);
 
     header.DataLength = 32;
     msg.SubPacketBits = 3;
@@ -49,7 +50,7 @@ TEST(test_decode_pcm, TestDecode_FirstPCM){
                 buffer, &msg));
 
     free(buffer);
-    free(attributes.Buffer);
+    FreeOutputBuffers_PCMF1(&attributes);
 }
 
 
@@ -118,6 +119,7 @@ TEST(test_decode_pcm, TestSet_Attributes_PCMF1){
 
 TEST(test_decode_pcm, TestCreateOutputBuffers_PCMF1){
     PCMF1_Attributes attributes;
+    attributes.WordsInMinorFrame = 10;
 
     TEST_ASSERT_EQUAL(I106_OK, CreateOutputBuffers_PCMF1(&attributes));
 }

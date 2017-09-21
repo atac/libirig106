@@ -1,19 +1,16 @@
 
 EXT=
+CLEANUP = rm -rf
+MKDIR = mkdir -p
 
 # Try to detect the OS we are running on, and adjust commands as needed
 ifeq ($(OS), Windows_NT)
 	ifeq ($(shell uname -s),) # not in a bash-like shell
 		CLEANUP = del /F /Q
 		MKDIR = mkdir
-	else # in a bash-like shell, like msys
-		CLEANUP = rm -f
-		MKDIR = mkdir -p
 	endif
 	EXT =.exe
 else
-	CLEANUP = rm -rf
-	MKDIR = mkdir -p
 endif
 
 CC=gcc
@@ -26,13 +23,18 @@ ifeq ($(shell uname -s), Darwin)
 CC=gcc-7
 endif
 
+ifeq ($(OS), Windows_NT)
+CFLAGS += -D_MSC_VER
+endif
+ifneq ($(OS), DARWIN)
 CFLAGS += -D_FILE_OFFSET_BITS=64
 CFLAGS += -D_LARGEFILE64_SOURCE
+endif
 CFLAGS += -ggdb
 CFLAGS += -fpack-struct=1
 CFLAGS += -fPIC
 CFLAGS += -std=c99
-CFLAGS += -Wno-address-of-packed-member
+# CFLAGS += -Wno-address-of-packed-member
 
 UNITY_ROOT=tests/unity
 SRC_DIR=src

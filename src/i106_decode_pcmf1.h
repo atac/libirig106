@@ -171,7 +171,7 @@ struct PCMF1_Message {
 
 
 /* Function Declaration */
-I106Status I106_Decode_FirstPCMF1(I106C10Header *header, void *buffer, PCMF1_Message *msg);
+I106Status I106_Decode_FirstPCMF1(I106C10Header *header, char *buffer, PCMF1_Message *msg);
 I106Status I106_Decode_NextPCMF1(PCMF1_Message *msg);
 I106Status DecodeMinorFrame_PCMF1(PCMF1_Message *msg);
 I106Status Set_Attributes_PCMF1(R_DataSource *r_datasource, PCMF1_Attributes *attributes);

@@ -18,47 +18,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\src\config.h" />
-    <ClInclude Include="..\src\i106_decode_1553f1.h" />
-    <ClInclude Include="..\src\i106_decode_analogf1.h" />
-    <ClInclude Include="..\src\i106_decode_arinc429.h" />
-    <ClInclude Include="..\src\i106_decode_can.h" />
-    <ClInclude Include="..\src\i106_decode_discrete.h" />
-    <ClInclude Include="..\src\i106_decode_ethernet.h" />
-    <ClInclude Include="..\src\i106_decode_index.h" />
-    <ClInclude Include="..\src\i106_decode_pcmf1.h" />
-    <ClInclude Include="..\src\i106_decode_time.h" />
-    <ClInclude Include="..\src\i106_decode_tmats.h" />
-    <ClInclude Include="..\src\i106_decode_uart.h" />
-    <ClInclude Include="..\src\i106_decode_video.h" />
-    <ClInclude Include="..\src\i106_index.h" />
-    <ClInclude Include="..\src\i106_time.h" />
-    <ClInclude Include="..\src\int.h" />
-    <ClInclude Include="..\src\irig106ch10.h" />
-    <ClInclude Include="..\src\util.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\src\i106_decode_1553f1.c" />
-    <ClCompile Include="..\src\i106_decode_analogf1.c" />
-    <ClCompile Include="..\src\i106_decode_arinc429.c" />
-    <ClCompile Include="..\src\i106_decode_can.c" />
-    <ClCompile Include="..\src\i106_decode_discrete.c" />
-    <ClCompile Include="..\src\i106_decode_ethernet.c" />
-    <ClCompile Include="..\src\i106_decode_index.c" />
-    <ClCompile Include="..\src\i106_decode_pcmf1.c" />
-    <ClCompile Include="..\src\i106_decode_time.c" />
-    <ClCompile Include="..\src\i106_decode_tmats.c" />
-    <ClCompile Include="..\src\i106_decode_uart.c" />
-    <ClCompile Include="..\src\i106_decode_video.c" />
-    <ClCompile Include="..\src\i106_index.c" />
-    <ClCompile Include="..\src\i106_time.c" />
-    <ClCompile Include="..\src\irig106ch10.c" />
-    <ClCompile Include="..\src\util.c" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{01E22346-C580-4DAC-BF7B-41E03399863E}</ProjectGuid>
-    <RootNamespace>irig106</RootNamespace>
+    <ProjectGuid>{D46198A1-0B96-4076-86FF-A9338DE79CB1}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tests</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -66,27 +29,27 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -106,49 +69,116 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>../tests/unity/extras/fixture/src;../tests/unity/src;../src</AdditionalIncludeDirectories>
       <CompileAs>CompileAsC</CompileAs>
       <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\tests\all_tests.c" />
+    <ClCompile Include="..\tests\test_decode_1553f1.c" />
+    <ClCompile Include="..\tests\test_decode_analogf1.c" />
+    <ClCompile Include="..\tests\test_decode_arinc429.c" />
+    <ClCompile Include="..\tests\test_decode_can.c" />
+    <ClCompile Include="..\tests\test_decode_discrete.c" />
+    <ClCompile Include="..\tests\test_decode_ethernet.c" />
+    <ClCompile Include="..\tests\test_decode_index.c" />
+    <ClCompile Include="..\tests\test_decode_pcmf1.c" />
+    <ClCompile Include="..\tests\test_decode_time.c" />
+    <ClCompile Include="..\tests\test_decode_tmats.c" />
+    <ClCompile Include="..\tests\test_decode_uart.c" />
+    <ClCompile Include="..\tests\test_decode_video.c" />
+    <ClCompile Include="..\tests\test_index.c" />
+    <ClCompile Include="..\tests\test_irig106ch10.c" />
+    <ClCompile Include="..\tests\test_time.c" />
+    <ClCompile Include="..\tests\unity\extras\fixture\src\unity_fixture.c" />
+    <ClCompile Include="..\tests\unity\src\unity.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\tests\unity\extras\fixture\src\unity_fixture.h" />
+    <ClInclude Include="..\tests\unity\extras\fixture\src\unity_fixture_internals.h" />
+    <ClInclude Include="..\tests\unity\extras\fixture\src\unity_fixture_malloc_overrides.h" />
+    <ClInclude Include="..\tests\unity\src\unity.h" />
+    <ClInclude Include="..\tests\unity\src\unity_internals.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="irig106.vcxproj">
+      <Project>{01e22346-c580-4dac-bf7b-41e03399863e}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

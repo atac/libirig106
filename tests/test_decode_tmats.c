@@ -22,7 +22,7 @@ TEST_TEAR_DOWN(test_decode_tmats){}
 
 TEST(test_decode_tmats, Test_Decode_TMATS){
     I106C10Header header;
-    void * buffer = malloc(32);
+    char * buffer = malloc(32);
     TMATS_Info tmats;
 
     header.DataLength = 0;
@@ -35,12 +35,12 @@ TEST(test_decode_tmats, Test_Decode_TMATS){
 
 
 TEST(test_decode_tmats, Test_Decode_TMATS_Text){
-    void * buffer = malloc(32);
+    char * buffer = malloc(32);
     TMATS_Info tmats;
 
     memset(&tmats, 0, sizeof(TMATS_Info));
 
-    TEST_ASSERT_EQUAL(I106_OK, I106_Decode_TMATS_Text(&buffer, 0, &tmats));
+    TEST_ASSERT_EQUAL(I106_OK, I106_Decode_TMATS_Text(buffer, 0, &tmats));
 
     free(buffer);
 }
@@ -48,7 +48,7 @@ TEST(test_decode_tmats, Test_Decode_TMATS_Text){
 
 TEST(test_decode_tmats, Test_Encode_TMATS){
     I106C10Header header;
-    void * buffer = malloc(32);
+    char * buffer = malloc(32);
     char * tmats = "Testing";
 
     TEST_ASSERT_EQUAL(I106_OK, I106_Encode_TMATS(&header, buffer, tmats));
@@ -59,7 +59,7 @@ TEST(test_decode_tmats, Test_Encode_TMATS){
 
 
 TEST(test_decode_tmats, Test_TMATS_Signature){
-    void * buffer = malloc(32);
+    char * buffer = malloc(32);
     uint16_t opcode;
     uint32_t signature;
 

@@ -20,7 +20,7 @@ TEST_TEAR_DOWN(test_ethernet){}
 
 TEST(test_ethernet, TestDecode_FirstEthernetF0){
     I106C10Header header;
-    void * buffer = malloc(32);
+    char * buffer = malloc(32);
     EthernetF0_Message msg;
 
     TEST_ASSERT_EQUAL(I106_OK, I106_Decode_FirstEthernetF0(&header, buffer, &msg));

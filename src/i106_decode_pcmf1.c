@@ -55,9 +55,9 @@ void RenewSyncCounters_PCMF1(PCMF1_Attributes *attributes, uint64_t sync_count);
 // Note; This code is tested only with Pcm in throughput mode
 
 
-I106Status I106_Decode_FirstPCMF1(I106C10Header *header, void *buffer,
+I106Status I106_Decode_FirstPCMF1(I106C10Header *header, char *buffer,
         PCMF1_Message *msg){
-    uint32_t subpacket_length;
+	uint32_t subpacket_length;
     uint32_t remainder;
 
     // Check for attributes available
@@ -91,7 +91,7 @@ I106Status I106_Decode_FirstPCMF1(I106C10Header *header, void *buffer,
         msg->IPTS = msg->IPTS_Base;
     }
     else {
-        // Not troughput mode, an intra packet header must be present
+        // Not throughput mode, an intra packet header must be present
         // NOTE: UNTESTED
 
         msg->IPH = (PCMF1_IPH *) ((char *)(msg->CSDW) + msg->BytesRead);
@@ -442,11 +442,11 @@ I106Status CreateOutputBuffers_PCMF1(PCMF1_Attributes *attributes){
 
     // Allocate the Pcm output buffer for a minor frame
     attributes->BufferSize = attributes->WordsInMinorFrame;
-    attributes->Buffer = (uint64_t *)calloc(sizeof(uint64_t), attributes->BufferSize);
+    attributes->Buffer = (uint64_t *)calloc(attributes->BufferSize, sizeof(uint64_t));
     if (attributes->Buffer == NULL)
         return I106_BUFFER_TOO_SMALL;
     
-    attributes->BufferError = (uint8_t *)calloc(sizeof(uint8_t), attributes->BufferSize);
+    attributes->BufferError = (uint8_t *)calloc(attributes->BufferSize, sizeof(uint8_t));
     if (attributes->BufferError == NULL){
         free(attributes->Buffer);
         attributes->Buffer = NULL;
