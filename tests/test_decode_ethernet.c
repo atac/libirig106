@@ -22,6 +22,9 @@ TEST(test_ethernet, TestDecode_FirstEthernetF0){
     I106C10Header header;
     char * buffer = malloc(100);
     EthernetF0_Message msg;
+    EthernetF0_CSDW csdw;
+    csdw.Frames = 10;
+    memcpy(buffer, &csdw, sizeof(EthernetF0_CSDW));
 
     TEST_ASSERT_EQUAL(I106_OK, I106_Decode_FirstEthernetF0(&header, buffer, &msg));
 
