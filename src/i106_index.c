@@ -353,7 +353,6 @@ I106Status ProcessNodeIndexPacket(int handle, int64_t offset){
 /* Add an index packet node to the in memory index array */
 void AddIndexNodeToIndex(int handle, IndexMsg *msg, uint16_t channel_id, uint8_t data_type){
     PacketIndexInfo      index_info;
-    I106Status           status;
     I106C10Header        header;
     void               * buffer;
     TimeF1_CSDW        * csdw;
@@ -374,16 +373,16 @@ void AddIndexNodeToIndex(int handle, IndexMsg *msg, uint16_t channel_id, uint8_t
     // Else if the indexed packet is a time packet then get the time from it
     else if (msg->NodeData->DataType == I106CH10_DTYPE_IRIG_TIME){
         // Go to what should be a time packet
-        status = I106C10SetPos(handle, *(msg->FileOffset));
+        I106C10SetPos(handle, *(msg->FileOffset));
 
         // Read the packet header
-        status = I106C10ReadNextHeader(handle, &header);
+        I106C10ReadNextHeader(handle, &header);
 
         // Make sure our buffer is big enough
         buffer = malloc(header.PacketLength);
 
         // Read the data buffer
-        status = I106C10ReadData(handle, header.PacketLength, buffer);
+        I106C10ReadData(handle, header.PacketLength, buffer);
 
         // Decode the time packet
         I106_Decode_TimeF1(&header, buffer, &index_info.IrigTime);

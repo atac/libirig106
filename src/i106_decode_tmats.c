@@ -533,15 +533,12 @@ void ConnectG(TMATS_Info * tmats_info){
 
 
 int DecodeRLine(char *code_name, char *data_item, R_Record **first_r_record){
-    int             found;
     char          * code_field;
     int             tokens;
     int             r_index;
     int             dsi_index;
     R_Record      * r_record;
     R_DataSource  * datasource;
-
-    found = 0;
 
     // See which R field it is
     code_field = strtok(code_name, "\\");

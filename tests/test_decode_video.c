@@ -32,7 +32,6 @@ TEST(test_decode_video, Test_Decode_FirstVideoF0){
 TEST(test_decode_video, Test_Decode_NextVideoF0){
     I106C10Header header;
     VideoF0_Message msg;
-    VideoF0_CSDW csdw;
     char * buffer = malloc(254);
 
     memset(buffer, 0, sizeof(VideoF0_CSDW));

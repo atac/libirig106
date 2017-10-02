@@ -38,9 +38,7 @@ TEST(test_decode_index, TestDecode_FirstIndex){
 TEST(test_decode_index, TestDecode_NextIndex){
     IndexMsg msg;
     IndexCSDW csdw;
-    I106C10Header header;
 
-    header.DataLength = 32;
     msg.DataLength = 32;
     msg.MessageNumber = 1;
     csdw.Count = 4;

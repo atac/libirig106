@@ -454,7 +454,7 @@ I106Status I106C10ReadData(int handle, unsigned long buffer_size, void *buffer){
 
 
 I106Status I106C10ReadDataFile(int handle, unsigned long buffer_size, void *buffer){
-    int             read_count;
+    int             read_count = 0;
     unsigned long   read_amount;
     I106Status      status = I106_OK;
 
@@ -570,11 +570,9 @@ I106Status I106C10FirstMsg(int handle){
 
 
 I106Status I106C10LastMsg(int handle){
-    I106Status     return_status, status;
+    I106Status     status;
     int64_t        pos;
     I106C10Header  header;
-    int            read_count;  
-    struct stat    stat_buffer, file_stat;
 
     // Check for a valid handle
     if (ValidHandle(handle))

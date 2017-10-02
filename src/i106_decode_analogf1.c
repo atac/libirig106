@@ -134,10 +134,6 @@ total number of channels!\n");
 
 I106Status I106_Decode_FirstAnalogF1(I106C10Header *header, void *buffer,
         AnalogF1_Message *msg){
-    int                    subchannel;
-    uint32_t               subpacket_length;
-    uint32_t               remainder;
-    uint32_t               subchannels;
     AnalogF1_Attributes  * attributes;
     
     // Check for attributes available
@@ -213,7 +209,6 @@ Current CSDW does not match initial CSDW\n",
 // TODO: implement needed attributes parsing in TMATS module
 I106Status Set_Attributes_AnalogF1(R_DataSource *r_datasource,
         AnalogF1_Attributes *attributes){
-    uint32_t  bit_count;
 
     if (attributes == NULL)
         return I106_INVALID_PARAMETER;

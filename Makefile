@@ -34,7 +34,7 @@ CFLAGS += -ggdb
 CFLAGS += -fpack-struct=1
 CFLAGS += -fPIC
 CFLAGS += -std=c99
-# CFLAGS += -Wno-address-of-packed-member
+CFLAGS += -Wall
 
 UNITY_ROOT=tests/unity
 SRC_DIR=src

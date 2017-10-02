@@ -65,7 +65,6 @@ I106Status I106_SetRelTime(int handle, I106Time *time, uint8_t rtc[]){
 // turn it into a real time based on the current reference IRIG time.
 I106Status I106_Rel2IrigTime(int handle, uint8_t rtc[], I106Time *time){
     int64_t     rel_time;
-    I106Status  status;
 
     // Convert 6 byte time array to 16 bit int.  This only works for 
     // positive time, but that shouldn't be a problem
