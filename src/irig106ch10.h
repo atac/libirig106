@@ -213,7 +213,7 @@ extern I106C10Handle  handles[MAX_HANDLES];
 
 // Open / Close
 I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode);
-I106Status I106C10OpenBuffer(int *handle, void *buffer, size_t size, I106C10Mode mode);
+I106Status I106C10OpenBuffer(int *handle, void *buffer, int size, I106C10Mode mode);
 I106Status I106C10Close(int handle);
 
 // Read / Write

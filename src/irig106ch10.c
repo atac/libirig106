@@ -59,7 +59,7 @@ I106Status InitHandle(int *handle, const char filename[]){
 }
 
 
-I106Status I106C10OpenBuffer(int *handle, void *buffer, size_t size, I106C10Mode mode){
+I106Status I106C10OpenBuffer(int *handle, void *buffer, int size, I106C10Mode mode){
     I106Status status;
     const char filename[] = "<buffer>";
 
