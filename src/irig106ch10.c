@@ -40,14 +40,10 @@ static int     handles_inited = 0;
 void InitHandles();
 int GetHandle();
 I106Status ValidHandle(int handle);
+I106Status I106C10CheckOpen(int *handle, I106C10Mode mode);
 
 
-I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
-    int            read_count;
-    uint16_t       signature;
-    I106Status     status;
-    I106C10Header  header;
-
+I106Status InitHandle(int *handle, const char filename[]){
     // Get the next available handle and initialize it.
     InitHandles();
     if ((*handle = GetHandle()) == -1)
@@ -58,6 +54,41 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
     strncpy(handles[*handle].FileName, filename, sizeof(handles[*handle].FileName));
     handles[*handle].FileName[sizeof(handles[*handle].FileName) - 1] = '\0';
     handles[*handle].BytesWritten = 0L;
+
+    return I106_OK;
+}
+
+
+I106Status I106C10OpenBuffer(int *handle, void *buffer, size_t size, I106C10Mode mode){
+    I106Status status;
+    const char filename[] = "<buffer>";
+
+    if ((status = InitHandle(handle, filename)))
+        return status;
+
+    // Open buffer in correct mode
+    if (mode == READ || mode == READ_IN_ORDER)
+        handles[*handle].File = fileno(fmemopen(buffer, size, "r"));
+    /* else if (mode == OVERWRITE) */
+    /*     handles[*handle].File = open(filename, OVERWRITE_FLAGS, OVERWRITE_MODE); */
+
+    // Any other mode is an error
+    else {
+        handles[*handle].File_State = I106_CLOSED;
+        handles[*handle].FileMode  = CLOSED;
+        handles[*handle].InUse = 0;
+        *handle = -1;
+        return I106_OPEN_ERROR;
+    }
+
+    return I106C10CheckOpen(handle, mode);
+}
+
+I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
+    I106Status status;
+
+    if ((status = InitHandle(handle, filename)))
+        return status;
 
     // Open file in correct mode
     if (mode == READ || mode == READ_IN_ORDER)
@@ -73,6 +104,16 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
         *handle = -1;
         return I106_OPEN_ERROR;
     }
+
+    return I106C10CheckOpen(handle, mode);
+}
+
+
+I106Status I106C10CheckOpen(int *handle, I106C10Mode mode){
+    int            read_count;
+    uint16_t       signature;
+    I106Status     status;
+    I106C10Header  header;
 
     if (handles[*handle].File == -1){
         handles[*handle].InUse = 0;
