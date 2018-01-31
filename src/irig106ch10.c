@@ -66,9 +66,17 @@ I106Status I106C10OpenBuffer(int *handle, void *buffer, int size, I106C10Mode mo
     if ((status = InitHandle(handle, filename)))
         return status;
 
-    // Open buffer in correct mode
-    if (mode == READ || mode == READ_IN_ORDER)
-        handles[*handle].File = fileno(fmemopen(buffer, size, "r"));
+    // Write buffer to tmpfile and attach to handle
+    if (mode == READ || mode == READ_IN_ORDER){
+        handles[*handle].File = fileno(tmpfile());
+        write(handles[*handle].File, buffer, size);
+        if (handles[*handle].File < 0)
+            return I106_OPEN_ERROR;
+
+        if ((0 > write(handles[*handle].File, buffer, size)))
+            return I106_OPEN_ERROR;
+        lseek(handles[*handle].File, 0, SEEK_SET);
+    }
     /* else if (mode == OVERWRITE) */
     /*     handles[*handle].File = open(filename, OVERWRITE_FLAGS, OVERWRITE_MODE); */
 
