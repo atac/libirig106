@@ -35,8 +35,6 @@ TEST(test_index, TestIndexPresent){
 
     TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
 
-    TEST_ASSERT_EQUAL(1, 2);
-
     TEST_ASSERT_EQUAL(I106_OK, IndexPresent(handle, &found_index));
     TEST_ASSERT_EQUAL(0, found_index);
     I106C10Close(handle);
