@@ -144,12 +144,13 @@ I106Status I106C10CheckOpen(int *handle, I106C10Mode mode){
         handles[*handle].FileMode   = mode;
         handles[*handle].File_State = I106_READ_HEADER;
 
+        // @TODO: move this to a new "validate" function
         // Make sure first packet is a config packet
-        I106C10SetPos(*handle, 0L);
-        if ((status = I106C10ReadNextHeaderFile(*handle, &header)))
-            return I106_OPEN_WARNING;
-        if (header.DataType != I106CH10_DTYPE_COMPUTER_1)
-            return I106_OPEN_WARNING;
+        /* I106C10SetPos(*handle, 0L); */
+        /* if ((status = I106C10ReadNextHeaderFile(*handle, &header))) */
+        /*     return I106_OPEN_WARNING; */
+        /* if (header.DataType != I106CH10_DTYPE_COMPUTER_1) */
+        /*     return I106_OPEN_WARNING; */
 
         // Everything OK so get time and reset back to the beginning
         I106C10SetPos(*handle, 0L);
