@@ -1,57 +1,48 @@
 # IRIG106LIB
 
-Copyright (c) 2017 Irig106.org
-
 Originally created by Bob Baggerman <bob@irig106.org>
 
 irig106lib is an open source library for reading and writing IRIG 106 
-Chapter 10 format files. The library supports the following compilers (building
-a static library):
-
-* Microsoft Visual C (Win32 static library and DLL)
-* GNU GCC compiler (Linux and macOS)
-* DJGPP
-
-A Python wrapper for the compiled DLL is also included.  The Python wrapper is
-incomplete but demonstrates how to make calls into the DLL from Python.
+Chapter 10 format files. The library is compatible with Windows/Visual C or
+Unix/GCC environments. A cross-platform Python wrapper is also available.
 
 
 ## Using the library
 
-Reading files involves opening the file, reading a data packet header, 
-optionally read the data packet (which may contain multiple data packets), 
-decode the data packet, and then loop back and read the next header.  The 
-routines for handling data packets are in "irig106ch10".  Routines for decoding 
-each data packet type are contained in their own source code modules.  For 
-example, 1553 decoding is contained in "i106_decode_1553f1".  Below is a 
-simplified example of packet processing:
+Reading files involves opening the file, reading a packet header, 
+optionally read the packet body (which may contain one or more data messages), 
+decode the data, and then loop to read the next header. The 
+routines for handling data packets are in "irig106ch10". Routines for decoding 
+each data type are organized into files named for the corresponding data
+type. For example, 1553 decoding is contained in "i106_decode_1553f1". Below is
+a simplified example of packet processing:
 
 ``` .c
-I106C10Open(&handle, file, I106_READ);
+    I106Status status = I106C10Open(&handle, filename, READ);
+    I106C10Header header;
 
-while (1){
-    I106Status status = I106C10ReadNextHeader(handle, &header);
+    while (status == I106_OK){
+        status = I106C10ReadNextHeader(handle, &header);
 
-    if (status == I106_EOF) return;
+        if (status == I106_EOF)
+            break;
 
-    status = I106C10ReadData(handle, &buffer_size, buffer);
+        int buffer_size = GetDataLength(&header);
+        char *buffer = malloc(buffer_size);
+        status = I106C10ReadData(handle, buffer_size, buffer);
 
-    switch (header.DataType){
+        MS1553F1_Message msg;
 
-        case I106CH10_DTYPE_1553_FMT_1 :    // 0x19
-
+        if (header.DataType == I106CH10_DTYPE_1553_FMT_1){  // 0x19
             status = I106_Decode_First1553F1(&header, buffer, &msg);
             while (status == I106_OK){
-                // Do some processing...
+                // Process message...
                 status = I106_Decode_Next1553F1(&msg);
             }
-            break;
-        default:
-            break;
+        }
     }
-}
 
-I106C10Close(handle);
+    I106C10Close(handle);
 ```
 
 
@@ -108,10 +99,6 @@ These header files are necessary for every application that uses the IRIG 106 li
 
 ### First Pass (current)
 
-* Update naming conventions (need to codify somewhere)
-* Disable networking, C++, and lookahead code (for now)
-* Move util functions from top-level to new util "module"
-    * Create valid_handle utility function to reduce duplication
 * Explore difference between rel_time and RTC (verbage is inconsistent esp. in
   i106_time)
 * Automated tests
@@ -120,7 +107,6 @@ These header files are necessary for every application that uses the IRIG 106 li
 
 ### Other
 
-* Update and spinoff python wrapper
 * Update and spinoff utils?
 * Implement support for index records.
 * Implement seek() based on time.
