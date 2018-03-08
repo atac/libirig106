@@ -158,10 +158,10 @@ I106Status I106C10CheckOpen(int *handle, I106C10Mode mode){
         handles[*handle].FileMode = mode;
     }
 
-    /* else if (mode == OVERWRITE){ */
-    /*     handles[*handle].File_State = I106_WRITE; */
-    /*     handles[*handle].FileMode = mode; */
-    /* } */
+    else if (mode == OVERWRITE){
+        handles[*handle].File_State = I106_WRITE;
+        handles[*handle].FileMode = mode;
+    }
 
     return I106_OK;
 }
