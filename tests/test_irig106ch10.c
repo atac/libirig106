@@ -149,7 +149,7 @@ TEST(test_i106, TestI106C10ReadData){
 
 TEST(test_i106, TestI106C10ReadDataFile){
     int handle;
-    unsigned long buffer_size = 10000;
+    unsigned long buffer_size = 100000;
     void *buffer = malloc(buffer_size);
 
     TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
