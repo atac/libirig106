@@ -19,9 +19,9 @@ DEPEND=gcc -MM -MG -MF
 CFLAGS=
 
 # Just use GCC on mac for now
-ifeq ($(shell uname -s), Darwin)
-CC=gcc-7
-endif
+# ifeq ($(shell uname -s), Darwin)
+# CC=gcc-7
+# endif
 
 ifeq ($(OS), Windows_NT)
 CFLAGS += -D_MSC_VER
