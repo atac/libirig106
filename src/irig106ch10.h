@@ -7,6 +7,8 @@
 #ifndef _irig106ch10_h_
 #define _irig106ch10_h_
 
+#include <stdio.h>
+
 #include "config.h"
 #include "int.h"
 
@@ -187,6 +189,7 @@ typedef struct I106C10Handle I106C10Handle;
 struct I106C10Handle {
     int            InUse;
     int            File;
+    FILE          *fp;
     char           FileName[MAX_PATH];
     I106C10Mode    FileMode;
     I106FileState  File_State;

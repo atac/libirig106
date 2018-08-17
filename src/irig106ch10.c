@@ -68,17 +68,17 @@ I106Status I106C10OpenBuffer(int *handle, void *buffer, int size, I106C10Mode mo
 
     // Write buffer to tmpfile and attach to handle
     if (mode == READ || mode == READ_IN_ORDER){
-        handles[*handle].File = fileno(tmpfile());
-        write(handles[*handle].File, buffer, size);
-        if (handles[*handle].File < 0)
+        if ((handles[*handle].fp = tmpfile()) == NULL)
             return I106_OPEN_ERROR;
 
-        if ((0 > write(handles[*handle].File, buffer, size)))
+        if (0 > (handles[*handle].File = fileno(handles[*handle].fp)))
             return I106_OPEN_ERROR;
+
+        if (0 > write(handles[*handle].File, buffer, size))
+            return I106_OPEN_ERROR;
+
         lseek(handles[*handle].File, 0, SEEK_SET);
     }
-    /* else if (mode == OVERWRITE) */
-    /*     handles[*handle].File = open(filename, OVERWRITE_FLAGS, OVERWRITE_MODE); */
 
     // Any other mode is an error
     else {
@@ -182,6 +182,9 @@ I106Status I106C10Close(int handle){
     if ((handles[handle].File != -1) && (handles[handle].InUse == 1))
         close(handles[handle].File);
 
+    if ((handles[handle].fp != NULL) && (handles[handle].InUse == 1))
+        fclose(handles[handle].fp);
+
     // Free index buffer and mark unsorted
     free(handles[handle].Index.Index);
     handles[handle].Index.Index          = NULL;
@@ -192,6 +195,7 @@ I106Status I106C10Close(int handle){
 
     // Reset some status variables
     handles[handle].File       = -1;
+    handles[handle].fp         = NULL;
     handles[handle].InUse      = 0;
     handles[handle].FileMode   = CLOSED;
     handles[handle].File_State = I106_CLOSED;
