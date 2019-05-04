@@ -1,0 +1,56 @@
+
+# pool:
+#   vmImage: 'vs2017-win2016'
+
+trigger:
+- master
+
+steps:
+# - task: UsePythonVersion@0
+#   inputs:
+#     versionSpec: '3.7'
+#     architecture: 'x64'
+
+# - script: python -m pip install -r requirements.txt
+#   displayName: 'Install dependencies'
+#
+
+- script: make
+  displayName: 'Build'
+
+- script: git submodule init && git submodule update
+  displayName: 'Load git submodules'
+
+- script: make test
+  displayName: 'Run tests'
+
+# - task: PublishTestResults@2
+#   inputs:
+#     testResultsFormat: 'JUnit'
+#     testResultsFiles: '**/test-results.xml'
+#     testRunTitle: 'Python $(python.version)'
+#   condition: succeededOrFailed()
+
+# - task: PublishPipelineArtifact@0
+#   displayName: 'Publish binary'
+#   inputs:
+#     artifactName: 'witdb'
+#     targetPath: 'dist/witdb.exe'
+
+# - script: python -m pip download -r requirements.txt -d ./deps
+#   displayName: 'Download dependencies'
+
+# - task: ArchiveFiles@2
+#   displayName: 'Zip dependencies'
+#   inputs:
+#     rootFolderOrFile: 'deps' 
+#     includeRootFolder: true 
+#     archiveType: 'zip'
+#     archiveFile: 'deps.zip' 
+#     replaceExistingArchive: true 
+
+# - task: PublishPipelineArtifact@0
+#   displayName: 'Publish dependencies'
+#   inputs:
+#     artifactName: 'dependencies'
+#     targetPath: 'deps.zip'
