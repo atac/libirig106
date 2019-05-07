@@ -1,5 +1,7 @@
 # IRIG106LIB
 
+[![Build Status](https://dev.azure.com/atac-bham/libirig106/_apis/build/status/atac-bham.libirig106?branchName=master)](https://dev.azure.com/atac-bham/libirig106/_build/latest?definitionId=2&branchName=master)
+
 Originally created by Bob Baggerman <bob@irig106.org>
 
 irig106lib is an open source library for reading and writing IRIG 106 
