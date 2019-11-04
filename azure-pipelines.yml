@@ -30,7 +30,7 @@ steps:
 
 - script: make
   displayName: 'Build (Unix)'
-  condition: neq( variables['Agent.OS'], 'Linux' )
+  condition: eq( variables['Agent.OS'], 'Linux' )
 
 - script: git submodule init && git submodule update
   displayName: 'Load git submodules'
