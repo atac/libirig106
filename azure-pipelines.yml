@@ -1,6 +1,15 @@
 
-# pool:
-#   vmImage: 'vs2017-win2016'
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-16.04'
+    mac:
+      imageName: 'macos-10.13'
+    windows:
+      imageName: 'vs2017-win2016'
+
+pool:
+  vmImage: $(imageName)
 
 trigger:
 - master
@@ -15,8 +24,13 @@ steps:
 #   displayName: 'Install dependencies'
 #
 
+- script: msbuild win/irig106.sln
+  displayName: 'Build (Windows)
+  condition: eq( variables['Agent.OS'], 'Windows_NT' )
+
 - script: make
-  displayName: 'Build'
+  displayName: 'Build (Unix)'
+  condition: neq( variables['Agent.OS'], 'Linux' )
 
 - script: git submodule init && git submodule update
   displayName: 'Load git submodules'
