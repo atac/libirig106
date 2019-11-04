@@ -25,7 +25,7 @@ steps:
 #
 
 - script: msbuild win/irig106.sln
-  displayName: 'Build (Windows)
+  displayName: 'Build (Windows)'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
 - script: make
