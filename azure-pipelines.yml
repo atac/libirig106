@@ -37,7 +37,7 @@ steps:
 #   displayName: 'Build (Windows)'
 #   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
-- script: win/x64/Debug/tests.exe
+- script: ./win/x64/Debug/tests.exe
   displayName: 'Run tests (Windows)'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
