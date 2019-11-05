@@ -27,7 +27,7 @@ steps:
 - script: git submodule init && git submodule update
   displayName: 'Load git submodules'
 
-- script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/MSBuild/15.0/Bin/msbuild.exe" win/irig106.sln
+- script: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/MSBuild/15.0/Bin/msbuild.exe win/irig106.sln
   displayName: 'Build (Windows)'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
