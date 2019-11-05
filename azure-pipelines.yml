@@ -27,9 +27,15 @@ steps:
 - script: git submodule init && git submodule update
   displayName: 'Load git submodules'
 
-- script: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/MSBuild/15.0/Bin/msbuild.exe win/irig106.sln
+- task: MSBuild@1
   displayName: 'Build (Windows)'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
+  inputs:
+    solution: 'win/irig106.sln.sln' 
+
+# - script: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/MSBuild/15.0/Bin/msbuild.exe win/irig106.sln
+#   displayName: 'Build (Windows)'
+#   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
 - script: win/x64/Debug/tests.exe
   displayName: 'Run tests (Windows)'
@@ -37,11 +43,11 @@ steps:
 
 - script: make
   displayName: 'Build (Unix)'
-  condition: ne( variables['Agent.OS'], 'Linux' )
+  condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
 - script: make test
   displayName: 'Run tests'
-  condition: ne( variables['Agent.OS'], 'Linux' )
+  condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
 # - task: PublishTestResults@2
 #   inputs:
