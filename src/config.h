@@ -34,11 +34,6 @@
 #pragma warning(disable : 4996)
 #endif
 
-// Turn on network support - broken on windows (currently disabled)
-#if !defined(_MSC_VER)
-/* #define IRIG_NETWORKING */
-#endif
-
 
 // File open flags
 

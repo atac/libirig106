@@ -5,15 +5,15 @@
 Originally created by Bob Baggerman <bob@irig106.org>
 
 irig106lib is an open source library for reading and writing IRIG 106 
-Chapter 10 format files. The library is compatible with Windows/Visual C or
+Chapter 10 files. The library is compatible with Windows/Visual C or
 Unix/GCC environments. A cross-platform Python wrapper is also available.
 
 
 ## Using the library
 
 Reading files involves opening the file, reading a packet header, 
-optionally read the packet body (which may contain one or more data messages), 
-decode the data, and then loop to read the next header. The 
+optionally reading the packet body (which may contain one or more data messages), 
+decoding the data, and then looping to read the next header. The 
 routines for handling data packets are in "irig106ch10". Routines for decoding 
 each data type are organized into files named for the corresponding data
 type. For example, 1553 decoding is contained in "i106_decode_1553f1". Below is
