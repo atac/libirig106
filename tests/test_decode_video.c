@@ -34,14 +34,14 @@ TEST(test_decode_video, Test_Decode_NextVideoF0){
     VideoF0_Message msg;
     char * buffer = malloc(254);
 
-    /* memset(buffer, 0, sizeof(VideoF0_CSDW)); */
-    /* header.DataLength = 512; */
-    /* msg.Data = buffer + 4; */
-    /* msg.CSDW = (VideoF0_CSDW *)buffer; */
+    memset(buffer, 0, sizeof(VideoF0_CSDW));
+    header.DataLength = 512;
+    msg.Data = (uint8_t *)buffer + 4;
+    msg.CSDW = (VideoF0_CSDW *)buffer;
 
-    /* msg.CSDW->ET = 0; */
+    msg.CSDW->ET = 0;
 
-    /* TEST_ASSERT_EQUAL(I106_OK, I106_Decode_NextVideoF0(&header, &msg)); */
+    TEST_ASSERT_EQUAL(I106_OK, I106_Decode_NextVideoF0(&header, &msg));
 
     free(buffer);
 }
