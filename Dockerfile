@@ -1,4 +1,6 @@
 
+# Run tests in a GCC docker container #
+
 FROM gcc:6.1
 
 # Clean, build, and run tests

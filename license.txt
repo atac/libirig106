@@ -1,6 +1,6 @@
-irig106lib
 
-Copyright (c) 2017 Irig106.org
+Forked from irig106lib by Bob Baggerman Copyright (c) 2017 Irig106.org
+Additional changes Copyright (c) 2017-2019 Micah Ferrill
 
 All rights reserved.
 
