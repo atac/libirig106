@@ -16,10 +16,10 @@ Using the library
 
 Basic usage consists of:
 
-0. Opening the file
-0. Reading a packet header
-0. Processing packet data if relevant
-0. Repeat from #2
+1. Opening the file
+2. Reading a packet header
+3. Processing packet data if relevant
+4. Repeat from #2
 
 As an example, to iterate over 1553 messages in a file:
 
