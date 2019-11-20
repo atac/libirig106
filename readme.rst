@@ -1,4 +1,5 @@
-IRIG106LIB
+
+LibIrig106
 ==========
 
 |StatusImage|_
