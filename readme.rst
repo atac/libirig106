@@ -17,12 +17,14 @@ Using the library
 
 Basic usage consists of:
 
-0. Opening the file
-0. Reading a packet header
-0. Processing packet data if relevant
-0. Repeat from #2
+1. Opening the file
+2. Reading a packet header
+3. Processing packet data if relevant
+4. Repeat from #2
 
-As an example, to iterate over 1553 messages in a file::
+As an example, to iterate over 1553 messages in a file:
+
+.. code-block:: c
 
     I106Status status;
     I106C10Header header;
@@ -43,7 +45,7 @@ As an example, to iterate over 1553 messages in a file::
         }
 
         if (header.DataType == I106CH10_DTYPE_1553_FMT_1){  // 0x19
-            while ((status == status = I106_Decode_First1553F1(&header, buffer, &msg)){
+            while ((status = I106_Decode_First1553F1(&header, buffer, &msg)){
                 // Process message...
             }
         }
@@ -89,7 +91,6 @@ To Do
 * Provide better, more automatic ways to keep time in sync
 * Review "header version" to see what needs to be accounted for in code
 * Implement partial & missing datatypes
-    * 1394
 
 
 .. _Python Wrapper: https://github.com/atac-bham/libirig106-python
