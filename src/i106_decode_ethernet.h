@@ -46,14 +46,15 @@ struct EthernetF0_CSDW {
 
 // Intra-message header
 typedef struct {
-    uint8_t     IPTS[8];           // Reference time
-    uint32_t    Length      : 14;  // Data length
-    uint32_t    Reserved1   :  2;
-    uint32_t    NetID       :  8;
-    uint32_t    Speed       :  4;
-    uint32_t    Content     :  2;
-    uint32_t    FrameError  :  1;
-    uint32_t    Reserved2   :  1; 
+    uint8_t     IPTS[8];            // Reference time
+    uint32_t    Length       : 14;  // Data length
+    uint32_t    LengthError  :  1;
+    uint32_t    DataCRCError :  1;
+    uint32_t    NetID        :  8;
+    uint32_t    Speed        :  4;
+    uint32_t    Content      :  2;
+    uint32_t    FrameError   :  1;
+    uint32_t    FrameCRCError:  1; 
 } PACKED EthernetF0_IPH;
 
 #if defined(_MSC_VER)
