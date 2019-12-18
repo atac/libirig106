@@ -120,8 +120,6 @@ I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
 I106Status I106C10CheckOpen(int *handle, I106C10Mode mode){
     int            read_count;
     uint16_t       signature;
-    I106Status     status;
-    I106C10Header  header;
 
     if (handles[*handle].File == -1){
         handles[*handle].InUse = 0;
