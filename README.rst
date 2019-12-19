@@ -1,13 +1,13 @@
 
-LibIrig106
+libirig106
 ==========
 
 |StatusImage|_
 
 Forked from Bob Baggerman's `irig106lib`_
 
-libirig106 is an open source library for reading and writing IRIG 106 
-Chapter 10 (now 11) files tested on all 3 major platforms.
+libirig106 is a cross-platform open-source library written in C for reading and
+writing IRIG 106 Chapter 10 (now 11) files. Tested on all 3 major platforms.
 
 A cross-platform `Python wrapper`_ is also available.
 
