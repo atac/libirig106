@@ -73,7 +73,7 @@ Supported data types:
 * Time packets
 * TMATS packets
 * UART Format 0
-* Video Formats 0 and 1
+* Video Format 0
 
 To Do
 -----
@@ -83,10 +83,8 @@ To Do
 * More robust tests
 * Remove/replace Message->Datalength (refers to packet body size as opposed to
   message length)
-* Update and spinoff utils?
 * Implement support for index records.
 * Implement seek() based on time.
-* Implement video decoder
 * Parse more TMATS fields
 * Provide better, more automatic ways to keep time in sync
 * Review "header version" to see what needs to be accounted for in code
