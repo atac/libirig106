@@ -44,10 +44,11 @@ TEST_DIR=tests
 # Includes
 CFLAGS += -I$(UNITY_ROOT)/src
 CFLAGS += -I$(UNITY_ROOT)/extras/fixture/src
+CFLAGS += -I$(UNITY_ROOT)/extras/memory/src
 CFLAGS += -I$(SRC_DIR)
 
-UNITY := $(UNITY_ROOT)/src/unity.c $(UNITY_ROOT)/extras/fixture/src/unity_fixture.c
-UNITY_OBJ := $(OBJ_DIR)/unity.o $(OBJ_DIR)/unity_fixture.o
+UNITY := $(UNITY_ROOT)/src/unity.c $(UNITY_ROOT)/extras/fixture/src/unity_fixture.c $(UNITY_ROOT)/extras/memory/src/unity_memory.c
+UNITY_OBJ := $(OBJ_DIR)/unity.o $(OBJ_DIR)/unity_fixture.o $(OBJ_DIR)/unity_memory.o
 
 TESTS := $(wildcard $(TEST_DIR)/*.c)
 TEST_RUNNERS := $(TESTS:$(TEST_DIR)/test_%.c=$(TEST_DIR)/test_%$(EXT))
@@ -79,6 +80,7 @@ $(TEST_OBJ): $(OBJ_DIR)/%.o : $(TEST_DIR)/%.c
 $(UNITY_OBJ):
 	$(CC) $(CFLAGS) -c $(UNITY_ROOT)/src/unity.c -o $(OBJ_DIR)/unity.o
 	$(CC) $(CFLAGS) -c $(UNITY_ROOT)/extras/fixture/src/unity_fixture.c -o $(OBJ_DIR)/unity_fixture.o
+	$(CC) $(CFLAGS) -c $(UNITY_ROOT)/extras/memory/src/unity_memory.c -o $(OBJ_DIR)/unity_memory.o
 
 clean:
 	$(CLEANUP) libirig106.so libirig106.a && \
