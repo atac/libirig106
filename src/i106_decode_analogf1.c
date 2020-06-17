@@ -416,7 +416,9 @@ I106Status I106_Decode_NextAnalogF1(AnalogF1_Message *msg){
                     return I106_UNSUPPORTED;
             }
             
-            while (msg->BytesRead < msg->Length){
+            // TODO: not sure why we needed the while in the first place?
+            // gets stuck in an infinite loop on linux or WSL
+            /* while (msg->BytesRead < msg->Length){ */
                 for (int32_t i = 1; i < max_simultaneous; i++){
                     for (int j = 0; j < subchannels; j++){
                         if (max_simultaneous == sample_factors[j]){
@@ -426,7 +428,7 @@ I106Status I106_Decode_NextAnalogF1(AnalogF1_Message *msg){
                         }
                     }
                 }
-            }
+            /* } */
         }
         else {
             if (subchannels > 1){
