@@ -130,13 +130,14 @@ I106Status I106C10CheckOpen(int *handle, I106C10Mode mode){
     if (mode == READ || mode == READ_IN_ORDER){
 
         // Check for valid sync pattern
-        read_count = read(handles[*handle].File, &signature, 2);
-        if (read_count != 2 || signature != IRIG106_SYNC){
-            close(handles[*handle].File);
-            handles[*handle].InUse = 0;
-            *handle = -1;
-            return I106_OPEN_ERROR;
-        }
+        // TODO: re-enable this later. Not appropriate for OpenBuffer
+        /* read_count = read(handles[*handle].File, &signature, 2); */
+        /* if (read_count != 2 || signature != IRIG106_SYNC){ */
+        /*     close(handles[*handle].File); */
+        /*     handles[*handle].InUse = 0; */
+        /*     *handle = -1; */
+        /*     return I106_OPEN_ERROR; */
+        /* } */
 
         // Open OK and sync character OK so set read state to reflect this
         handles[*handle].FileMode   = mode;
