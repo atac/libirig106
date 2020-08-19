@@ -250,8 +250,11 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
                           handles[handle].HeaderBufferLength -
                           handles[handle].DataBufferPos;
 
-                if ((status = I106C10SetPos(handle, offset)))
+                if ((status = I106C10SetPos(handle, offset))){
+                    if (status == I106_EOF)
+                        return I106_EOF;
                     return I106_SEEK_ERROR;
+                }
             }
 
         case I106_READ_NET_STREAM:
@@ -344,8 +347,11 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
 
             offset -= handles[handle].HeaderBufferLength + 1;
 
-            if ((status = I106C10SetPos(handle, offset)))
+            if ((status = I106C10SetPos(handle, offset))){
+                if (status == I106_EOF)
+                    return status;
                 return I106_SEEK_ERROR;
+            }
         }
 
     }
@@ -679,7 +685,7 @@ I106Status I106C10SetPos(int handle, int64_t offset){
             I106C10GetPos(handle, &pos);
 
             status = lseek(handles[handle].File, 0, SEEK_END);
-            if (offset > status)
+            if (offset >= status)
                 return I106_EOF;
             else
                 I106C10SetPos(handle, pos);
