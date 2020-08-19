@@ -674,6 +674,16 @@ I106Status I106C10SetPos(int handle, int64_t offset){
             || handles[handle].FileMode == READ_IN_ORDER){
         // Seek
         off_t status = lseek(handles[handle].File, (off_t)offset, SEEK_SET);
+        if (status < 0){
+            int64_t pos;
+            I106C10GetPos(handle, &pos);
+
+            status = lseek(handles[handle].File, 0, SEEK_END);
+            if (offset > status)
+                return I106_EOF;
+            else
+                I106C10SetPos(handle, pos);
+        }
         assert(status >= 0);
 
         // Can't be sure we're on a message boundary so set unsync'ed
