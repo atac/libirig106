@@ -271,6 +271,10 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
     while (1){
         header_ok = 1;
 
+        // Find the offset where we start parsing
+        if ((status = I106C10GetPos(handle, &offset)))
+            return I106_SEEK_ERROR;
+
         // Read the header
         if (handles[handle].FileMode != READ_NET_STREAM)
             read_count = read(handles[handle].File, header, HEADER_SIZE);
@@ -342,12 +346,10 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
 
         // Read header was not OK so try again beyond previous read point
         if (handles[handle].FileMode != READ_NET_STREAM){
-            if ((status = I106C10GetPos(handle, &offset)))
-                return I106_SEEK_ERROR;
 
-            offset -= handles[handle].HeaderBufferLength + 1;
+            /* printf("No header at %d, retrying\n", (int)offset); */
 
-            if ((status = I106C10SetPos(handle, offset))){
+            if ((status = I106C10SetPos(handle, offset + 1))){
                 if (status == I106_EOF)
                     return status;
                 return I106_SEEK_ERROR;
