@@ -130,13 +130,14 @@ I106Status I106C10CheckOpen(int *handle, I106C10Mode mode){
     if (mode == READ || mode == READ_IN_ORDER){
 
         // Check for valid sync pattern
-        read_count = read(handles[*handle].File, &signature, 2);
-        if (read_count != 2 || signature != IRIG106_SYNC){
-            close(handles[*handle].File);
-            handles[*handle].InUse = 0;
-            *handle = -1;
-            return I106_OPEN_ERROR;
-        }
+        // TODO: re-enable this later. Not appropriate for OpenBuffer
+        /* read_count = read(handles[*handle].File, &signature, 2); */
+        /* if (read_count != 2 || signature != IRIG106_SYNC){ */
+        /*     close(handles[*handle].File); */
+        /*     handles[*handle].InUse = 0; */
+        /*     *handle = -1; */
+        /*     return I106_OPEN_ERROR; */
+        /* } */
 
         // Open OK and sync character OK so set read state to reflect this
         handles[*handle].FileMode   = mode;
@@ -249,8 +250,11 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
                           handles[handle].HeaderBufferLength -
                           handles[handle].DataBufferPos;
 
-                if ((status = I106C10SetPos(handle, offset)))
+                if ((status = I106C10SetPos(handle, offset))){
+                    if (status == I106_EOF)
+                        return I106_EOF;
                     return I106_SEEK_ERROR;
+                }
             }
 
         case I106_READ_NET_STREAM:
@@ -267,6 +271,10 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
     while (1){
         header_ok = 1;
 
+        // Find the offset where we start parsing
+        if ((status = I106C10GetPos(handle, &offset)))
+            return I106_SEEK_ERROR;
+
         // Read the header
         if (handles[handle].FileMode != READ_NET_STREAM)
             read_count = read(handles[handle].File, header, HEADER_SIZE);
@@ -279,6 +287,7 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
             handles[handle].File_State = I106_READ_UNSYNCED;
             if (read_count == -1)
                 return I106_READ_ERROR;
+            //printf("read_count incorrect size (= %d, sync = %hu)\n", read_count, header->SyncPattern);
             return I106_EOF;
         }
 
@@ -316,6 +325,7 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
                 handles[handle].File_State = I106_READ_UNSYNCED;
                 if (read_count == -1)
                     return I106_READ_ERROR;
+                //printf("read_count incorrect size (sec header)\n");
                 return I106_EOF;
             }
 
@@ -338,13 +348,18 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
 
         // Read header was not OK so try again beyond previous read point
         if (handles[handle].FileMode != READ_NET_STREAM){
-            if ((status = I106C10GetPos(handle, &offset)))
-                return I106_SEEK_ERROR;
 
-            offset -= handles[handle].HeaderBufferLength + 1;
-
-            if ((status = I106C10SetPos(handle, offset)))
+            //printf("No header at %d, retrying\n", (int)offset);
+           /* if(offset < 20)
+                printf("offset %lld, sync pattern: %hu\n", offset, header->SyncPattern);*/
+            if ((status = I106C10SetPos(handle, offset + 1))){
+                if (status == I106_EOF)
+                {
+                    //printf("status eof\n");
+                    return status;
+                }
                 return I106_SEEK_ERROR;
+            }
         }
 
     }
@@ -673,6 +688,16 @@ I106Status I106C10SetPos(int handle, int64_t offset){
             || handles[handle].FileMode == READ_IN_ORDER){
         // Seek
         off_t status = lseek(handles[handle].File, (off_t)offset, SEEK_SET);
+        if (status < 0){
+            int64_t pos;
+            I106C10GetPos(handle, &pos);
+
+            status = lseek(handles[handle].File, 0, SEEK_END);
+            if (offset >= status)
+                return I106_EOF;
+            else
+                I106C10SetPos(handle, pos);
+        }
         assert(status >= 0);
 
         // Can't be sure we're on a message boundary so set unsync'ed
