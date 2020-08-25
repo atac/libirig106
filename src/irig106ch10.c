@@ -287,6 +287,7 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
             handles[handle].File_State = I106_READ_UNSYNCED;
             if (read_count == -1)
                 return I106_READ_ERROR;
+            //printf("read_count incorrect size (= %d, sync = %hu)\n", read_count, header->SyncPattern);
             return I106_EOF;
         }
 
@@ -324,6 +325,7 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
                 handles[handle].File_State = I106_READ_UNSYNCED;
                 if (read_count == -1)
                     return I106_READ_ERROR;
+                //printf("read_count incorrect size (sec header)\n");
                 return I106_EOF;
             }
 
@@ -347,11 +349,15 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
         // Read header was not OK so try again beyond previous read point
         if (handles[handle].FileMode != READ_NET_STREAM){
 
-            /* printf("No header at %d, retrying\n", (int)offset); */
-
+            //printf("No header at %d, retrying\n", (int)offset);
+           /* if(offset < 20)
+                printf("offset %lld, sync pattern: %hu\n", offset, header->SyncPattern);*/
             if ((status = I106C10SetPos(handle, offset + 1))){
                 if (status == I106_EOF)
+                {
+                    //printf("status eof\n");
                     return status;
+                }
                 return I106_SEEK_ERROR;
             }
         }
