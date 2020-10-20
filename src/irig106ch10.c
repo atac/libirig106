@@ -287,7 +287,7 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
             handles[handle].File_State = I106_READ_UNSYNCED;
             if (read_count == -1)
                 return I106_READ_ERROR;
-            //printf("read_count incorrect size (= %d, sync = %hu)\n", read_count, header->SyncPattern);
+            /* printf("read_count incorrect size (= %d, sync = %hu)\n", read_count, header->SyncPattern); */
             return I106_EOF;
         }
 
@@ -350,14 +350,9 @@ I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header * header){
         if (handles[handle].FileMode != READ_NET_STREAM){
 
             //printf("No header at %d, retrying\n", (int)offset);
-           /* if(offset < 20)
-                printf("offset %lld, sync pattern: %hu\n", offset, header->SyncPattern);*/
             if ((status = I106C10SetPos(handle, offset + 1))){
                 if (status == I106_EOF)
-                {
-                    //printf("status eof\n");
                     return status;
-                }
                 return I106_SEEK_ERROR;
             }
         }
@@ -667,6 +662,7 @@ I106Status I106C10LastMsg(int handle){
         return status;
 
     // Seek back to the beginning of the packet
+    I106C10GetPos(handle, &pos);
     pos -= handles[handle].HeaderBufferLength;
     if ((status = I106C10SetPos(handle, pos)))
         return status;
