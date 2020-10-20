@@ -288,6 +288,7 @@ I106Status I106_Decode_TMATS(I106C10Header * header, void *buffer, TMATS_Info *t
 I106Status I106_Decode_TMATS_Text(char *buffer, uint32_t data_length, TMATS_Info *tmats_info);
 void I106_Free_TMATS_Info(TMATS_Info *tmats_info);
 I106Status I106_Encode_TMATS(I106C10Header *header, void *buffer, char *tmats);
+void I106GetRawTMATS(I106C10Header* header, void* buffer, char** tmats_raw, int* length);
 I106Status I106_TMATS_Signature(
     void *buffer,           // TMATS text without CSDW
     uint32_t data_length,   // Length of TMATS in pvBuff

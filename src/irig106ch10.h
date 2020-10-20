@@ -136,7 +136,7 @@ typedef enum {
     UNSORTED,
     SORTED,
     SORT_ERROR,
-} SortStatus;
+} I106SortStatus;
 
 
 /* Data structures */
@@ -175,7 +175,7 @@ typedef struct {
 // Various file index array indexes
 typedef struct InOrderIndex InOrderIndex;
 struct InOrderIndex {
-    SortStatus           SortStatus;
+    I106SortStatus           SortStatus;
     InOrderPacketInfo  * Index;
     int                  ArraySize;
     int                  ArrayUsed;

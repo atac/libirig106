@@ -109,6 +109,10 @@ char * FirstNonWhitespace(char *string);
 
 uint32_t Fletcher32(uint8_t *data, int count);
 
+void I106GetRawTMATS(I106C10Header* header, void* buffer, char** tmats_raw, int* length){
+    *tmats_raw = (char*)buffer + sizeof(TMATS_CSDW);
+    *length = header->DataLength - sizeof(TMATS_CSDW);
+}
 
 /* The idea behind this routine is to read the TMATS record, parse it, and 
  * put the various data fields into a tree structure that can be used later
