@@ -93,5 +93,5 @@ To Do
 
 .. _Python Wrapper: https://github.com/atac-bham/libirig106-python
 .. _irig106lib: https://github.com/bbaggerman/irig106lib
-.. |StatusImage| image:: https://dev.azure.com/atac-bham/libirig106/_apis/build/status/atac.libirig106%20(1)?branchName=master
-.. _StatusImage: https://dev.azure.com/atac-bham/libirig106/_build/latest?definitionId=10&branchName=master
+.. |StatusImage| image:: https://dev.azure.com/atac-bham/libirig106/_apis/build/status/atac.libirig106?branchName=master
+.. _StatusImage: https://dev.azure.com/atac-bham/libirig106/_build/latest?definitionId=9&branchName=master
