@@ -17,6 +17,7 @@
 
 TEST_GROUP_RUNNER(test_i106){
     RUN_TEST_CASE(test_i106, TestI106C10Open);
+    RUN_TEST_CASE(test_i106, TestI106C10OpenBuffer);
     RUN_TEST_CASE(test_i106, TestI106C10Close);
 
     RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeader);
@@ -62,6 +63,35 @@ TEST(test_i106, TestI106C10Open){
     TEST_ASSERT_EQUAL(I106_OPEN_ERROR, I106C10Open(&handle, "not-a-thing.c10", READ));
 
     I106C10Close(handle);
+}
+
+
+void clear_handles(){
+    for (int i=0;i<MAX_HANDLES;i++){
+        I106C10Close(i);
+    }
+}
+
+
+TEST(test_i106, TestI106C10OpenBuffer){
+    int handle;
+    void *buffer = malloc(100);
+
+    // Test opening works
+    TEST_ASSERT_EQUAL(I106_OK, I106C10OpenBuffer(&handle, buffer, 100, READ));
+
+    // Test overflowing MAX_HANDLES produces the expected result.
+    clear_handles();
+    for (int i=0;i<100;i++){
+        TEST_ASSERT_EQUAL(I106_OK, I106C10OpenBuffer(&handle, buffer, 100, READ));
+    }
+    TEST_ASSERT_EQUAL(I106_NO_FREE_HANDLES, I106C10OpenBuffer(&handle, buffer, 100, READ));
+
+    // Test opening works again after clearing handles.
+    clear_handles();
+    TEST_ASSERT_EQUAL(I106_OK, I106C10OpenBuffer(&handle, buffer, 100, READ));
+
+    free(buffer);
 }
 
 
