@@ -75,20 +75,26 @@ Supported data types:
 * UART Format 0
 * Video Format 0
 
-To Do
------
+Installing
+----------
 
-* Explore difference between rel_time and RTC (verbage is inconsistent esp. in
-  i106_time)
-* More robust tests
-* Remove/replace Message->Datalength (refers to packet body size as opposed to
-  message length)
-* Implement support for index records.
-* Implement seek() based on time.
-* Parse more TMATS fields
-* Provide better, more automatic ways to keep time in sync
-* Review "header version" to see what needs to be accounted for in code
-* Implement partial & missing datatypes
+Unix / make
+...........
+
+::
+
+    mkdir build && cd build
+    cmake ..
+    make
+
+Windows / visual studio
+.......................
+
+From the VS native tools commandline run::
+
+    mkdir build && cd build
+    cmake ..
+    cmake build . --config Release
 
 
 .. _Python Wrapper: https://github.com/atac-bham/libirig106-python
