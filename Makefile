@@ -45,7 +45,7 @@ TEST_DIR=tests
 CFLAGS += -I$(UNITY_ROOT)/src
 CFLAGS += -I$(UNITY_ROOT)/extras/fixture/src
 CFLAGS += -I$(UNITY_ROOT)/extras/memory/src
-CFLAGS += -I$(SRC_DIR)
+CFLAGS += -Iinclude
 
 UNITY := $(UNITY_ROOT)/src/unity.c $(UNITY_ROOT)/extras/fixture/src/unity_fixture.c $(UNITY_ROOT)/extras/memory/src/unity_memory.c
 UNITY_OBJ := $(OBJ_DIR)/unity.o $(OBJ_DIR)/unity_fixture.o $(OBJ_DIR)/unity_memory.o

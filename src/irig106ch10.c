@@ -1055,7 +1055,7 @@ int WriteInOrderIndex(int handle, char *filename){
 #if __APPLE__
     flags = O_WRONLY | O_CREAT;
 #else
-    flags = O_WRONLY | O_CREAT | O_LARGEFILE;
+    flags = O_WRONLY | O_CREAT;
 #endif
     file_mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 #else
