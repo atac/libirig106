@@ -75,8 +75,8 @@ Supported data types:
 * UART Format 0
 * Video Format 0
 
-Installing
-----------
+Building and Testing
+--------------------
 
 Unix / make
 ...........
@@ -95,6 +95,9 @@ From the VS native tools commandline run::
     mkdir build && cd build
     cmake ..
     cmake build . --config Release
+
+Alternatively, use the build_and_test.py script to build and then run the test
+suite.
 
 
 .. _Python Wrapper: https://github.com/atac-bham/libirig106-python
