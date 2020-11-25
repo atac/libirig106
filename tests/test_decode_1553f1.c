@@ -1,4 +1,5 @@
 
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -60,6 +61,7 @@ TEST(test_1553, TestDecodeNext1553F1){
     csdw.MessageCount = 4;
     msg.CSDW = &csdw;
     msg.Offset = 0;
+    msg.DataLength = header.DataLength;
     msg.MessageNumber = 0;
     iph.Length = 3;
 
@@ -71,7 +73,7 @@ TEST(test_1553, TestDecodeNext1553F1){
     memcpy(buffer + offset, (void *)&iph, sizeof(MS1553F1_IPH));
 
     status = I106_Decode_Next1553F1(&msg);
-    TEST_ASSERT_EQUAL(status, I106_OK);
+    TEST_ASSERT_EQUAL(I106_OK, status);
     TEST_ASSERT_EQUAL(4, msg.IPH->Length);
 
     free(buffer);
