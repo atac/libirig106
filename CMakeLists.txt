@@ -25,6 +25,7 @@ include_directories(tests/unity/src)
 include_directories(tests/unity/extras/fixture/src)
 include_directories(tests/unity/extras/memory/src)
 
+# Test runner (includes library, unity, and test suite)
 file(GLOB TESTS "tests/test_*.c")
 add_executable(test_runner
     tests/all_tests.c
@@ -34,5 +35,3 @@ add_executable(test_runner
     ${TESTS}
 )
 target_link_libraries(test_runner libirig106 unity)
-
-add_test(all_tests run_tests)
