@@ -59,10 +59,10 @@ Data Formats
 Unlisted type numbers are reserved as of this writing.
 
 
-====  ============================                          =========
+====  ==================================================    =========
 Type  Name                                                  Supported                      
-----  ----------------------------                          ---------
-0x00  Computer-Generated F0 - User-Defined                  Recognized, not implemented (user-defined format)
+====  ==================================================    =========
+0x00  Computer-Generated F0 - User-Defined                  User-Defined
 0x01  Computer-Generated F1 - Setup Record (TMATS)          Yes
 0x02  Computer-Generated F2 - Recording Events              Yes
 0x03  Computer-Generated F3 - Recording Index               Yes
@@ -96,6 +96,8 @@ Type  Name                                                  Supported
 0x78  Controller Area Network Bus                           Yes
 0x79  Fibre Channel F0                                      No
 0x7A  Fibre Channel F1                                      No
+====  ==================================================    =========
+
 
 Building and Testing
 --------------------
@@ -118,7 +120,7 @@ From the VS native tools commandline run::
     cmake ..
     cmake build . --config Release
 
-Alternatively, run the build_and_test.py script from VS commandline to build
+Alternatively, run the build_and_test.py script from unix terminal or VS commandline to build
 and then run the test suite.
 
 
