@@ -19,5 +19,8 @@ steps:
 - script: git submodule init && git submodule update
   displayName: 'Load git submodules'
 
-- script: python build_and_test.py rebuild
-  displayName: "Build and Test"
+- task: CMake@1
+  displayName: "Build"
+
+# - script: python build_and_test.py rebuild
+#   displayName: "Build and Test"
