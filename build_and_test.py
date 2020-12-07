@@ -3,20 +3,28 @@
 import os
 import sys
 
+
+def run(cmd):
+    status = os.system(cmd)
+    if status:
+        sys.exit(status)
+
+
 if 'rebuild' in sys.argv:
     if sys.platform == 'win32':
-        os.system('del /F /Q build')
+        run('del /F /Q build')
     else:
-        os.system('rm -rf build')
+        run('rm -rf build')
 
-os.system('mkdir build')
+if not os.path.exists('build'):
+    run('mkdir build')
 os.chdir('build')
-os.system('cmake ..')
+run('cmake ..')
 if sys.platform == 'win32':
-    os.system('cmake --build . --config Release')
+    run('cmake --build . --config Release')
     os.chdir('..')
-    os.system('.\\build\\Release\\test_runner.exe')
+    run('.\\build\\Release\\test_runner.exe')
 else:
-    os.system('make')
+    run('make')
     os.chdir('..')
-    os.system('./build/test_runner')
+    run('./build/test_runner')
