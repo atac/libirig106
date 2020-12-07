@@ -19,20 +19,5 @@ steps:
 - script: git submodule init && git submodule update
   displayName: 'Load git submodules'
 
-- task: MSBuild@1
-  displayName: 'Build (Windows)'
-  condition: eq( variables['Agent.OS'], 'Windows_NT' )
-  inputs:
-    solution: 'win/irig106.sln' 
-
-- script: win\\x64\\Debug\\tests.exe
-  displayName: 'Run tests (Windows)'
-  condition: eq( variables['Agent.OS'], 'Windows_NT' )
-
-- script: make
-  displayName: 'Build (Unix)'
-  condition: ne( variables['Agent.OS'], 'Windows_NT' )
-
-- script: make test
-  displayName: 'Run tests (Unix)'
-  condition: ne( variables['Agent.OS'], 'Windows_NT' )
+- script: python build_and_test.py rebuild
+  displayName: "Build and Test"
