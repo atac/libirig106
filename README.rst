@@ -53,27 +53,49 @@ As an example, to iterate over 1553 messages in a file:
 
     I106C10Close(handle);
 
-Directory Structure
-...................
+Data Formats
+.............
 
-The top-level capability is in the "irig106ch10" file while datatype-specific
-parsing can be found in the "i106_decode_X" files where "X" is the datatype in
-question.
+Unlisted type numbers are reserved as of this writing.
 
-Supported data types:
 
-* 1553 Format 1
-* Analog Format 1
-* Arinc429 Format 0
-* CAN
-* Discrete Format 1
-* Ethernet Format 0
-* Index packets
-* PCM Format 1
-* Time packets
-* TMATS packets
-* UART Format 0
-* Video Format 0
+====  ============================                          =========
+Type  Name                                                  Supported                      
+----  ----------------------------                          ---------
+0x00  Computer-Generated F0 - User-Defined                  Recognized, not implemented (user-defined format)
+0x01  Computer-Generated F1 - Setup Record (TMATS)          Yes
+0x02  Computer-Generated F2 - Recording Events              Yes
+0x03  Computer-Generated F3 - Recording Index               Yes
+0x04  Computer-Generated F4 - Streaming Config (TMATS)      No
+0x09  PCM F1                                                Yes
+0x11  Time Data F1                                          Yes 
+0x12  Time Data F2                                          No
+0x19  1553 F1                                               Yes
+0x1A  1553 F2 - 16PP194                                     Yes
+0x21  Analog F1                                             Yes
+0x29  Discrete F1                                           Yes
+0x30  Message F0                                            No
+0x38  ARINC-429 F0                                          Yes
+0x40  Video F0                                              Yes
+0x41  Video F1                                              Yes
+0x42  Video F2                                              No
+0x43  Video F3                                              No
+0x44  Video F4                                              No
+0x48  Image F0                                              No
+0x49  Image F1                                              No
+0x4A  Image F2                                              No
+0x50  UART F0                                               Yes
+0x58  IEEE 1394 F0                                          No
+0x59  IEEE 1394 F1                                          No
+0x60  Parallel F0                                           No
+0x68  Ethernet F0 - Ethernet Data                           Yes
+0x69  Ethernet F1 - UDP Payload                             No
+0x70  TSPI/CTS F0 - GPS NMEA-RTCM                           No
+0x71  TSPI/CTS F1 - EAG ACMI                                No
+0x72  TSPI/CTS F2 - ACTTS                                   No
+0x78  Controller Area Network Bus                           Yes
+0x79  Fibre Channel F0                                      No
+0x7A  Fibre Channel F1                                      No
 
 Building and Testing
 --------------------
@@ -96,8 +118,8 @@ From the VS native tools commandline run::
     cmake ..
     cmake build . --config Release
 
-Alternatively, use the build_and_test.py script to build and then run the test
-suite.
+Alternatively, run the build_and_test.py script from VS commandline to build
+and then run the test suite.
 
 
 .. _Python Wrapper: https://github.com/atac-bham/libirig106-python
