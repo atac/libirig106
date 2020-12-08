@@ -6,7 +6,7 @@ import sys
 
 def run(cmd):
     status = os.system(cmd)
-    if status:
+    if sys.platform != 'win32' and status:
         print('%s failed: %s' % (cmd, status))
         sys.exit(status)
 
