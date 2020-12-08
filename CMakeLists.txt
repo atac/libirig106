@@ -6,12 +6,6 @@ project(libirig106
     LANGUAGES C CXX)
 
 # Build flags
-if (MSVC)
-    add_compile_options("-D_MSC_VER")
-elseif(NOT APPLE)
-    add_compile_options("-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE")
-endif()
-# set(CMAKE_C_FLAGS "-Wall")
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 # Library
@@ -28,7 +22,7 @@ include_directories(tests/unity/src)
 include_directories(tests/unity/extras/fixture/src)
 include_directories(tests/unity/extras/memory/src)
 
-# Test runner (includes library, unity, and test suite)
+# Test runner (includes unity and test suite)
 file(GLOB TESTS "tests/test_*.c")
 add_executable(test_runner
     tests/all_tests.c
