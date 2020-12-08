@@ -141,10 +141,7 @@ typedef enum {
 
 /* Data structures */
 
-#if defined(_MSC_VER)
-#pragma pack(push)
-#pragma pack(1)
-#endif
+#pragma pack(push, 1)
 
 // IRIG 106 header and optional secondary header data structure
 typedef struct {
@@ -202,9 +199,7 @@ struct I106C10Handle {
     char           Reserved[128];
 };
 
-#if defined(_MSC_VER)
 #pragma pack(pop)
-#endif
 
 
 /* Global data */

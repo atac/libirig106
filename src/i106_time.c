@@ -128,7 +128,7 @@ I106Status I106_Irig2RelTime(int handle, I106Time *time, uint8_t rtc[]){
     new_rtc = time_ref[handle].RTC + diff;
 
     // Now convert this to a 6 byte relative time
-    memcpy((char *)&rtc[0], (char *)&(new_rtc), 6);
+    memcpy(&rtc, &new_rtc, 6);
 
     return I106_OK;
 }
@@ -272,6 +272,7 @@ I106Status I106_SyncTime(int handle, int sync, int max_seconds){
 }
 
 
+// TODO: seek based on RTC? Excuse me??
 I106Status I106C10SetPosToIrigTime(int handle, I106Time *irig_seek_time){
     uint8_t           rtc_seek_time[6];
     int64_t           seek_time;

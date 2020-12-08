@@ -4,11 +4,11 @@
 #ifndef _config_h_
 #define _config_h_
 
-#if defined(__GNUC__)
-#define PACKED __attribute__ ((packed))
-#else
+/* #if defined(__GNUC__) */
+/* #define PACKED __attribute__ ((packed)) */
+/* #else */
 #define PACKED
-#endif
+/* #endif */
 
 #if defined(__APPLE__)
 #include <sys/uio.h>

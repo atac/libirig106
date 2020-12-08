@@ -34,10 +34,7 @@ typedef enum {
 
 /* Time Format 1 */
 
-#if defined(_MSC_VER)
-#pragma pack(push)
-#pragma pack(1)
-#endif
+#pragma pack(push, 1)
 
 // Channel specific header
 typedef struct {
@@ -108,9 +105,7 @@ struct MessageTimeF1 {
     } Message;
 };
 
-#if defined(_MSC_VER)
 #pragma pack(pop)
-#endif
 
 
 /* Function Declaration */

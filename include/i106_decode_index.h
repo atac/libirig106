@@ -14,11 +14,7 @@
 
 // Macros and definitions
 
-#if defined(_MSC_VER)
-#pragma pack(push)
-#pragma pack(1)
-#endif
-
+#pragma pack(push, 1)
 
 // Index time
 typedef union {
@@ -102,13 +98,11 @@ typedef struct {
 
 } IndexMsg;
 
-#if defined(_MSC_VER)
-#pragma pack(pop)
-#endif
-
 
 // Function Declaration
 I106Status I106_Decode_FirstIndex(I106C10Header *header, void * buffer, IndexMsg *msg);
 I106Status I106_Decode_NextIndex(IndexMsg *msg);
+
+#pragma pack(pop)
 
 #endif

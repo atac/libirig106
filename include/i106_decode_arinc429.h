@@ -13,9 +13,7 @@
 
 /* Data structures */
 
-#if defined(_MSC_VER)
 #pragma pack(push,1)
-#endif
 
 // Channel specific data word
 typedef struct Arinc429F0_CSDW Arinc429F0_CSDW;
@@ -58,9 +56,7 @@ typedef struct {
 } PACKED Arinc429F0_Message;
 
 
-#if defined(_MSC_VER)
 #pragma pack(pop)
-#endif
 
 
 /* Function Declaration */

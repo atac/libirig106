@@ -32,9 +32,7 @@ typedef enum {
 
 /* Data structures */
 
-#if defined(_MSC_VER)
 #pragma pack(push,1)
-#endif
 
 // Channel specific data word
 typedef struct EthernetF0_CSDW EthernetF0_CSDW;
@@ -57,9 +55,7 @@ typedef struct {
     uint32_t    FrameCRCError:  1; 
 } PACKED EthernetF0_IPH;
 
-#if defined(_MSC_VER)
 #pragma pack(pop)
-#endif
 
 
 // Ethernet physical frame

@@ -50,9 +50,7 @@ typedef enum {
 
 /* Data structures */
 
-#if defined(_MSC_VER)
 #pragma pack(push,1)
-#endif
 
 // Channel specific data word
 typedef struct PCMF1_CSDW PCMF1_CSDW;
@@ -80,11 +78,6 @@ struct PCMF1_IPH {
     uint32_t    MinorFrameStatus  :  2;      // Minor frame lock status
     uint32_t    Reserved2         : 16;
 } PACKED;
-
-
-#if defined(_MSC_VER)
-#pragma pack(pop)
-#endif
 
 
 // Channel attributes
@@ -149,6 +142,8 @@ struct PCMF1_Attributes {
     int32_t         SaveData;                     // Save the data (0: do nothing, 1 save, 2: save terminated)
 } PACKED;
 
+#pragma pack(pop)
+
 // Current PCM message
 typedef struct PCMF1_Message PCMF1_Message;
 struct PCMF1_Message {
@@ -168,6 +163,7 @@ struct PCMF1_Message {
     uint8_t           * Data;             // Pointer to the start of the data
     TimeRef             Time;
 } PACKED;
+
 
 
 /* Function Declaration */

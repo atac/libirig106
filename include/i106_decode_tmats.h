@@ -30,10 +30,7 @@
 
 // Channel specific data word
 
-#if defined(_MSC_VER)
-#pragma pack(push)
-#pragma pack(1)
-#endif
+#pragma pack(push, 1)
 
 typedef struct {
     uint32_t    C10Version     :  8;      // Recorder Ch 10 Version
@@ -42,9 +39,7 @@ typedef struct {
     uint32_t    Reserved       : 22;      // Reserved
 } PACKED TMATS_CSDW;
 
-#if defined(_MSC_VER)
 #pragma pack(pop)
-#endif
 
 // NEED TO ADD STORAGE FOR REQUIRED DATA FIELDS
 // NEED TO ADD SUPPORT OF "OTHER" DATA FIELDS TO PERMIT TMATS WRITE

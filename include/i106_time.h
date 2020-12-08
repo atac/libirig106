@@ -47,6 +47,8 @@ typedef struct {
 } TimeRef;
 
 
+#pragma pack(push, 1)
+
 // IRIG 106 secondary header time in Ch 4 BCD format
 typedef struct {
     uint16_t      Minute1   : 4;    // High order time
@@ -88,6 +90,8 @@ typedef struct {
 typedef struct {
     uint8_t  IPTS[8];   // Time Stamp    
 } PACKED IntraPacketTS;
+
+#pragma pack(pop)
 
 
 /* Function Declaration */

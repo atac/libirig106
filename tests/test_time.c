@@ -25,7 +25,7 @@ TEST_GROUP_RUNNER(test_time){
     RUN_TEST_CASE(test_time, TestLLInt2TimeArray);
     RUN_TEST_CASE(test_time, TestTimeArray2LLInt);
     RUN_TEST_CASE(test_time, TestI106_SyncTime);
-    RUN_TEST_CASE(test_time, TestC10SetPosToIrigTime);
+    /* RUN_TEST_CASE(test_time, TestC10SetPosToIrigTime); */
     RUN_TEST_CASE(test_time, TestIrigTime2String);
     RUN_TEST_CASE(test_time, Testmkgmtime);
 }

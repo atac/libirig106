@@ -57,9 +57,7 @@ typedef enum{
 
 /* Data structures */
 
-#if defined(_MSC_VER)
 #pragma pack(push,1)
-#endif
 
 
 // Channel specific data word
@@ -154,9 +152,7 @@ struct AnalogF1_Message {
     TimeRef                Time;
 } PACKED;
 
-#if defined(_MSC_VER)
 #pragma pack(pop)
-#endif
 
 
 /* Function Declaration */

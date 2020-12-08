@@ -14,9 +14,7 @@
 
 /* Data structures */
 
-#if defined(_MSC_VER)
 #pragma pack(push,1)
-#endif
 
 
 // Channel specific data word
@@ -45,9 +43,7 @@ typedef struct {
     uint32_t    IDE            :  1;
 } PACKED CAN_ID;
 
-#if defined(_MSC_VER)
 #pragma pack(pop)
-#endif
 
 typedef struct {
     unsigned int     MessageNumber;

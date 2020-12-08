@@ -13,10 +13,7 @@
 
 /* Data structures */
 
-#if defined(_MSC_VER)
-#pragma pack(push)
-#pragma pack(1)
-#endif
+#pragma pack(push, 1)
 
 
 // 1553 Command Word bit fields
@@ -120,9 +117,7 @@ typedef struct {
     _16PP194_Word  Status;
 } PACKED _16PP194_Transaction;
 
-#if defined(_MSC_VER)
 #pragma pack(pop)
-#endif
 
 
 // Function Declaration

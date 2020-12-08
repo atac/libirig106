@@ -13,10 +13,7 @@
 
 /* Data structures */
 
-#if defined(_MSC_VER)
-#pragma pack(push)
-#pragma pack(1)
-#endif
+#pragma pack(push, 1)
 
 /* UART Format 0 */
 
@@ -46,9 +43,7 @@ typedef struct {
 } UARTF0_Message;
 
 
-#if defined(_MSC_VER)
 #pragma pack(pop)
-#endif
 
 
 /* Function Declaration */

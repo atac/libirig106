@@ -11,12 +11,15 @@ if (MSVC)
 elseif(NOT APPLE)
     add_compile_options("-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE")
 endif()
-set(CMAKE_C_FLAGS "-ggdb -fpack-struct=1 -fPIC -std=c99 -Wall")
+# set(CMAKE_C_FLAGS "-Wall")
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 # Library
 include_directories(include)
 file(GLOB SOURCES "src/*.c")
 add_library(libirig106 SHARED STATIC ${SOURCES})
+set_property(TARGET libirig106 PROPERTY C_STANDARD 99)
+set_property(TARGET libirig106 PROPERTY POSITION_INDEPENDENT_CODE ON)
 install(TARGETS libirig106 DESTINATION ${PROJECT_SOURCE_DIR})
 
 # Unity (testing library)

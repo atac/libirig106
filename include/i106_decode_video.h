@@ -12,9 +12,7 @@
 
 /* Data structures */
 
-#if defined(_MSC_VER)
 #pragma pack(push,1)
-#endif
 
 
 /* Video Format 0 */
@@ -76,9 +74,7 @@ typedef struct {
 } PACKED VideoF2_CSDW;
 
 
-#if defined(_MSC_VER)
 #pragma pack(pop)
-#endif
 
 
 /* Function Declaration */
