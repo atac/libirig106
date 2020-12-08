@@ -22,7 +22,7 @@ typedef struct {
     uint16_t    SubAddress  : 5;    // Subaddress Specifier
     uint16_t    TR          : 1;    // Transmit/Receive Flag
     uint16_t    RT          : 5;    // RT Address
-} PACKED CommandWord;
+} CommandWord;
 
 // A union to make manipulating the command word easier
 typedef union {
@@ -38,7 +38,7 @@ typedef struct {
     uint32_t    MessageCount  : 24;
     uint32_t    Reserved      :  6;
     uint32_t    TTB           :  2;  // Time tag bits
-} PACKED MS1553F1_CSDW;
+} MS1553F1_CSDW;
 
 // Intra-message header
 typedef struct {
@@ -57,7 +57,7 @@ typedef struct {
     uint8_t     GapTime1;
     uint8_t     GapTime2;
     uint16_t    Length;
-} PACKED MS1553F1_IPH;
+} MS1553F1_IPH;
 
 // 1553 message
 typedef struct {
@@ -72,7 +72,7 @@ typedef struct {
     uint16_t          * StatusWord2;
     uint16_t            WordCount;
     uint16_t          * Data;
-} PACKED MS1553F1_Message;
+} MS1553F1_Message;
 
 
 /* 1553 Format 2 */
@@ -80,7 +80,7 @@ typedef struct {
 // Channel specific header
 typedef struct {
     uint32_t  MessageCount;
-} PACKED MS1553F2_CSDW;
+} MS1553F2_CSDW;
 
 // 16PP194 Intra-message header
 typedef struct {
@@ -94,7 +94,7 @@ typedef struct {
     uint16_t    Reset          : 1;
     uint16_t    TransmitError  : 1;
     uint16_t    Length;
-} PACKED MS1553F2_IPH;
+} MS1553F2_IPH;
 
 // 16PP194 word
 typedef struct {
@@ -105,7 +105,7 @@ typedef struct {
     uint32_t    WordError      : 1;    // Manchester error flag
     uint32_t    Gap            : 3;    // Gap time indicator
     uint32_t    BusID          : 3;    // Bus ID indicator
-} PACKED _16PP194_Word;
+} _16PP194_Word;
 
 // 16PP194 transaction
 typedef struct {
@@ -115,7 +115,7 @@ typedef struct {
     _16PP194_Word  NoGo;
     _16PP194_Word  NoGoEcho;
     _16PP194_Word  Status;
-} PACKED _16PP194_Transaction;
+} _16PP194_Transaction;
 
 #pragma pack(pop)
 

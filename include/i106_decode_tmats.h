@@ -37,7 +37,7 @@ typedef struct {
     uint32_t    ConfigChange   :  1;      // Recorder configuration changed
     uint32_t    Format         :  1;      // TMATS / XML Format
     uint32_t    Reserved       : 22;      // Reserved
-} PACKED TMATS_CSDW;
+} TMATS_CSDW;
 
 #pragma pack(pop)
 

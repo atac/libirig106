@@ -160,7 +160,7 @@ typedef struct {
     uint32_t  Time[2];
     uint16_t  Reserved;
     uint16_t  SecondaryChecksum;
-} PACKED I106C10Header;
+} I106C10Header;
 
 // Structure for holding file index
 // TODO: Move to i106_index

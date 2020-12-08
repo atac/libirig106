@@ -21,7 +21,7 @@
 typedef struct {
     uint32_t    Reserved    : 31;      
     uint32_t    IPH         :  1;      // Intra-Packet Header enabled    
-} PACKED UARTF0_CSDW;
+} UARTF0_CSDW;
 
 // Intra-message header
 typedef struct {    
@@ -29,7 +29,7 @@ typedef struct {
     uint16_t    Subchannel     : 14;    // Subchannel for the following data
     uint16_t    Reserved       : 1;
     uint16_t    ParityError    : 1;     //Parity Error    
-} PACKED UARTF0_IPH;
+} UARTF0_IPH;
 
 // Current UART message
 typedef struct {

@@ -20,7 +20,7 @@ typedef struct Arinc429F0_CSDW Arinc429F0_CSDW;
 struct Arinc429F0_CSDW {
     uint32_t    Count     : 16;      // Message count
     uint32_t    Reserved  : 16;
-} PACKED;
+};
 
 // Intra-message header
 typedef struct Arinc429F0_IPH Arinc429F0_IPH;
@@ -31,7 +31,7 @@ struct Arinc429F0_IPH {
     uint32_t    ParityError    :  1;
     uint32_t    FormatError    :  1;
     uint32_t    BusNumber      :  8;
-} PACKED;
+};
 
 
 // ARINC 429 data format
@@ -42,7 +42,7 @@ struct Arinc429F0_Data {
     uint32_t    Data           : 19;
     uint32_t    SSM            :  2;      // Sign/Status Matrix
     uint32_t    Parity         :  1;
-} PACKED;
+};
 
 
 // Current ARINC 429 message
@@ -53,7 +53,7 @@ typedef struct {
     int64_t            IPTS;
     Arinc429F0_IPH   * IPH;
     Arinc429F0_Data  * Data;
-} PACKED Arinc429F0_Message;
+} Arinc429F0_Message;
 
 
 #pragma pack(pop)

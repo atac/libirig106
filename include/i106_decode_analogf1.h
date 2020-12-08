@@ -59,7 +59,6 @@ typedef enum{
 
 #pragma pack(push,1)
 
-
 // Channel specific data word
 typedef struct {
     uint32_t    Mode           :  2;
@@ -69,7 +68,7 @@ typedef struct {
     uint32_t    Factor         :  4;      // Sample rate exponent
     uint32_t    Same           :  1;      // One/multiple Channel Specific
     uint32_t    Reserved       :  3;
-} PACKED AnalogF1_CSDW;
+} AnalogF1_CSDW;
 
 
 // Subchannel information structure
@@ -81,7 +80,7 @@ struct AnalogF1_Subchannel {
     uint8_t        * Data;                 // Pointer to the start of the data
     char             OutputFilename[256];  // Subchan output filename
     FILE           * OutputFile;           // Subchan output file handle
-} PACKED;
+};
 
 
 // Channel attributes
@@ -137,7 +136,7 @@ struct AnalogF1_Attributes {
 
     // Variables for bit decoding
     int32_t               SaveData;                  // Save the data (0: do nothing, 1 save, 2: save terminated)
-} PACKED;
+};
 
 
 // Current Analog message 
@@ -150,7 +149,7 @@ struct AnalogF1_Message {
     uint32_t               Length;      // Overall data packet length (in bytes)
     uint8_t              * Data;        // Pointer to the start of the data
     TimeRef                Time;
-} PACKED;
+};
 
 #pragma pack(pop)
 

@@ -22,7 +22,7 @@ typedef union {
     I106Ch4_Binary_Time  ch4_time;
     IEEE1588_Time        i1588_time;
     uint64_t             time;
-} PACKED IndexTime;
+} IndexTime;
 
 
 // Channel specific data word
@@ -32,7 +32,7 @@ typedef struct {
     uint32_t  IPH        :  1;   // Intra-packet header present
     uint32_t  FileSize   :  1;   // File size present
     uint32_t  IndexType  :  1;   // Index type
-} PACKED IndexCSDW;
+} IndexCSDW;
 
 
 /* Node Index */
@@ -42,14 +42,14 @@ typedef struct {
     uint32_t    ChannelID      : 16;
     uint32_t    DataType       :  8;
     uint32_t    Reserved       :  8;
-} PACKED IndexNodeData;
+} IndexNodeData;
 
 // Node index message without optional secondary data header
 typedef struct {
     IndexTime      Time;
     IndexNodeData  Data;
     int64_t        Offset;
-} PACKED IndexNodeMsg;
+} IndexNodeMsg;
 
 // Node index message with optional secondary data header
 typedef struct {
@@ -57,7 +57,7 @@ typedef struct {
     IndexTime                SecondaryTime;
     IndexNodeData            Data;
     int64_t                  Offset;
-} PACKED IndexNodeMsgTime;
+} IndexNodeMsgTime;
 
 
 /* Root Index */
@@ -66,14 +66,14 @@ typedef struct {
 typedef struct {
     IndexTime                Time;
     int64_t                  Offset;
-} PACKED IndexRootMsg;
+} IndexRootMsg;
 
 // Root index message with optional secondary data header
 typedef struct {
     IndexTime                Time;
     IndexTime                SecondaryTime;
     int64_t                  Offset;
-} PACKED IndexRootMsgTime;
+} IndexRootMsgTime;
 
 
 // Data structure to hold state for First / Next

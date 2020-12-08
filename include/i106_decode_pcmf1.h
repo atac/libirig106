@@ -67,7 +67,7 @@ struct PCMF1_CSDW {
     uint32_t    MajorFrameIndicator  :  1;
     uint32_t    IPH                  :  1;
     uint32_t    Reserved2            :  1;
-} PACKED;
+};
 
 // Intra-message header
 typedef struct PCMF1_IPH PCMF1_IPH;
@@ -77,7 +77,7 @@ struct PCMF1_IPH {
     uint32_t    MajorFrameStatus  :  2;      // Major frame lock status
     uint32_t    MinorFrameStatus  :  2;      // Minor frame lock status
     uint32_t    Reserved2         : 16;
-} PACKED;
+};
 
 
 // Channel attributes
@@ -140,7 +140,7 @@ struct PCMF1_Attributes {
     uint32_t        MinorFrameWordCount;          // Counter for the Minor frame words (inclusive syncword)
     uint32_t        DataWordBitCount;             // Counter for the bits of a data word
     int32_t         SaveData;                     // Save the data (0: do nothing, 1 save, 2: save terminated)
-} PACKED;
+};
 
 #pragma pack(pop)
 
@@ -162,7 +162,7 @@ struct PCMF1_Message {
     uint32_t            SubPacketBits;    // MinorFrameLen in Bits
     uint8_t           * Data;             // Pointer to the start of the data
     TimeRef             Time;
-} PACKED;
+};
 
 
 

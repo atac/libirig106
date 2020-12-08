@@ -4,12 +4,8 @@
 #ifndef _config_h_
 #define _config_h_
 
-/* #if defined(__GNUC__) */
-/* #define PACKED __attribute__ ((packed)) */
-/* #else */
-#define PACKED
-/* #endif */
-
+// TODO: check if this is still needed and/or could be moved to individual
+// headers.
 #if defined(__APPLE__)
 #include <sys/uio.h>
 #endif
@@ -19,11 +15,11 @@
 // time_t is assumed to be a 32 bit value.  The following #define tells .NET to use 32 bits
 // as the default time_t size.  This needs to be set in the project properties.  This forces
 // a puke if it isn't set.
-#if _MSC_VER >= 1400
-#if !defined(_USE_32BIT_TIME_T)
-#pragma message("WARNING - '_USE_32BIT_TIME_T' not set!")
-#endif
-#endif
+/* #if _MSC_VER >= 1400 */
+/* #if !defined(_USE_32BIT_TIME_T) */
+/* #pragma message("WARNING - '_USE_32BIT_TIME_T' not set!") */
+/* #endif */
+/* #endif */
 
 // The POSIX caseless string compare is strcasecmp(). MSVC uses the
 // non-standard stricmp(). Fix it up with a macro if necessary

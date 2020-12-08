@@ -44,7 +44,7 @@ typedef struct {
     uint32_t    DateFormat  :  1;      // Date format
     uint32_t    Reserved2   :  2;
     uint32_t    Reserved3   : 20;
-} PACKED TimeF1_CSDW;
+} TimeF1_CSDW;
 
 // Time message - Day format
 typedef struct {
@@ -65,7 +65,7 @@ typedef struct {
     uint16_t    TDn         :  4;      // Tens of day number
     uint16_t    HDn         :  2;      // Hundreds of day number
     uint16_t    Reserved4   :  6;      // 0
-} PACKED Time_MessageDayFormat;
+} Time_MessageDayFormat;
 
 // Time message - DMY format
 typedef struct {
@@ -93,7 +93,7 @@ typedef struct {
     uint16_t    HYn         :  4;      // Hundreds of year number
     uint16_t    OYn         :  2;      // Thousands of year number
     uint16_t    Reserved5   :  2;      // 0
-} PACKED Time_MessageDMYFormat;
+} Time_MessageDMYFormat;
 
 // Time message Format 1 structure
 typedef struct MessageTimeF1 MessageTimeF1;

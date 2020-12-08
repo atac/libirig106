@@ -40,7 +40,7 @@ struct EthernetF0_CSDW {
     uint32_t    Frames     : 16;      // Number of frames
     uint32_t    Reserved1  : 12;
     uint32_t    Format     :  4;      // Format of frames
-} PACKED;
+};
 
 // Intra-message header
 typedef struct {
@@ -53,7 +53,7 @@ typedef struct {
     uint32_t    Content      :  2;
     uint32_t    FrameError   :  1;
     uint32_t    FrameCRCError:  1; 
-} PACKED EthernetF0_IPH;
+} EthernetF0_IPH;
 
 #pragma pack(pop)
 
@@ -64,7 +64,7 @@ typedef struct {
     uint8_t   Source[6];       // Source address
     uint16_t  TypeLen;         // Ethernet type / 802.3 length, byte swapped!
     uint8_t   Data[1];         // Start of the data
-} PACKED EthernetF0_Physical_FullMAC;
+} EthernetF0_Physical_FullMAC;
 
 
 // Current Ethernet message
@@ -74,7 +74,7 @@ typedef struct {
     EthernetF0_CSDW  * CSDW;
     EthernetF0_IPH   * IPH;
     uint8_t          * Data;
-} PACKED EthernetF0_Message;
+} EthernetF0_Message;
 
 
 /* Function Declaration */

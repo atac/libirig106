@@ -21,7 +21,7 @@
 typedef struct {
     uint32_t    Count          : 16;
     uint32_t    Reserved       : 16;
-} PACKED CAN_CSDW;
+} CAN_CSDW;
 
 
 // Intra-packed message header
@@ -32,7 +32,7 @@ typedef struct {
     uint32_t    SubChannel   : 14;      // Subchannel number
     uint32_t    FormatError  :  1;      // Format error flag
     uint32_t    DataError    :  1;      // Data error flag
-} PACKED CAN_IPH;
+} CAN_IPH;
 
 
 // CAN ID Word
@@ -41,7 +41,7 @@ typedef struct {
     uint32_t    Reserved       :  1;    // 0 = 11-bit CAN id; 1 = 29-bit CAN Id
     uint32_t    RTR            :  1;    // Remote transfer request bit
     uint32_t    IDE            :  1;
-} PACKED CAN_ID;
+} CAN_ID;
 
 #pragma pack(pop)
 

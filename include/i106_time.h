@@ -62,7 +62,7 @@ typedef struct {
     uint16_t      Sec10     : 2;
     uint16_t      Reserved  : 2;
     uint16_t      Micro;           // Microsecond time
-} PACKED I106Ch4_BCD_Time;
+} I106Ch4_BCD_Time;
 
 
 // IRIG 106 secondary header time in Ch 4 binary format
@@ -70,26 +70,26 @@ typedef struct {
     uint16_t      HighBinTime;     // High order time
     uint16_t      LowBinTime;      // Low order time
     uint16_t      Micro;           // Microsecond time
-} PACKED I106Ch4_Binary_Time;
+} I106Ch4_Binary_Time;
 
 
 // IRIG 106 secondary header time in IEEE-1588 format
 typedef struct {
     uint32_t      NanoSeconds;     // Nano-seconds
     uint32_t      Seconds;         // Seconds
-} PACKED IEEE1588_Time;
+} IEEE1588_Time;
 
 
 // Intra-packet header relative time counter format
 typedef struct {
     uint8_t       RTC[6];   // Reference time
     uint16_t      Reserved;
-} PACKED IntraPacketRTC;
+} IntraPacketRTC;
 
 // Intra-packet header time stamp - raw data
 typedef struct {
     uint8_t  IPTS[8];   // Time Stamp    
-} PACKED IntraPacketTS;
+} IntraPacketTS;
 
 #pragma pack(pop)
 

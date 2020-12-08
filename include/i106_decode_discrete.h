@@ -29,7 +29,7 @@ typedef struct {
     uint32_t    Reserved2  :  1;
     uint32_t    Alignment  :  1;      // 0 = lsb, 1 = msb
     uint32_t    State      :  1;      // 0 = date recorded on change, 1 = recorded at time interval
-} PACKED DiscreteF1_CSDW;
+} DiscreteF1_CSDW;
 
 // Current discrete message
 typedef struct {
@@ -37,7 +37,7 @@ typedef struct {
     DiscreteF1_CSDW  * CSDW;
     IntraPacketTS    * IPTS;
     uint32_t           Data;
-} PACKED DiscreteF1_Message;
+} DiscreteF1_Message;
 
 #pragma pack(pop)
 

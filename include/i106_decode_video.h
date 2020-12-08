@@ -25,13 +25,13 @@ typedef struct {
     uint32_t    SRS         :  1;  // SCR/RTC Sync
     uint32_t    IPH         :  1;  // Intra-Packet Header
     uint32_t    ET          :  1;  // Embedded Time
-} PACKED VideoF0_CSDW;
+} VideoF0_CSDW;
 
 
 // Video Format 0 intra-packet header
 typedef struct {
     uint8_t  IPTS[8];  // Reference time
-} PACKED VideoF0_IPH;
+} VideoF0_IPH;
 
 
 // Current video format 0 data message
@@ -39,7 +39,7 @@ typedef struct {
     VideoF0_CSDW  * CSDW;  // Pointer to channel specific header
     VideoF0_IPH   * IPH;   // Pointer to intra-packet header
     uint8_t       * Data;  // Pointer to transport stream data
-} PACKED VideoF0_Message;
+} VideoF0_Message;
 
 
 /* Video Format 1 */
@@ -55,7 +55,7 @@ typedef struct {
     uint32_t    SRS          :  1;  // SCR/RTC Sync
     uint32_t    KLV          :  1;  // KLV present
     uint32_t    Reserved     : 10;
-} PACKED VideoF1_CSDW;
+} VideoF1_CSDW;
 
 
 // Video Format 2 channel specific header
@@ -71,7 +71,7 @@ typedef struct {
     uint32_t    EL           :  4;  // Encoding Level
     uint32_t    AET          :  1;  // Audio Encoding Type
     uint32_t    Reserved     :  5;
-} PACKED VideoF2_CSDW;
+} VideoF2_CSDW;
 
 
 #pragma pack(pop)
