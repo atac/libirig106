@@ -7,6 +7,7 @@ import sys
 def run(cmd):
     status = os.system(cmd)
     if status:
+        print(f'{cmd} failed: {status}')
         sys.exit(status)
 
 
