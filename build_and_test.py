@@ -24,6 +24,10 @@ run('cmake ..')
 if sys.platform == 'win32':
     run('cmake --build . --config Release')
     os.chdir('..')
+    if not os.path.exists('.\\build\\Release\\test_runner.exe'):
+        print('Test runner not found!')
+        import pprint
+        pprint.pprint(os.walk('build'))
     run('.\\build\\Release\\test_runner.exe')
 else:
     run('make')
