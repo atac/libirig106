@@ -31,17 +31,22 @@ jobs:
   - script: python build_and_test.py rebuild
     displayName: "Build and Test"
 
-- job: "Artifacts"
-  dependsOn: "Build"
-  steps:
-    # - task: PublishBuildArtifacts@1
-    #   inputs:
-    #     pathToPublish: 'pychapter10-$(Build.BuildNumber)-full.zip'
-    #     artifactName: complete-library
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: 'build'
+      artifactName: dist
 
-    - task: ArchiveFiles@2
-      inputs:
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/**/libirig106*'
-        includeRootFolder: false
+# - job: "Artifacts"
+#   dependsOn: "Build"
+#   steps:
+#     # - task: PublishBuildArtifacts@1
+#     #   inputs:
+#     #     pathToPublish: 'pychapter10-$(Build.BuildNumber)-full.zip'
+#     #     artifactName: complete-library
 
-    - task: PublishBuildArtifacts@1
+#     - task: ArchiveFiles@2
+#       inputs:
+#         rootFolderOrFile: '$(System.DefaultWorkingDirectory)/**/libirig106*'
+#         includeRootFolder: false
+
+#     - task: PublishBuildArtifacts@1
