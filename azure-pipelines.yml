@@ -10,7 +10,7 @@ name: $(major).$(minor)$(Rev:.r)
 
 jobs:
 
-- job: "Build and Test"
+- job: "Build"
   strategy:
     matrix:
       linux:
@@ -31,8 +31,8 @@ jobs:
   - script: python build_and_test.py rebuild
     displayName: "Build and Test"
 
-- job: "Prep Release"
-  dependsOn: "Build and Test"
+- job: "Artifacts"
+  dependsOn: "Build"
   steps:
     # - task: PublishBuildArtifacts@1
     #   inputs:
