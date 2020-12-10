@@ -20,36 +20,8 @@ jobs:
     vmImage: $(imageName)
 
   steps:
-
   - script: git submodule init && git submodule update
     displayName: 'Load git submodules'
 
   - script: python build_and_test.py rebuild
     displayName: "Build and Test"
-
-  - task: PublishBuildArtifacts@1
-    condition: eq(variables['Agent.OS'], 'Linux')
-    inputs:
-      pathToPublish: 'build/libirig106.a'
-      artifactName: ubuntu-static
-
-  - task: PublishBuildArtifacts@1
-    condition: eq(variables['Agent.OS'], 'Windows_NT')
-    inputs:
-      pathToPublish: 'build/Release/irig106.lib'
-      artifactName: windows-static
-
-# - job: "Artifacts"
-#   dependsOn: "Build"
-#   steps:
-#     # - task: PublishBuildArtifacts@1
-#     #   inputs:
-#     #     pathToPublish: 'pychapter10-$(Build.BuildNumber)-full.zip'
-#     #     artifactName: complete-library
-
-#     - task: ArchiveFiles@2
-#       inputs:
-#         rootFolderOrFile: '$(System.DefaultWorkingDirectory)/**/libirig106*'
-#         includeRootFolder: false
-
-#     - task: PublishBuildArtifacts@1
