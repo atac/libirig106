@@ -1,23 +1,46 @@
 
-strategy:
-  matrix:
-    linux:
-      imageName: 'ubuntu-18.04'
-    mac:
-      imageName: 'macos-10.15'
-    windows:
-      imageName: 'windows-2019'
-
-pool:
-  vmImage: $(imageName)
-
 trigger:
 - master
 
-steps:
+variables:
+  major: 0
+  minor: 2
 
-- script: git submodule init && git submodule update
-  displayName: 'Load git submodules'
+name: $(major).$(minor)$(Rev:.r)
 
-- script: python build_and_test.py rebuild
-  displayName: "Build and Test"
+jobs:
+
+- job: "Build and Test"
+  strategy:
+    matrix:
+      linux:
+        imageName: 'ubuntu-18.04'
+      # mac:
+      #   imageName: 'macos-10.15'
+      windows:
+        imageName: 'windows-2019'
+
+  pool:
+    vmImage: $(imageName)
+
+  steps:
+
+  - script: git submodule init && git submodule update
+    displayName: 'Load git submodules'
+
+  - script: python build_and_test.py rebuild
+    displayName: "Build and Test"
+
+- job: "Prep Release"
+  dependsOn: "Build and Test"
+
+  # - task: PublishBuildArtifacts@1
+  #   inputs:
+  #     pathToPublish: 'pychapter10-$(Build.BuildNumber)-full.zip'
+  #     artifactName: complete-library
+	- task: ArchiveFiles@2
+		inputs:
+			rootFolderOrFile: '$(System.DefaultWorkingDirectory)/**/libirig106*'
+			includeRootFolder: false
+
+	- task: PublishBuildArtifacts@1
