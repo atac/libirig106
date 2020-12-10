@@ -28,11 +28,13 @@ jobs:
     displayName: "Build and Test"
 
   - task: PublishBuildArtifacts@1
+    condition: eq(variables['Agent.OS'], 'Linux')
     inputs:
       pathToPublish: 'build/libirig106.a'
       artifactName: ubuntu-static
 
   - task: PublishBuildArtifacts@1
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
     inputs:
       pathToPublish: 'build/Release/libirig106.lib'
       artifactName: windows-static
