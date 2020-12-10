@@ -36,7 +36,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     condition: eq(variables['Agent.OS'], 'Windows_NT')
     inputs:
-      pathToPublish: 'build/Release/libirig106.lib'
+      pathToPublish: 'build/Release/irig106.lib'
       artifactName: windows-static
 
 # - job: "Artifacts"
