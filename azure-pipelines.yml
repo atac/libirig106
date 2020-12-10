@@ -34,10 +34,12 @@ jobs:
 - job: "Prep Release"
   dependsOn: "Build and Test"
 
+	steps:
   # - task: PublishBuildArtifacts@1
   #   inputs:
   #     pathToPublish: 'pychapter10-$(Build.BuildNumber)-full.zip'
   #     artifactName: complete-library
+
 	- task: ArchiveFiles@2
 		inputs:
 			rootFolderOrFile: '$(System.DefaultWorkingDirectory)/**/libirig106*'
