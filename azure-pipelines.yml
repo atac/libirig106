@@ -42,6 +42,6 @@ jobs:
     - task: ArchiveFiles@2
       inputs:
         rootFolderOrFile: '$(System.DefaultWorkingDirectory)/**/libirig106*'
-      includeRootFolder: false
+        includeRootFolder: false
 
     - task: PublishBuildArtifacts@1
