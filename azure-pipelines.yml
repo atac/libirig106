@@ -2,22 +2,18 @@
 trigger:
 - master
 
-variables:
-  major: 0
-  minor: 2
-
-name: $(major).$(minor)$(Rev:.r)
+name: "0.2.0"
 
 jobs:
 
 - job: "Build"
   strategy:
     matrix:
-      linux:
+      Linux:
         imageName: 'ubuntu-18.04'
       # mac:
       #   imageName: 'macos-10.15'
-      windows:
+      Windows:
         imageName: 'windows-2019'
 
   pool:
@@ -33,8 +29,13 @@ jobs:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: 'build'
-      artifactName: dist
+      pathToPublish: 'build/libirig106.a'
+      artifactName: ubuntu-static
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: 'build/Release/libirig106.lib'
+      artifactName: windows-static
 
 # - job: "Artifacts"
 #   dependsOn: "Build"
