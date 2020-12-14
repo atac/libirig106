@@ -10,6 +10,11 @@
 #include "config.h"
 #include "irig106ch10.h"
 
+#if defined(_MSC_VER)
+#define strcasecmp(s1, s2)          _stricmp(s1, s2)
+#define strncasecmp(s1, s2, n)      _strnicmp(s1, s2, n)
+#pragma warning(disable : 4996)
+#endif
 
 /* Macros and definitions */
 
