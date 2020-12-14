@@ -99,7 +99,7 @@ Type  Name                                                  Supported
 ====  ==================================================    =========
 
 
-Building and Testing
+Building and Testing (requires cmake)
 --------------------
 
 Unix / make
@@ -120,8 +120,8 @@ From the VS native tools commandline run::
     cmake ..
     cmake build . --config Release
 
-Alternatively, run the build_and_test.py script from unix terminal or VS commandline to build
-and then run the test suite.
+Alternatively, run the build_and_test.py script from unix terminal or VS
+commandline to build and then run the test suite.
 
 
 .. _Python Wrapper: https://github.com/atac-bham/libirig106-python
