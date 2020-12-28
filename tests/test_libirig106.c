@@ -1,5 +1,5 @@
 
-#include "irig106ch10.h"
+#include "libirig106.h"
 #include "unity.h"
 #include "unity_fixture.h"
 #include <assert.h>

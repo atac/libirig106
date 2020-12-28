@@ -16,13 +16,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "config.h"
 #include "i106_decode_analogf1.h"
 #include "i106_decode_tmats.h"
 #include "i106_time.h"
-#include "int.h"
 #include "util.h"
-#include "irig106ch10.h"
+#include "libirig106.h"
 
 
 /* Function Declaration */

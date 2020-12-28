@@ -1,8 +1,3 @@
-/****************************************************************************
-
- irig106ch10.c
-
- ****************************************************************************/
 
 #include <assert.h>
 #include <errno.h>
@@ -17,10 +12,7 @@
 #include <unistd.h>
 #endif
 
-#include "config.h"
-#include "int.h"
-
-#include "irig106ch10.h"
+#include "libirig106.h"
 #include "i106_time.h"
 
 

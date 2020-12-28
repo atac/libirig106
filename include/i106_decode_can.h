@@ -8,7 +8,7 @@
 #ifndef _I106_DECODE_CAN_H
 #define _I106_DECODE_CAN_H
 
-#include "irig106ch10.h"
+#include "libirig106.h"
 #include "i106_time.h"
 
 

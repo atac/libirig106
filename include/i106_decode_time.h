@@ -8,7 +8,7 @@
 #define _I106_DECODE_TIME_H
 
 #include "i106_time.h"
-#include "irig106ch10.h"
+#include "libirig106.h"
 
 
 /* Macros and definitions */

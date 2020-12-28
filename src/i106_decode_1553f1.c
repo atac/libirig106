@@ -10,7 +10,7 @@
 
 #include "stdint.h"
 
-#include "irig106ch10.h"
+#include "libirig106.h"
 #include "i106_decode_1553f1.h"
 
 

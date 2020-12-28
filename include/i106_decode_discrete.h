@@ -7,8 +7,7 @@
 #ifndef _I106_DECODE_DISCRETE_H
 #define _I106_DECODE_DISCRETE_H
 
-#include "config.h"
-#include "irig106ch10.h"
+#include "libirig106.h"
 #include "i106_time.h"
 
 

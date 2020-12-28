@@ -4,10 +4,7 @@
 
  ****************************************************************************/
 
-#include "config.h"
-#include "int.h"
-
-#include "irig106ch10.h"
+#include "libirig106.h"
 #include "i106_time.h"
 #include "i106_decode_arinc429.h"
 

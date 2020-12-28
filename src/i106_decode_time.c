@@ -11,14 +11,7 @@
 #include <sys/types.h>
 #include <sys/timeb.h>
 
-#if defined(_WIN32)
-#include <windows.h>        // For FILETIME
-#endif
-
-#include "int.h"
-#include "config.h"
-
-#include "irig106ch10.h"
+#include "libirig106.h"
 #include "i106_time.h"
 #include "i106_decode_time.h"
 

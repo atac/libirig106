@@ -8,7 +8,7 @@
 #define _I106_TIME_H
 
 #include <time.h>
-#include "irig106ch10.h"
+#include "libirig106.h"
 
 /* Macros and definitions */
 

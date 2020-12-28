@@ -7,8 +7,7 @@
 #ifndef _I106_DECODE_TMATS_H
 #define _I106_DECODE_TMATS_H
 
-#include "config.h"
-#include "irig106ch10.h"
+#include "libirig106.h"
 
 #if defined(_MSC_VER)
 #define strcasecmp(s1, s2)          _stricmp(s1, s2)

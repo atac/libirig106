@@ -8,9 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "stdint.h"
-
-#include "irig106ch10.h"
+#include "libirig106.h"
 #include "i106_time.h"
 
 #include "i106_decode_uart.h"

@@ -21,10 +21,9 @@ set BytesRead to zero, continue along
 #ifndef _I106_DECODE_ANALOGF1_H
 #define _I106_DECODE_ANALOGF1_H
 
-#include "irig106ch10.h"
+#include "libirig106.h"
 #include "i106_decode_tmats.h"
 #include "i106_time.h"
-#include "int.h"
 
 
 /* Macros and definitions */

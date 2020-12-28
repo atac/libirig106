@@ -7,7 +7,7 @@
 #ifndef _I106_DECODE_UART_H
 #define _I106_DECODE_UART_H
 
-#include "irig106ch10.h"
+#include "libirig106.h"
 #include "i106_time.h"
 
 
