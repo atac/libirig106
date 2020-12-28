@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 #include "config.h"
-#include "int.h"
+#include <stdint.h>
 
 
 /* Macros and definitions */
