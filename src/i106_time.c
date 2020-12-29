@@ -192,7 +192,7 @@ I106Status I106_SyncTime(int handle, int sync, int max_seconds){
         return status;
 
     // Read the next header
-    status = I106C10ReadNextHeaderFile(handle, &header);
+    status = I106C10ReadNextHeader(handle, &header);
     if (status == I106_EOF)
         return I106_TIME_NOT_FOUND;
 
@@ -246,7 +246,7 @@ I106Status I106_SyncTime(int handle, int sync, int max_seconds){
         }
 
         // Read the next header and try again
-        status = I106C10ReadNextHeaderFile(handle, &header);
+        status = I106C10ReadNextHeader(handle, &header);
         if (status == I106_EOF){
             return_status = I106_TIME_NOT_FOUND;
             break;
@@ -291,7 +291,7 @@ I106Status I106C10SetPosToIrigTime(int handle, I106Time *irig_seek_time){
 
     // Check time bounds
     if (seek_time < index->Index[0].Time){
-        I106C10FirstMsg(handle);
+        I106C10SetPos(handle, 0L);
         return I106_TIME_NOT_FOUND;
     };
 

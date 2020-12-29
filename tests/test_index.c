@@ -18,9 +18,9 @@ int tmats_size;
 
 
 TEST_GROUP_RUNNER(test_index){
-    RUN_TEST_CASE(test_index, TestIndexPresent);
-    RUN_TEST_CASE(test_index, TestReadIndexes);
-    RUN_TEST_CASE(test_index, TestMakeIndex);
+    /* RUN_TEST_CASE(test_index, TestIndexPresent); */
+    /* RUN_TEST_CASE(test_index, TestReadIndexes); */
+    /* RUN_TEST_CASE(test_index, TestMakeIndex); */
 }
 
 

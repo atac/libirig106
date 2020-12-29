@@ -11,9 +11,12 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/types.h>
 
 #if !defined(__GNUC__)
 #include <io.h>
+#else
+#include <unistd.h>
 #endif
 
 #include <stdlib.h>
@@ -82,7 +85,7 @@ I106Status IndexPresent(const int handle, int *found_index){
     do {
 
         // Check for index support in TMATS
-        status = I106C10FirstMsg(handle);
+        status = I106C10SetPos(handle, 0L);
         if (status != I106_OK)
             break;
 
@@ -123,7 +126,8 @@ I106Status IndexPresent(const int handle, int *found_index){
         if (status != I106_OK)
             break;
 
-        status = I106C10ReadNextHeader(handle, &header);
+        off_t pos = lseek(handles[handle].File, 0, SEEK_END);
+        status = I106C10ReadPrevHeader(handle, &header);
         if (status != I106_OK)
             break;
 
@@ -153,9 +157,9 @@ I106Status ReadIndexes(const int handle){
         InitIndexes();
 
     // Make sure indexes are in the file
-    status = IndexPresent(handle, &found_index);
-    if (status != I106_OK)
+    if ((status = IndexPresent(handle, &found_index)))
         return status;
+
     if (found_index == 0)
         return I106_NO_INDEX;
 
@@ -181,16 +185,16 @@ I106Status ReadIndexes(const int handle){
     I106C10LastMsg(handle);
 
     // Save this file offset
-    status = I106C10GetPos(handle, &pos);
+    I106C10GetPos(handle, &pos);
 
 	// Root packet found so start processing root index packets
     while (1){
-        // Process the root packet at the given offset
-        status = ProcessRootIndexPacket(handle, pos, &next);
+        /* printf("Root index"); */
 
         // Check for exit conditions
-        if (status != I106_OK)
+        if ((status = ProcessRootIndexPacket(handle, pos, &next))){
             break;
+        }
 
         if (pos == next)
             break;
@@ -222,8 +226,9 @@ I106Status ProcessRootIndexPacket(int handle, int64_t offset, int64_t *next){
         return status;
 
     // Read what should be a root index packet
-    if ((status = I106C10ReadNextHeader(handle, &header)))
+    if ((status = I106C10ReadNextHeader(handle, &header))){
         return status;
+    }
 
     if (header.DataType != I106CH10_DTYPE_RECORDING_INDEX)
         return I106_INVALID_DATA;
@@ -501,7 +506,7 @@ I106Status FindTimePacket(int handle){
     status = I106C10SetPos(handle, last/2);
 
     // Read the next header
-    status = I106C10ReadNextHeaderFile(handle, &header);
+    status = I106C10ReadNextHeader(handle, &header);
     if (status == I106_EOF)
         return I106_TIME_NOT_FOUND;
 
@@ -556,7 +561,7 @@ I106Status FindTimePacket(int handle){
         }
 
         // Read the next header and try again
-        status = I106C10ReadNextHeaderFile(handle, &header);
+        status = I106C10ReadNextHeader(handle, &header);
         if (status == I106_EOF){
             return_status = I106_TIME_NOT_FOUND;
             break;

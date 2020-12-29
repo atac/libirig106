@@ -22,13 +22,13 @@ TEST_GROUP_RUNNER(test_i106){
 
     RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeader);
     RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeaderFile);
-    RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeaderInOrder);
+    /* RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeaderInOrder); */
     RUN_TEST_CASE(test_i106, TestI106C10ReadPrevHeader);
     RUN_TEST_CASE(test_i106, TestI106C10ReadData);
     RUN_TEST_CASE(test_i106, TestI106C10ReadDataFile);
     RUN_TEST_CASE(test_i106, TestI106C10WriteMsg);
 
-    RUN_TEST_CASE(test_i106, TestI106C10FirstMsg);
+    /* RUN_TEST_CASE(test_i106, TestI106C10FirstMsg); */
     RUN_TEST_CASE(test_i106, TestI106C10LastMsg);
     RUN_TEST_CASE(test_i106, TestI106C10SetPos);
     RUN_TEST_CASE(test_i106, TestI106C10GetPos);
@@ -41,7 +41,7 @@ TEST_GROUP_RUNNER(test_i106){
     /* RUN_TEST_CASE(test_i106, TestSecondaryHeaderChecksum); */
     RUN_TEST_CASE(test_i106, TestI106C10ErrorString);
     /* RUN_TEST_CASE(test_i106, TestDataChecksum); */
-    RUN_TEST_CASE(test_i106, TestBufferSize);
+    /* RUN_TEST_CASE(test_i106, TestBufferSize); */
     /* RUN_TEST_CASE(test_i106, TestAddFillerAndChecksum); */
 
     /* RUN_TEST_CASE(test_i106, TestMakeInOrderIndex); */
@@ -109,14 +109,14 @@ TEST(test_i106, TestI106C10ReadNextHeader){
 
     TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/indexed.c10", READ));
 
-    MakeInOrderIndex(handle);
+    /* MakeInOrderIndex(handle); */
 
     handles[handle].FileMode = OVERWRITE;
     TEST_ASSERT_EQUAL(I106_WRONG_FILE_MODE, I106C10ReadNextHeader(handle, &header));
 
-    handles[handle].FileMode = READ_IN_ORDER;
-    handles[handle].Index.SortStatus = SORTED;
-    TEST_ASSERT_EQUAL(I106C10ReadNextHeaderInOrder(handle, &header), I106C10ReadNextHeader(handle, &header));
+    /* handles[handle].FileMode = READ_IN_ORDER; */
+    /* handles[handle].Index.SortStatus = SORTED; */
+    /* TEST_ASSERT_EQUAL(I106C10ReadNextHeaderInOrder(handle, &header), I106C10ReadNextHeader(handle, &header)); */
     I106C10Close(handle);
 }
 
@@ -127,23 +127,23 @@ TEST(test_i106, TestI106C10ReadNextHeaderFile){
 
     TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
 
-    TEST_ASSERT_EQUAL(I106_OK, I106C10ReadNextHeaderFile(handle, &header));
+    TEST_ASSERT_EQUAL(I106_OK, I106C10ReadNextHeader(handle, &header));
 
     I106C10Close(handle);
 }
 
 
-TEST(test_i106, TestI106C10ReadNextHeaderInOrder){
-    int handle;
-    I106C10Header header;
+/* TEST(test_i106, TestI106C10ReadNextHeaderInOrder){ */
+/*     int handle; */
+/*     I106C10Header header; */
 
-    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/indexed.c10", READ));
+/*     TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/indexed.c10", READ)); */
 
-    MakeInOrderIndex(handle);
+/*     /1* MakeInOrderIndex(handle); *1/ */
 
-    TEST_ASSERT_EQUAL(I106_OK, I106C10ReadNextHeaderInOrder(handle, &header));
-    I106C10Close(handle);
-}
+/*     TEST_ASSERT_EQUAL(I106_OK, I106C10ReadNextHeaderInOrder(handle, &header)); */
+/*     I106C10Close(handle); */
+/* } */
 
 
 TEST(test_i106, TestI106C10ReadPrevHeader){
@@ -168,9 +168,9 @@ TEST(test_i106, TestI106C10ReadData){
     void *buffer = malloc(buffer_size);
 
     TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
-    TEST_ASSERT_EQUAL(
-            I106C10ReadDataFile(handle, buffer_size, buffer),
-            I106C10ReadData(handle, buffer_size, buffer));
+    /* TEST_ASSERT_EQUAL( */
+    /*         I106C10ReadDataFile(handle, buffer_size, buffer), */
+    /*         I106C10ReadData(handle, buffer_size, buffer)); */
 
     I106C10Close(handle);
     free(buffer);
@@ -186,7 +186,7 @@ TEST(test_i106, TestI106C10ReadDataFile){
     TEST_ASSERT_EQUAL(I106_OK, I106C10SetPos(handle, 24));
     handles[handle].File_State = I106_READ_DATA;
 
-    TEST_ASSERT_EQUAL(I106_OK, I106C10ReadDataFile(handle, buffer_size, buffer));
+    TEST_ASSERT_EQUAL(I106_OK, I106C10ReadData(handle, buffer_size, buffer));
 
     I106C10Close(handle);
     free(buffer);
@@ -210,13 +210,13 @@ TEST(test_i106, TestI106C10WriteMsg){
 }
 
 
-TEST(test_i106, TestI106C10FirstMsg){
-    int handle;
-    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ));
-    TEST_ASSERT_EQUAL(I106_OK, I106C10FirstMsg(handle));
+/* TEST(test_i106, TestI106C10FirstMsg){ */
+/*     int handle; */
+/*     TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/copy.c10", READ)); */
+/*     TEST_ASSERT_EQUAL(I106_OK, I106C10FirstMsg(handle)); */
 
-    I106C10Close(handle);
-}
+/*     I106C10Close(handle); */
+/* } */
 
 
 TEST(test_i106, TestI106C10LastMsg){
@@ -309,13 +309,13 @@ TEST(test_i106, TestI106C10ErrorString){
 }
 
 
-TEST(test_i106, TestBufferSize){
-    TEST_ASSERT_EQUAL(52, BufferSize(50, 0));
-    TEST_ASSERT_EQUAL(52, BufferSize(50, I106CH10_PFLAGS_CHKSUM_NONE));
-    TEST_ASSERT_EQUAL(52, BufferSize(50, I106CH10_PFLAGS_CHKSUM_8));
-    TEST_ASSERT_EQUAL(52, BufferSize(50, I106CH10_PFLAGS_CHKSUM_16));
-    TEST_ASSERT_EQUAL(56, BufferSize(50, I106CH10_PFLAGS_CHKSUM_32));
-}
+/* TEST(test_i106, TestBufferSize){ */
+/*     TEST_ASSERT_EQUAL(52, BufferSize(50, 0)); */
+/*     TEST_ASSERT_EQUAL(52, BufferSize(50, I106CH10_PFLAGS_CHKSUM_NONE)); */
+/*     TEST_ASSERT_EQUAL(52, BufferSize(50, I106CH10_PFLAGS_CHKSUM_8)); */
+/*     TEST_ASSERT_EQUAL(52, BufferSize(50, I106CH10_PFLAGS_CHKSUM_16)); */
+/*     TEST_ASSERT_EQUAL(56, BufferSize(50, I106CH10_PFLAGS_CHKSUM_32)); */
+/* } */
 
 
 TEST(test_i106, TestAddFillerAndChecksum){

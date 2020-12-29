@@ -243,15 +243,11 @@ I106Status I106C10Close(int handle);
 
 // Read / Write
 I106Status I106C10ReadNextHeader(int handle, I106C10Header *header);
-I106Status I106C10ReadNextHeaderFile(int handle, I106C10Header *header);
-I106Status I106C10ReadNextHeaderInOrder(int handle, I106C10Header *header);
 I106Status I106C10ReadPrevHeader(int handle, I106C10Header *header);
 I106Status I106C10ReadData(int handle, unsigned long buffer_size, void * buffer);
-I106Status I106C10ReadDataFile(int handle, unsigned long buffer_size, void * buffer);
 I106Status I106C10WriteMsg(int handle, I106C10Header *header, void *buffer);
 
 // Move file pointer
-I106Status I106C10FirstMsg(int handle);
 I106Status I106C10LastMsg(int handle);
 I106Status I106C10SetPos(int handle, int64_t offset);
 I106Status I106C10GetPos(int handle, int64_t * offset);
@@ -265,12 +261,6 @@ uint16_t HeaderChecksum(I106C10Header *header);
 uint16_t SecondaryHeaderChecksum(I106C10Header *header);
 char * I106ErrorString(I106Status status);
 /* int DataChecksum(void *buffer); */
-uint32_t BufferSize(uint32_t data_length, int checksum_type);
 I106Status AddFillerAndChecksum(I106C10Header *header, unsigned char data[]);
-
-// In-order indexing
-void MakeInOrderIndex(int handle);
-int ReadInOrderIndex(int handle, char *filename);
-int WriteInOrderIndex(int handle, char *filename);
 
 #endif
