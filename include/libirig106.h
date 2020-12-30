@@ -238,7 +238,9 @@ extern I106C10Handle  handles[MAX_HANDLES];
 
 // New API
 I106Status I106NextHeader(int fd, I106C10Header *header);
-I106Status I106NextHeaderBuffer(void *buffer, int64_t buffer_size, int64_t offset, I106C10Header *header);
+I106Status I106NextHeaderBuffer(char *buffer, int64_t buffer_size, int64_t offset, I106C10Header *header);
+I106Status I106PrevHeader(int fd, I106C10Header *header);
+I106Status I106PrevHeaderBuffer(char *buffer, int64_t buffer_size, int64_t offset, I106C10Header *header);
 
 // Old API (deprecated)
 I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode);

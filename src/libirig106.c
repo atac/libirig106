@@ -191,12 +191,70 @@ I106Status I106C10Close(int handle){
     return status;
 }
 
+
+// Simple header validation. Returns 1 = valid, 0 = invalid
+int ValidHeader(I106C10Header *header){
+    if (header->SyncPattern != IRIG106_SYNC)
+        return 0;
+
+    else if (header->Checksum != HeaderChecksum(header))
+        return 0;
+
+    if (header->PacketFlags & I106CH10_PFLAGS_SEC_HEADER)
+        if (header->SecondaryChecksum != SecondaryHeaderChecksum(header))
+            return 0;
+
+    return 1;
+}
+
+
+// Reads a header from a file. If ftell() is not at a sync pattern will seek
+// forward to find one.
+I106Status I106NextHeader(int fd, I106C10Header *header){
+    int read_count, valid = 1;
+    int64_t offset;
+
+    // Read what we think is a header, and keep reading if things don't look correct.
+    while (1){
+
+        // Find the offset where we start parsing
+        offset = lseek(fd, 0, SEEK_CUR);
+
+        // Read the header and secondary header if present
+        read_count = read(fd, header, HEADER_SIZE);
+        if (read_count != HEADER_SIZE){
+            if (read_count == -1)
+                return I106_READ_ERROR;
+            return I106_EOF;
+        }
+
+        if (header->PacketFlags & I106CH10_PFLAGS_SEC_HEADER){
+            read_count = read(fd, &header->Time[0], SEC_HEADER_SIZE);
+            if (read_count != SEC_HEADER_SIZE){
+                if (read_count == -1)
+                    return I106_READ_ERROR;
+                return I106_EOF;
+            }
+        }
+
+        // If not valid, seek forward and try again
+        if (!ValidHeader(header)){
+            if ((lseek(fd, offset + 1, SEEK_SET)) == -1)
+                return I106_SEEK_ERROR;
+            if (lseek(fd, 0, SEEK_CUR) <= offset)
+                return I106_EOF;
+            continue;
+        }
+
+        // Otherwise return
+        return I106_OK;
+    }
+}
+
+
 // Reads a header from a buffer. If not at a sync pattern will seek
-// forward to find one. Optionally, if "header" is an existing header, will
-// skip past the previous packet to save time.
-I106Status I106NextHeaderBuffer(void *buffer, int64_t buffer_size, int64_t offset, I106C10Header *header){
-    int valid = 1;
-    I106Status status;
+// forward to find one.
+I106Status I106NextHeaderBuffer(char *buffer, int64_t buffer_size, int64_t offset, I106C10Header *header){
 
     // Read what we think is a header, and keep reading if things don't look correct.
     while (1){
@@ -205,22 +263,10 @@ I106Status I106NextHeaderBuffer(void *buffer, int64_t buffer_size, int64_t offse
             return I106_EOF;
 
         // Read the header and check for errors
-        header = (I106C10Header*)buffer + offset;
-
-        // Validate header
-        if (header->SyncPattern != IRIG106_SYNC)
-            valid = 0;
-
-        else if (header->Checksum != HeaderChecksum(header))
-            valid = 0;
-
-        else if (header->PacketFlags & I106CH10_PFLAGS_SEC_HEADER){
-            if (header->SecondaryChecksum != SecondaryHeaderChecksum(header))
-                valid = 0;
-        }
+        memcpy(header, buffer+offset, 32);
 
         // If not valid, seek forward and try again
-        if (!valid){
+        if (!ValidHeader(header)){
             offset += 1;
             continue;
         }
@@ -230,61 +276,38 @@ I106Status I106NextHeaderBuffer(void *buffer, int64_t buffer_size, int64_t offse
     }
 }
 
-// Reads a header from a file. If ftell() is not at a sync pattern will seek
-// forward to find one.
-I106Status I106NextHeader(int fd, I106C10Header *header){
-    int read_count, valid = 1;
-    int64_t offset;
+
+// Search backwards for a header
+I106Status I106PrevHeader(int fd, I106C10Header *header){
+    I106Status status;
+    int64_t offset = lseek(fd, 0, SEEK_CUR);
+
+    while (1){
+        offset -= 30;
+        if (lseek(fd, offset, SEEK_SET) == -1)
+            if (lseek(fd, 0, SEEK_CUR) == 0)
+                return I106_BOF;
+            else
+                return I106_SEEK_ERROR;
+        if ((status = I106NextHeader(fd, header)))
+            continue;
+
+        return status;
+    }
+}
+
+
+// Search backwards for a header
+I106Status I106PrevHeaderBuffer(char *buffer, int64_t buffer_size, int64_t offset, I106C10Header *header){
     I106Status status;
 
-    // Read what we think is a header, and keep reading if things don't look correct.
     while (1){
-
-        // Find the offset where we start parsing
-        offset = lseek(fd, 0, SEEK_CUR);
-
-        // Read the header and check for errors
-        read_count = read(fd, header, HEADER_SIZE);
-        if (read_count != HEADER_SIZE){
-            if (read_count == -1)
-                return I106_READ_ERROR;
-            return I106_EOF;
-        }
-
-        // Validate header
-        if (header->SyncPattern != IRIG106_SYNC){
-            printf("Sync %i != %i", header->SyncPattern, IRIG106_SYNC);
-            return I106_EOF;
-            valid = 0;
-        }
-
-        else if (header->Checksum != HeaderChecksum(header))
-            valid = 0;
-
-        else if (header->PacketFlags & I106CH10_PFLAGS_SEC_HEADER){
-            // Read the secondary header and handle read errors if needed
-            read_count = read(fd, &header->Time[0], SEC_HEADER_SIZE);
-            if (read_count != SEC_HEADER_SIZE){
-                if (read_count == -1)
-                    return I106_READ_ERROR;
-                return I106_EOF;
-            }
-
-            if (header->SecondaryChecksum != SecondaryHeaderChecksum(header))
-                valid = 0;
-        }
-
-        // If not valid, seek forward and try again
-        if (valid == 0){
-            if ((lseek(fd, offset + 1, SEEK_SET)))
-                return I106_SEEK_ERROR;
-            if (lseek(fd, 0, SEEK_CUR) <= offset)
-                return I106_EOF;
+        offset -= 30;
+        memcpy(header, buffer+offset, 32);
+        if ((status = I106NextHeaderBuffer(buffer, buffer_size, offset, header)))
             continue;
-        }
 
-        // Otherwise return
-        return I106_OK;
+        return status;
     }
 }
 

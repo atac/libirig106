@@ -20,6 +20,7 @@ TEST_GROUP_RUNNER(test_i106){
     // New API
     RUN_TEST_CASE(test_i106, TestI106NextHeader);
     RUN_TEST_CASE(test_i106, TestI106NextHeaderBuffer);
+    RUN_TEST_CASE(test_i106, TestI106PrevHeader);
 
     // Old API
     RUN_TEST_CASE(test_i106, TestI106C10Open);
@@ -42,7 +43,6 @@ TEST_GROUP_RUNNER(test_i106){
     RUN_TEST_CASE(test_i106, TestGetHeaderLength);
     RUN_TEST_CASE(test_i106, TestGetDataLength);
     RUN_TEST_CASE(test_i106, TestHeaderChecksum);
-    // TODO: fix disabled tests!
     /* RUN_TEST_CASE(test_i106, TestSecondaryHeaderChecksum); */
     RUN_TEST_CASE(test_i106, TestI106C10ErrorString);
     /* RUN_TEST_CASE(test_i106, TestDataChecksum); */
@@ -60,11 +60,14 @@ TEST_SETUP(test_i106){}
 TEST_TEAR_DOWN(test_i106){}
 
 
+// New API
 TEST(test_i106, TestI106NextHeader){
     I106C10Header header;
     int fd = open("tests/indexed.c10", 0);
 
     TEST_ASSERT_EQUAL(I106_OK, I106NextHeader(fd, &header));
+    TEST_ASSERT_EQUAL(0, header.ChannelID);
+    TEST_ASSERT_EQUAL(1, header.DataType);
 }
 
 
@@ -72,13 +75,41 @@ TEST(test_i106, TestI106NextHeaderBuffer){
     I106C10Header header;
     int fd = open("tests/indexed.c10", 0);
     void *buffer = malloc(100);
-    read(fd, buffer, 100);
+    int read_count = read(fd, buffer, 100);
 
     TEST_ASSERT_EQUAL(I106_OK, I106NextHeaderBuffer(buffer, 100, 0, &header));
+    TEST_ASSERT_EQUAL(0, header.ChannelID);
+    TEST_ASSERT_EQUAL(1, header.DataType);
+
     free(buffer);
 }
 
 
+TEST(test_i106, TestI106PrevHeader){
+    I106C10Header header;
+    int fd = open("tests/indexed.c10", 0);
+    lseek(fd, 0, SEEK_END);
+
+    TEST_ASSERT_EQUAL(I106_OK, I106PrevHeader(fd, &header));
+    TEST_ASSERT_EQUAL(0, header.ChannelID);
+    TEST_ASSERT_EQUAL(3, header.DataType);
+}
+
+
+TEST(test_i106, TestI106PrevHeaderBuffer){
+    I106C10Header header;
+    int fd = open("tests/indexed.c10", 0);
+    void *buffer = malloc(100);
+    lseek(fd, -100, SEEK_END);
+    read(fd, buffer, 100);
+
+    TEST_ASSERT_EQUAL(I106_OK, I106PrevHeaderBuffer(buffer, 100, 100, &header));
+    TEST_ASSERT_EQUAL(0, header.ChannelID);
+    TEST_ASSERT_EQUAL(3, header.DataType);
+}
+
+
+// Old API
 TEST(test_i106, TestI106C10Open){
     int handle;
 
