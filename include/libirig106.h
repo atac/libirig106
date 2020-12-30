@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <sys/stat.h>
 
 
 /* Macros and definitions */
@@ -15,7 +16,7 @@
 #endif
 
 
-// File open flags
+// File open flags (will be removed when API switch is complete)
 
 // Microsoft
 #if defined(_MSC_VER)
@@ -42,11 +43,12 @@
 #define OVERWRITE_MODE 0
 #endif
 
+// deprecated
 #define MAX_HANDLES         100
 
 #define IRIG106_SYNC        0xEB25
-#define HEADER_SIZE         24
-#define SEC_HEADER_SIZE     12
+#define HEADER_SIZE         24 // are these needed??
+#define SEC_HEADER_SIZE     12 //
 
 // Define the longest file path string size
 #undef  MAX_PATH
@@ -137,7 +139,7 @@ typedef enum {
     I106_INVALID_PARAMETER   // Passed parameter is invalid
 } I106Status;
 
-// Data file open mode
+// Data file open mode (deprecated)
 typedef enum {
     CLOSED,
     READ,              // Open an existing file for reading
@@ -148,7 +150,7 @@ typedef enum {
     WRITE_NET_STREAM,  // Open network data stream for writing
 } I106C10Mode;
 
-// Used to keep track of the next expected data file structure
+// Used to keep track of the next expected data file structure (deprecated)
 typedef enum {
 	I106_CLOSED,
 	I106_WRITE,
@@ -158,7 +160,7 @@ typedef enum {
 	I106_READ_NET_STREAM,
 } I106FileState;
 
-// Index sort state
+// Index sort state (deprecated)
 typedef enum {
     UNSORTED,
     SORTED,
@@ -170,7 +172,7 @@ typedef enum {
 
 #pragma pack(push, 1)
 
-// IRIG 106 header and optional secondary header data structure
+// IRIG 106 header and optional secondary header
 typedef struct {
     uint16_t  SyncPattern;
     uint16_t  ChannelID;
@@ -189,14 +191,13 @@ typedef struct {
     uint16_t  SecondaryChecksum;
 } I106C10Header;
 
-// Structure for holding file index
-// TODO: Move to i106_index
+// Structure for holding file index (deprecated)
 typedef struct {
     int64_t  Offset;  // File position byte offset
     int64_t  Time;    // Packet RTC at this offset
 } InOrderPacketInfo;
 
-// Various file index array indexes
+// Various file index array indexes (deprecated)
 typedef struct InOrderIndex InOrderIndex;
 struct InOrderIndex {
     I106SortStatus           SortStatus;
@@ -208,7 +209,7 @@ struct InOrderIndex {
     int                  NumSearchSteps;
 };
 
-// Data structure for IRIG 106 read/write handle
+// Data structure for IRIG 106 read/write handle (deprecated)
 typedef struct I106C10Handle I106C10Handle;
 struct I106C10Handle {
     int            InUse;
@@ -229,28 +230,28 @@ struct I106C10Handle {
 #pragma pack(pop)
 
 
-/* Global data */
-
+/* Global data (deprecated */
 extern I106C10Handle  handles[MAX_HANDLES];
 
 
 /* Function Declaration */
 
-// Open / Close
+// New API
+I106Status I106NextHeader(int fd, I106C10Header *header);
+I106Status I106NextHeaderBuffer(void *buffer, int64_t buffer_size, int64_t offset, I106C10Header *header);
+
+// Old API (deprecated)
 I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode);
 I106Status I106C10OpenBuffer(int *handle, void *buffer, int size, I106C10Mode mode);
 I106Status I106C10Close(int handle);
-
-// Read / Write
 I106Status I106C10ReadNextHeader(int handle, I106C10Header *header);
 I106Status I106C10ReadPrevHeader(int handle, I106C10Header *header);
 I106Status I106C10ReadData(int handle, unsigned long buffer_size, void * buffer);
 I106Status I106C10WriteMsg(int handle, I106C10Header *header, void *buffer);
-
-// Move file pointer
 I106Status I106C10LastMsg(int handle);
 I106Status I106C10SetPos(int handle, int64_t offset);
 I106Status I106C10GetPos(int handle, int64_t * offset);
+// end old API
 
 // Utilities
 int HeaderInit(I106C10Header *header, unsigned int channel_id,

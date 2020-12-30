@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #ifndef _WIN32
 #include <sys/mman.h>
@@ -16,10 +17,14 @@
 
 
 TEST_GROUP_RUNNER(test_i106){
+    // New API
+    RUN_TEST_CASE(test_i106, TestI106NextHeader);
+    RUN_TEST_CASE(test_i106, TestI106NextHeaderBuffer);
+
+    // Old API
     RUN_TEST_CASE(test_i106, TestI106C10Open);
     RUN_TEST_CASE(test_i106, TestI106C10OpenBuffer);
     RUN_TEST_CASE(test_i106, TestI106C10Close);
-
     RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeader);
     RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeaderFile);
     /* RUN_TEST_CASE(test_i106, TestI106C10ReadNextHeaderInOrder); */
@@ -53,6 +58,25 @@ TEST_GROUP_RUNNER(test_i106){
 TEST_GROUP(test_i106);
 TEST_SETUP(test_i106){}
 TEST_TEAR_DOWN(test_i106){}
+
+
+TEST(test_i106, TestI106NextHeader){
+    I106C10Header header;
+    int fd = open("tests/indexed.c10", 0);
+
+    TEST_ASSERT_EQUAL(I106_OK, I106NextHeader(fd, &header));
+}
+
+
+TEST(test_i106, TestI106NextHeaderBuffer){
+    I106C10Header header;
+    int fd = open("tests/indexed.c10", 0);
+    void *buffer = malloc(100);
+    read(fd, buffer, 100);
+
+    TEST_ASSERT_EQUAL(I106_OK, I106NextHeaderBuffer(buffer, 100, 0, &header));
+    free(buffer);
+}
 
 
 TEST(test_i106, TestI106C10Open){
