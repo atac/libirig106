@@ -1,7 +1,7 @@
 
 #include <string.h>
 
-#include "util.h"
+#include "i106_util.h"
 
 
 // Swaps "bytes" bytes in place

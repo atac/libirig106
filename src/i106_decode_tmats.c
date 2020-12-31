@@ -17,7 +17,7 @@
 #include <assert.h>
 
 #include "libirig106.h"
-#include "util.h"
+#include "i106_util.h"
 #include "i106_decode_tmats.h"
 
 /******************************************************************************

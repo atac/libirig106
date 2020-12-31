@@ -1,6 +1,6 @@
 
 #include "libirig106.h"
-#include "util.h"
+#include "i106_util.h"
 #include "unity.h"
 #include "unity_fixture.h"
 #include <assert.h>
