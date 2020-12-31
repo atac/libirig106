@@ -6,45 +6,9 @@
 #include <stdint.h>
 #include <sys/stat.h>
 
-
-/* Macros and definitions */
-
-// TODO: check if this is still needed and/or could be moved to individual
-// headers.
 #if defined(__APPLE__)
 #include <sys/uio.h>
 #endif
-
-
-// File open flags (will be removed when API switch is complete)
-
-// Microsoft
-#if defined(_MSC_VER)
-#define READ_FLAGS O_RDONLY | O_BINARY
-#define OVERWRITE_FLAGS O_WRONLY | O_CREAT | _O_TRUNC | O_BINARY
-#define OVERWRITE_MODE _S_IREAD | _S_IWRITE
-
-// GCC
-#elif defined(__GNUC__)
-#define OVERWRITE_MODE S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
-#if !defined(__APPLE__)
-#define READ_FLAGS O_RDONLY
-#define OVERWRITE_FLAGS O_WRONLY | O_CREAT
-
-// OSX
-#else
-#define READ_FLAGS O_RDONLY
-#define OVERWRITE_FLAGS O_WRONLY | O_CREAT
-#endif
-
-// Everyone else
-#else
-#define OVERWRITE_FLAGS O_WRONLY | O_CREAT
-#define OVERWRITE_MODE 0
-#endif
-
-// deprecated
-#define MAX_HANDLES         100
 
 #define IRIG106_SYNC        0xEB25
 #define HEADER_SIZE         24 // are these needed??
@@ -139,40 +103,9 @@ typedef enum {
     I106_INVALID_PARAMETER   // Passed parameter is invalid
 } I106Status;
 
-// Data file open mode (deprecated)
-typedef enum {
-    CLOSED,
-    READ,              // Open an existing file for reading
-    OVERWRITE,         // Create a new file or overwrite an exising file
-    APPEND,            // Append data to the end of an existing file
-    READ_IN_ORDER,     // Open an existing file for reading in time order
-    READ_NET_STREAM,   // Open network data stream for reading
-    WRITE_NET_STREAM,  // Open network data stream for writing
-} I106C10Mode;
-
-// Used to keep track of the next expected data file structure (deprecated)
-typedef enum {
-	I106_CLOSED,
-	I106_WRITE,
-	I106_READ_UNSYNCED,
-    I106_READ_HEADER,
-	I106_READ_DATA,
-	I106_READ_NET_STREAM,
-} I106FileState;
-
-// Index sort state (deprecated)
-typedef enum {
-    UNSORTED,
-    SORTED,
-    SORT_ERROR,
-} I106SortStatus;
-
-
-/* Data structures */
-
-#pragma pack(push, 1)
 
 // IRIG 106 header and optional secondary header
+#pragma pack(push, 1)
 typedef struct {
     uint16_t  SyncPattern;
     uint16_t  ChannelID;
@@ -190,7 +123,74 @@ typedef struct {
     uint16_t  Reserved;
     uint16_t  SecondaryChecksum;
 } I106C10Header;
+#pragma pack(pop)
 
+
+I106Status I106NextHeader(int fd, I106C10Header *header);
+I106Status I106NextHeaderBuffer(char *buffer, int64_t buffer_size, int64_t offset, I106C10Header *header);
+I106Status I106PrevHeader(int fd, I106C10Header *header);
+I106Status I106PrevHeaderBuffer(char *buffer, int64_t buffer_size, int64_t offset, I106C10Header *header);
+
+
+// Old API (deprecated) //
+
+// File open flags
+// Microsoft
+#if defined(_MSC_VER)
+#define READ_FLAGS O_RDONLY | O_BINARY
+#define OVERWRITE_FLAGS O_WRONLY | O_CREAT | _O_TRUNC | O_BINARY
+#define OVERWRITE_MODE _S_IREAD | _S_IWRITE
+
+// GCC
+#elif defined(__GNUC__)
+#define OVERWRITE_MODE S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
+#if !defined(__APPLE__)
+#define READ_FLAGS O_RDONLY
+#define OVERWRITE_FLAGS O_WRONLY | O_CREAT
+
+// OSX
+#else
+#define READ_FLAGS O_RDONLY
+#define OVERWRITE_FLAGS O_WRONLY | O_CREAT
+#endif
+
+// Everyone else
+#else
+#define OVERWRITE_FLAGS O_WRONLY | O_CREAT
+#define OVERWRITE_MODE 0
+#endif
+
+#define MAX_HANDLES         100
+
+// Data file open mode
+typedef enum {
+    CLOSED,
+    READ,              // Open an existing file for reading
+    OVERWRITE,         // Create a new file or overwrite an exising file
+    APPEND,            // Append data to the end of an existing file
+    READ_IN_ORDER,     // Open an existing file for reading in time order
+    READ_NET_STREAM,   // Open network data stream for reading
+    WRITE_NET_STREAM,  // Open network data stream for writing
+} I106C10Mode;
+
+// Used to keep track of the next expected data file structure
+typedef enum {
+	I106_CLOSED,
+	I106_WRITE,
+	I106_READ_UNSYNCED,
+    I106_READ_HEADER,
+	I106_READ_DATA,
+	I106_READ_NET_STREAM,
+} I106FileState;
+
+// Index sort state
+typedef enum {
+    UNSORTED,
+    SORTED,
+    SORT_ERROR,
+} I106SortStatus;
+
+#pragma pack(push, 1)
 // Structure for holding file index (deprecated)
 typedef struct {
     int64_t  Offset;  // File position byte offset
@@ -229,20 +229,9 @@ struct I106C10Handle {
 
 #pragma pack(pop)
 
+// Evil global. Kill ASAP
+extern I106C10Handle handles[MAX_HANDLES];
 
-/* Global data (deprecated */
-extern I106C10Handle  handles[MAX_HANDLES];
-
-
-/* Function Declaration */
-
-// New API
-I106Status I106NextHeader(int fd, I106C10Header *header);
-I106Status I106NextHeaderBuffer(char *buffer, int64_t buffer_size, int64_t offset, I106C10Header *header);
-I106Status I106PrevHeader(int fd, I106C10Header *header);
-I106Status I106PrevHeaderBuffer(char *buffer, int64_t buffer_size, int64_t offset, I106C10Header *header);
-
-// Old API (deprecated)
 I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode);
 I106Status I106C10OpenBuffer(int *handle, void *buffer, int size, I106C10Mode mode);
 I106Status I106C10Close(int handle);
@@ -253,7 +242,5 @@ I106Status I106C10WriteMsg(int handle, I106C10Header *header, void *buffer);
 I106Status I106C10LastMsg(int handle);
 I106Status I106C10SetPos(int handle, int64_t offset);
 I106Status I106C10GetPos(int handle, int64_t * offset);
-// end old API
-
 
 #endif

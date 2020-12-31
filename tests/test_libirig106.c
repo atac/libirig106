@@ -101,7 +101,7 @@ TEST(test_i106, TestI106PrevHeaderBuffer){
     int fd = open("tests/indexed.c10", 0);
     void *buffer = malloc(100);
     lseek(fd, -100, SEEK_END);
-    read(fd, buffer, 100);
+    int read_count = read(fd, buffer, 100);
 
     TEST_ASSERT_EQUAL(I106_OK, I106PrevHeaderBuffer(buffer, 100, 100, &header));
     TEST_ASSERT_EQUAL(0, header.ChannelID);

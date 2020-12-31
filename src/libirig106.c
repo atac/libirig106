@@ -9,187 +9,8 @@
 #endif
 
 #include "libirig106.h"
+#include "util.h"
 #include "i106_time.h"
-
-
-/* Macros and definitions */
-
-// Size of buffer when searching in reverse order.
-#define BACKUP_SIZE     256
-
-
-/*  Module data */
-
-I106C10Handle  handles[MAX_HANDLES];
-static int     handles_inited = 0;
-
-
-/* Function Declaration */
-
-void InitHandles();
-int GetHandle();
-I106Status ValidHandle(int handle);
-I106Status I106C10CheckOpen(int *handle, I106C10Mode mode);
-
-
-I106Status InitHandle(int *handle, const char filename[]){
-    // Get the next available handle and initialize it.
-    InitHandles();
-    if ((*handle = GetHandle()) == -1)
-        return I106_NO_FREE_HANDLES;
-
-    handles[*handle].File_State = I106_CLOSED;
-    handles[*handle].Index.SortStatus = UNSORTED;
-    strncpy(handles[*handle].FileName, filename, sizeof(handles[*handle].FileName));
-    handles[*handle].FileName[sizeof(handles[*handle].FileName) - 1] = '\0';
-    handles[*handle].BytesWritten = 0L;
-
-    return I106_OK;
-}
-
-
-I106Status I106C10OpenBuffer(int *handle, void *buffer, int size, I106C10Mode mode){
-    I106Status status;
-    const char filename[] = "<buffer>";
-
-    if ((status = InitHandle(handle, filename)))
-        return status;
-
-    // Write buffer to tmpfile and attach to handle
-    if (mode == READ || mode == READ_IN_ORDER){
-        if ((handles[*handle].fp = tmpfile()) == NULL)
-            return I106_OPEN_ERROR;
-
-        if (0 > (handles[*handle].File = fileno(handles[*handle].fp)))
-            return I106_OPEN_ERROR;
-
-        if (0 > write(handles[*handle].File, buffer, size))
-            return I106_OPEN_ERROR;
-
-        lseek(handles[*handle].File, 0, SEEK_SET);
-    }
-
-    // Any other mode is an error
-    else {
-        handles[*handle].File_State = I106_CLOSED;
-        handles[*handle].FileMode  = CLOSED;
-        handles[*handle].InUse = 0;
-        *handle = -1;
-        return I106_OPEN_ERROR;
-    }
-
-    return I106C10CheckOpen(handle, mode);
-}
-
-I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
-    I106Status status;
-
-    if ((status = InitHandle(handle, filename)))
-        return status;
-
-    // Open file in correct mode
-    if (mode == READ || mode == READ_IN_ORDER)
-        handles[*handle].File = open(filename, READ_FLAGS, 0);
-    else if (mode == OVERWRITE)
-        handles[*handle].File = open(filename, OVERWRITE_FLAGS, OVERWRITE_MODE);
-
-    // Any other mode is an error
-    else {
-        handles[*handle].File_State = I106_CLOSED;
-        handles[*handle].FileMode  = CLOSED;
-        handles[*handle].InUse = 0;
-        *handle = -1;
-        return I106_OPEN_ERROR;
-    }
-
-    return I106C10CheckOpen(handle, mode);
-}
-
-
-I106Status I106C10CheckOpen(int *handle, I106C10Mode mode){
-    int            read_count;
-    uint16_t       signature;
-
-    if (handles[*handle].File == -1){
-        handles[*handle].InUse = 0;
-        *handle = -1;
-        return I106_OPEN_ERROR;
-    }
-
-    if (mode == READ || mode == READ_IN_ORDER){
-
-        // Check for valid sync pattern
-        // TODO: re-enable this later. Not appropriate for OpenBuffer
-        /* read_count = read(handles[*handle].File, &signature, 2); */
-        /* if (read_count != 2 || signature != IRIG106_SYNC){ */
-        /*     close(handles[*handle].File); */
-        /*     handles[*handle].InUse = 0; */
-        /*     *handle = -1; */
-        /*     return I106_OPEN_ERROR; */
-        /* } */
-
-        // Open OK and sync character OK so set read state to reflect this
-        handles[*handle].FileMode   = mode;
-        handles[*handle].File_State = I106_READ_HEADER;
-
-        // @TODO: move this to a new "validate" function
-        // Make sure first packet is a config packet
-        /* I106C10SetPos(*handle, 0L); */
-        /* if ((status = I106C10ReadNextHeaderFile(*handle, &header))) */
-        /*     return I106_OPEN_WARNING; */
-        /* if (header.DataType != I106CH10_DTYPE_COMPUTER_1) */
-        /*     return I106_OPEN_WARNING; */
-
-        // Everything OK so get time and reset back to the beginning
-        I106C10SetPos(*handle, 0L);
-        handles[*handle].File_State = I106_READ_HEADER;
-        handles[*handle].FileMode = mode;
-    }
-
-    else if (mode == OVERWRITE){
-        handles[*handle].File_State = I106_WRITE;
-        handles[*handle].FileMode = mode;
-    }
-
-    return I106_OK;
-}
-
-
-I106Status I106C10Close(int handle){
-    I106Status status = I106_OK;
-
-    // If handles have not been init'ed then bail
-    if (handles_inited == 0)
-        return I106_NOT_OPEN;
-
-    // Check for a valid handle
-    if ((status = ValidHandle(handle)))
-        return status;
-
-    // Close file if open
-    if ((handles[handle].File != -1) && (handles[handle].InUse == 1))
-        close(handles[handle].File);
-
-    if ((handles[handle].fp != NULL) && (handles[handle].InUse == 1))
-        fclose(handles[handle].fp);
-
-    // Free index buffer and mark unsorted
-    free(handles[handle].Index.Index);
-    handles[handle].Index.Index          = NULL;
-    handles[handle].Index.ArraySize      = 0;
-    handles[handle].Index.ArrayUsed      = 0;
-    handles[handle].Index.NumSearchSteps = 0;
-    handles[handle].Index.SortStatus     = UNSORTED;
-
-    // Reset some status variables
-    handles[handle].File       = -1;
-    handles[handle].fp         = NULL;
-    handles[handle].InUse      = 0;
-    handles[handle].FileMode   = CLOSED;
-    handles[handle].File_State = I106_CLOSED;
-
-    return status;
-}
 
 
 // Simple header validation. Returns 1 = valid, 0 = invalid
@@ -309,6 +130,178 @@ I106Status I106PrevHeaderBuffer(char *buffer, int64_t buffer_size, int64_t offse
 
         return status;
     }
+}
+
+
+//// Old API (deprecated) ////
+
+#define BACKUP_SIZE 256
+I106C10Handle  handles[MAX_HANDLES];
+static int handles_inited = 0;
+void InitHandles();
+int GetHandle();
+I106Status ValidHandle(int handle);
+I106Status I106C10CheckOpen(int *handle, I106C10Mode mode);
+
+
+I106Status InitHandle(int *handle, const char filename[]){
+    // Get the next available handle and initialize it.
+    InitHandles();
+    if ((*handle = GetHandle()) == -1)
+        return I106_NO_FREE_HANDLES;
+
+    handles[*handle].File_State = I106_CLOSED;
+    handles[*handle].Index.SortStatus = UNSORTED;
+    strncpy(handles[*handle].FileName, filename, sizeof(handles[*handle].FileName));
+    handles[*handle].FileName[sizeof(handles[*handle].FileName) - 1] = '\0';
+    handles[*handle].BytesWritten = 0L;
+
+    return I106_OK;
+}
+
+
+I106Status I106C10OpenBuffer(int *handle, void *buffer, int size, I106C10Mode mode){
+    I106Status status;
+    const char filename[] = "<buffer>";
+
+    if ((status = InitHandle(handle, filename)))
+        return status;
+
+    // Write buffer to tmpfile and attach to handle
+    if (mode == READ || mode == READ_IN_ORDER){
+        if ((handles[*handle].fp = tmpfile()) == NULL)
+            return I106_OPEN_ERROR;
+
+        if (0 > (handles[*handle].File = fileno(handles[*handle].fp)))
+            return I106_OPEN_ERROR;
+
+        if (0 > write(handles[*handle].File, buffer, size))
+            return I106_OPEN_ERROR;
+
+        lseek(handles[*handle].File, 0, SEEK_SET);
+    }
+
+    // Any other mode is an error
+    else {
+        handles[*handle].File_State = I106_CLOSED;
+        handles[*handle].FileMode  = CLOSED;
+        handles[*handle].InUse = 0;
+        *handle = -1;
+        return I106_OPEN_ERROR;
+    }
+
+    return I106C10CheckOpen(handle, mode);
+}
+
+
+I106Status I106C10Open(int *handle, const char filename[], I106C10Mode mode){
+    I106Status status;
+
+    if ((status = InitHandle(handle, filename)))
+        return status;
+
+    // Open file in correct mode
+    if (mode == READ || mode == READ_IN_ORDER)
+        handles[*handle].File = open(filename, READ_FLAGS, 0);
+    else if (mode == OVERWRITE)
+        handles[*handle].File = open(filename, OVERWRITE_FLAGS, OVERWRITE_MODE);
+
+    // Any other mode is an error
+    else {
+        handles[*handle].File_State = I106_CLOSED;
+        handles[*handle].FileMode  = CLOSED;
+        handles[*handle].InUse = 0;
+        *handle = -1;
+        return I106_OPEN_ERROR;
+    }
+
+    return I106C10CheckOpen(handle, mode);
+}
+
+
+I106Status I106C10CheckOpen(int *handle, I106C10Mode mode){
+    int            read_count;
+    uint16_t       signature;
+
+    if (handles[*handle].File == -1){
+        handles[*handle].InUse = 0;
+        *handle = -1;
+        return I106_OPEN_ERROR;
+    }
+
+    if (mode == READ || mode == READ_IN_ORDER){
+
+        // Check for valid sync pattern
+        // TODO: re-enable this later. Not appropriate for OpenBuffer
+        /* read_count = read(handles[*handle].File, &signature, 2); */
+        /* if (read_count != 2 || signature != IRIG106_SYNC){ */
+        /*     close(handles[*handle].File); */
+        /*     handles[*handle].InUse = 0; */
+        /*     *handle = -1; */
+        /*     return I106_OPEN_ERROR; */
+        /* } */
+
+        // Open OK and sync character OK so set read state to reflect this
+        handles[*handle].FileMode   = mode;
+        handles[*handle].File_State = I106_READ_HEADER;
+
+        // @TODO: move this to a new "validate" function
+        // Make sure first packet is a config packet
+        /* I106C10SetPos(*handle, 0L); */
+        /* if ((status = I106C10ReadNextHeaderFile(*handle, &header))) */
+        /*     return I106_OPEN_WARNING; */
+        /* if (header.DataType != I106CH10_DTYPE_COMPUTER_1) */
+        /*     return I106_OPEN_WARNING; */
+
+        // Everything OK so get time and reset back to the beginning
+        I106C10SetPos(*handle, 0L);
+        handles[*handle].File_State = I106_READ_HEADER;
+        handles[*handle].FileMode = mode;
+    }
+
+    else if (mode == OVERWRITE){
+        handles[*handle].File_State = I106_WRITE;
+        handles[*handle].FileMode = mode;
+    }
+
+    return I106_OK;
+}
+
+
+I106Status I106C10Close(int handle){
+    I106Status status = I106_OK;
+
+    // If handles have not been init'ed then bail
+    if (handles_inited == 0)
+        return I106_NOT_OPEN;
+
+    // Check for a valid handle
+    if ((status = ValidHandle(handle)))
+        return status;
+
+    // Close file if open
+    if ((handles[handle].File != -1) && (handles[handle].InUse == 1))
+        close(handles[handle].File);
+
+    if ((handles[handle].fp != NULL) && (handles[handle].InUse == 1))
+        fclose(handles[handle].fp);
+
+    // Free index buffer and mark unsorted
+    free(handles[handle].Index.Index);
+    handles[handle].Index.Index          = NULL;
+    handles[handle].Index.ArraySize      = 0;
+    handles[handle].Index.ArrayUsed      = 0;
+    handles[handle].Index.NumSearchSteps = 0;
+    handles[handle].Index.SortStatus     = UNSORTED;
+
+    // Reset some status variables
+    handles[handle].File       = -1;
+    handles[handle].fp         = NULL;
+    handles[handle].InUse      = 0;
+    handles[handle].FileMode   = CLOSED;
+    handles[handle].File_State = I106_CLOSED;
+
+    return status;
 }
 
 
@@ -705,8 +698,6 @@ I106Status I106C10GetPos(int handle, int64_t *offset){
     assert(*offset >= 0);
     return I106_OK;
 }
-
-
 
 
 // Initialize handle data if necessary
