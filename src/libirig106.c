@@ -372,7 +372,6 @@ I106Status I106C10ReadNextHeader(int handle, I106C10Header *header){
 
         // If there was an error reading, figure out why
         if (read_count != HEADER_SIZE){
-            printf("Read count %i != header size: %i at offset %lu", read_count, HEADER_SIZE, offset);
             handles[handle].File_State = I106_READ_UNSYNCED;
             if (read_count == -1)
                 return I106_READ_ERROR;
