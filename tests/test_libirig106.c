@@ -39,12 +39,12 @@ TEST_GROUP_RUNNER(test_i106){
     RUN_TEST_CASE(test_i106, TestI106C10SetPos);
     RUN_TEST_CASE(test_i106, TestI106C10GetPos);
 
-    RUN_TEST_CASE(test_i106, TestHeaderInit);
-    RUN_TEST_CASE(test_i106, TestGetHeaderLength);
-    RUN_TEST_CASE(test_i106, TestGetDataLength);
-    RUN_TEST_CASE(test_i106, TestHeaderChecksum);
+    /* RUN_TEST_CASE(test_i106, TestHeaderInit); */
+    /* RUN_TEST_CASE(test_i106, TestGetHeaderLength); */
+    /* RUN_TEST_CASE(test_i106, TestGetDataLength); */
+    /* RUN_TEST_CASE(test_i106, TestHeaderChecksum); */
     /* RUN_TEST_CASE(test_i106, TestSecondaryHeaderChecksum); */
-    RUN_TEST_CASE(test_i106, TestI106C10ErrorString);
+    /* RUN_TEST_CASE(test_i106, TestI106C10ErrorString); */
     /* RUN_TEST_CASE(test_i106, TestDataChecksum); */
     /* RUN_TEST_CASE(test_i106, TestBufferSize); */
     /* RUN_TEST_CASE(test_i106, TestAddFillerAndChecksum); */
@@ -307,76 +307,3 @@ TEST(test_i106, TestI106C10GetPos){
 }
 
 
-TEST(test_i106, TestHeaderInit){
-    I106C10Header header;
-    TEST_ASSERT_EQUAL(HeaderInit(&header, 4, 5, 6, 7), 0);
-    TEST_ASSERT_EQUAL(4, header.ChannelID);
-    TEST_ASSERT_EQUAL(5, header.DataType);
-    TEST_ASSERT_EQUAL(6, header.PacketFlags);
-    TEST_ASSERT_EQUAL(7, header.SequenceNumber);
-}
-
-
-TEST(test_i106, TestGetHeaderLength){
-    I106C10Header header;
-    header.PacketFlags = 0;
-
-    TEST_ASSERT_EQUAL(24, GetHeaderLength(&header));
-
-    header.PacketFlags |= I106CH10_PFLAGS_SEC_HEADER;
-    TEST_ASSERT_EQUAL(36, GetHeaderLength(&header));
-}
-
-
-TEST(test_i106, TestGetDataLength){
-    I106C10Header header;
-    header.PacketFlags = 0;
-    header.PacketLength = 100;
-    TEST_ASSERT_EQUAL(76, GetDataLength(&header));
-}
-
-
-TEST(test_i106, TestHeaderChecksum){
-    I106C10Header header;
-    HeaderInit(&header, 4, 5, 6, 7);
-
-    TEST_ASSERT_EQUAL(63305, HeaderChecksum(&header));
-}
-
-
-TEST(test_i106, TestSecondaryHeaderChecksum){
-    void *raw_header = malloc(36);
-    I106C10Header header;
-    header.PacketFlags |= I106CH10_PFLAGS_SEC_HEADER;
-    memset(raw_header, 0, 36);
-    memcpy(raw_header, &header, HEADER_SIZE);
-
-    TEST_ASSERT_EQUAL(28073, SecondaryHeaderChecksum(raw_header));
-
-    free(raw_header);
-}
-
-
-TEST(test_i106, TestI106C10ErrorString){
-    TEST_ASSERT_EQUAL_STRING("File not open", I106ErrorString(I106_NOT_OPEN));
-    TEST_ASSERT_EQUAL_STRING("No index", I106ErrorString(I106_NO_INDEX));
-    TEST_ASSERT_EQUAL_STRING("Unknown error", I106ErrorString(1000));
-}
-
-
-/* TEST(test_i106, TestBufferSize){ */
-/*     TEST_ASSERT_EQUAL(52, BufferSize(50, 0)); */
-/*     TEST_ASSERT_EQUAL(52, BufferSize(50, I106CH10_PFLAGS_CHKSUM_NONE)); */
-/*     TEST_ASSERT_EQUAL(52, BufferSize(50, I106CH10_PFLAGS_CHKSUM_8)); */
-/*     TEST_ASSERT_EQUAL(52, BufferSize(50, I106CH10_PFLAGS_CHKSUM_16)); */
-/*     TEST_ASSERT_EQUAL(56, BufferSize(50, I106CH10_PFLAGS_CHKSUM_32)); */
-/* } */
-
-
-TEST(test_i106, TestAddFillerAndChecksum){
-    void *data = malloc(100);
-    I106C10Header header;
-    TEST_ASSERT_EQUAL(I106_OK, AddFillerAndChecksum(&header, data));
-
-    free(data);
-}
