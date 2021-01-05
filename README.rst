@@ -3,6 +3,7 @@ libirig106
 ==========
 
 |StatusImage|_
+|LicenseImage|
 
 Forked from Bob Baggerman's `irig106lib`_
 
@@ -131,5 +132,6 @@ commandline to build and then run the test suite.
 
 .. _Python Wrapper: https://github.com/atac-bham/libirig106-python
 .. _irig106lib: https://github.com/bbaggerman/irig106lib
-.. |StatusImage| image:: https://dev.azure.com/atac-bham/libirig106/_apis/build/status/atac.libirig106?branchName=master
+.. |StatusImage| image:: https://img.shields.io/azure-devops/build/atac-bham/beac5449-743a-475e-9e57-8d3fcf729446/9
 .. _StatusImage: https://dev.azure.com/atac-bham/libirig106/_build/latest?definitionId=9&branchName=master
+.. |LicenseImage| image:: https://img.shields.io/github/license/atac/libirig106
