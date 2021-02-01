@@ -9,7 +9,7 @@
 #define _I106_DECODE_INDEX_H
 
 #include "libirig106.h"
-#include "i106_time.h"
+#include "i106_util.h"
 
 // Macros and definitions
 

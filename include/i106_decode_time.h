@@ -7,7 +7,7 @@
 #ifndef _I106_DECODE_TIME_H
 #define _I106_DECODE_TIME_H
 
-#include "i106_time.h"
+#include "i106_util.h"
 #include "libirig106.h"
 
 

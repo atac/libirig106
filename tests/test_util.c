@@ -36,6 +36,20 @@ TEST_GROUP_RUNNER(test_util){
     /* RUN_TEST_CASE(test_index, TestIndexPresent); */
     /* RUN_TEST_CASE(test_index, TestReadIndexes); */
     /* RUN_TEST_CASE(test_index, TestMakeIndex); */
+
+    RUN_TEST_CASE(test_util, TestSetRelTime);
+    RUN_TEST_CASE(test_util, TestRel2IrigTime);
+    RUN_TEST_CASE(test_util, TestRelInt2IrigTime);
+    RUN_TEST_CASE(test_util, TestIrig2RelTime);
+    RUN_TEST_CASE(test_util, TestI106_Ch4Binary2IrigTime);
+    RUN_TEST_CASE(test_util, TestIEEE15882IrigTime);
+    RUN_TEST_CASE(test_util, TestFillInTimeStruct);
+    RUN_TEST_CASE(test_util, TestLLInt2TimeArray);
+    RUN_TEST_CASE(test_util, TestTimeArray2LLInt);
+    RUN_TEST_CASE(test_util, TestI106_SyncTime);
+    /* RUN_TEST_CASE(test_util, TestC10SetPosToIrigTime); */
+    RUN_TEST_CASE(test_util, TestIrigTime2String);
+    RUN_TEST_CASE(test_util, Testmkgmtime);
 }
 
 
@@ -150,4 +164,114 @@ TEST(test_util, TestMakeIndex){
 
     TEST_ASSERT_EQUAL(I106_OK, MakeIndex(handle, 2));
     I106C10Close(handle);
+}
+
+
+TEST(test_util, TestSetRelTime){
+    I106Time t;
+    uint8_t rtc[] = {1, 2, 3};
+    TEST_ASSERT_EQUAL(I106_SetRelTime(1, &t, rtc), I106_OK);
+}
+
+
+TEST(test_util, TestRel2IrigTime){
+    I106Time t;
+    uint8_t rtc[] = {1, 2, 3};
+    TEST_ASSERT_EQUAL(I106_Rel2IrigTime(1, rtc, &t), I106_OK);
+}
+
+
+TEST(test_util, TestRelInt2IrigTime){
+    I106Time t;
+    TEST_ASSERT_EQUAL(I106_RelInt2IrigTime(1, 1, &t), I106_OK);
+}
+
+
+TEST(test_util, TestIrig2RelTime){
+    I106Time t;
+    uint8_t rtc[] = {1, 2, 3};
+    TEST_ASSERT_EQUAL(I106_Irig2RelTime(1, &t, rtc), I106_OK);
+}
+
+
+TEST(test_util, TestI106_Ch4Binary2IrigTime){
+    I106Ch4_Binary_Time ch4_time;
+    I106Time t;
+    TEST_ASSERT_EQUAL(I106_Ch4Binary2IrigTime(&ch4_time, &t), I106_OK);
+}
+
+
+TEST(test_util, TestIEEE15882IrigTime){
+    IEEE1588_Time ieee_time;
+    I106Time t;
+    TEST_ASSERT_EQUAL(I106_IEEE15882IrigTime(&ieee_time, &t), I106_OK);
+}
+
+
+TEST(test_util, TestFillInTimeStruct){
+    I106C10Header header;
+    IntraPacketTS ipts;
+    TimeRef t;
+    TEST_ASSERT_EQUAL(FillInTimeStruct(&header, &ipts, &t), I106_OK);
+}
+
+
+TEST(test_util, TestLLInt2TimeArray){
+    uint8_t arr[] = {1, 2, 3};
+    int64_t rtc;
+    LLInt2TimeArray(&rtc, arr);
+}
+
+
+TEST(test_util, TestTimeArray2LLInt){
+    uint8_t arr[] = {1, 2, 3};
+    int64_t rtc;
+    TimeArray2LLInt(arr, &rtc);
+}
+
+
+TEST(test_util, TestI106_SyncTime){
+    int handle;
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/indexed.c10", READ));
+    TEST_ASSERT_EQUAL(I106_OK, I106_SyncTime(handle, 0, 10));
+    I106C10Close(handle);
+}
+
+
+TEST(test_util, TestC10SetPosToIrigTime){
+    int handle;
+    I106Time t;
+
+    TEST_ASSERT_EQUAL(I106_OK, I106C10Open(&handle, "tests/indexed.c10", READ));
+    /* MakeInOrderIndex(handle); */
+    TEST_ASSERT_EQUAL(I106_OK, I106_RelInt2IrigTime(handle, 38129384813, &t));
+    TEST_ASSERT_EQUAL(I106_OK, I106C10SetPosToIrigTime(handle, &t));
+    I106C10Close(handle);
+}
+
+
+TEST(test_util, TestIrigTime2String){
+    I106Time t;
+    t.Seconds = 1504191545;
+    t.Fraction = 0;
+    t.Format = I106_DATEFMT_DAY;
+    TEST_ASSERT_EQUAL_STRING("243:14:59:05.000", IrigTime2String(&t));
+
+    t.Format = I106_DATEFMT_DMY;
+    TEST_ASSERT_EQUAL_STRING("2017/08/31 14:59:05.000", IrigTime2String(&t));
+}
+
+
+TEST(test_util, Testmkgmtime){
+    struct tm t = {
+        .tm_year = 117,
+        .tm_mon = 7,
+        .tm_mday = 31,
+        .tm_hour = 14,
+        .tm_min = 59,
+        .tm_sec = 5,
+        .tm_isdst = 1
+    };
+
+    TEST_ASSERT_EQUAL(1504191545, mkgmtime(&t));
 }

@@ -10,7 +10,6 @@
 
 #include "libirig106.h"
 #include "i106_util.h"
-#include "i106_time.h"
 
 
 // Simple header validation. Returns 1 = valid, 0 = invalid
