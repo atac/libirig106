@@ -38,7 +38,7 @@
 
 
 /* Module data */
-
+// TODO: evil global, delete ASAP
 static TimeRef  time_ref[MAX_HANDLES];  // Relative / absolute time reference
 
 
