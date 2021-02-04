@@ -16,7 +16,7 @@ def run(cmd):
 
 # Ensure build directory exists (recreate if requested)
 if 'rebuild' in sys.argv:
-    shutil.rmtree('build')
+    shutil.rmtree('build', True)
 if not os.path.exists('build'):
     run('mkdir build')
 
