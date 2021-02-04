@@ -12,7 +12,7 @@
 #include "libirig106.h"
 #include "i106_util.h"
 
-#include "i106_decode_can.h"
+#include "i106_can.h"
 
 
 /* Function Declaration */

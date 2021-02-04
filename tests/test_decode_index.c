@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include "i106_decode_index.h"
+#include "i106_index.h"
 #include "unity.h"
 #include "unity_fixture.h"
 

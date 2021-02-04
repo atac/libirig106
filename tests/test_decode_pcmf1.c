@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include "i106_decode_pcmf1.h"
+#include "i106_pcm.h"
 #include "unity.h"
 #include "unity_fixture.h"
 

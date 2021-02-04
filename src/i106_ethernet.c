@@ -9,7 +9,7 @@
 #include <string.h>
 
 #include "libirig106.h"
-#include "i106_decode_ethernet.h"
+#include "i106_ethernet.h"
 
 
 /* Function Declaration */

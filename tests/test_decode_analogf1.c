@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include "i106_decode_analogf1.h"
+#include "i106_analog.h"
 #include "unity.h"
 #include "unity_fixture.h"
 

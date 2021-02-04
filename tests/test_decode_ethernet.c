@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include "i106_decode_ethernet.h"
+#include "i106_ethernet.h"
 #include "unity.h"
 #include "unity_fixture.h"
 

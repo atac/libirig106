@@ -10,7 +10,7 @@
 
 #include "libirig106.h"
 #include "i106_util.h"
-#include "i106_decode_index.h"
+#include "i106_index.h"
 
 
 /* Function Declaration */

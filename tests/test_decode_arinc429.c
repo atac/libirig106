@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include "i106_decode_arinc429.h"
+#include "i106_arinc429.h"
 #include "unity.h"
 #include "unity_fixture.h"
 

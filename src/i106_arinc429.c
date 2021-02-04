@@ -6,7 +6,7 @@
 
 #include "libirig106.h"
 #include "i106_util.h"
-#include "i106_decode_arinc429.h"
+#include "i106_arinc429.h"
 
 
 /* Function Declaration */
