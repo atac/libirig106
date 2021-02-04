@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include "i106_decode_video.h"
+#include "i106_video.h"
 #include "unity.h"
 #include "unity_fixture.h"
 

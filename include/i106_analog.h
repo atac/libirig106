@@ -22,7 +22,7 @@ set BytesRead to zero, continue along
 #define _I106_DECODE_ANALOGF1_H
 
 #include "libirig106.h"
-#include "i106_decode_tmats.h"
+#include "i106_tmats.h"
 #include "i106_util.h"
 
 

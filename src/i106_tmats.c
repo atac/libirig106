@@ -18,7 +18,7 @@
 
 #include "libirig106.h"
 #include "i106_util.h"
-#include "i106_decode_tmats.h"
+#include "i106_tmats.h"
 
 /******************************************************************************
 

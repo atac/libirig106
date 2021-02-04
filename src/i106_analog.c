@@ -17,7 +17,7 @@
 #include <string.h>
 
 #include "i106_analog.h"
-#include "i106_decode_tmats.h"
+#include "i106_tmats.h"
 #include "i106_util.h"
 #include "libirig106.h"
 

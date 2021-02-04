@@ -6,7 +6,7 @@
 #include "libirig106.h"
 
 #include <time.h>
-#include "i106_decode_tmats.h"
+#include "i106_tmats.h"
 
 I106Status SwapBytes(uint8_t *buffer, long bytes);
 I106Status SwapShortWords(uint16_t *buffer, long bytes);
