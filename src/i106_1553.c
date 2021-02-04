@@ -11,7 +11,7 @@
 #include "stdint.h"
 
 #include "libirig106.h"
-#include "i106_decode_1553f1.h"
+#include "i106_1553.h"
 
 
 /* Function Declaration */

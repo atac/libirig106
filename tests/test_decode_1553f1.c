@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include "i106_decode_1553f1.h"
+#include "i106_1553.h"
 #include "unity.h"
 #include "unity_fixture.h"
 
