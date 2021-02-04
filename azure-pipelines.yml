@@ -2,7 +2,7 @@
 trigger:
 - master
 
-name: "0.2.0"
+name: "0.3.0"
 
 jobs:
 
